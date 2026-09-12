@@ -12,7 +12,7 @@ export default function Home() {
 
   useEffect(() => {
     // เอา Web App URL มาใส่ตรงนี้
-    const scriptUrl = "ใส่_WEB_APP_URL_ตรงนี้";
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbzCHgXH4L74QA0tKw-GIS2moFPCcfBEiwkN38Ejj-Y_k2vLOWxXo1MLFfHiKYF1qrCI/exec";
     
     fetch(scriptUrl)
       .then(res => res.json())
