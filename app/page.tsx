@@ -20,7 +20,6 @@ export default function Home() {
       complete: (results) => {
         const rows = results.data as any[][];
         
-        // ดึงเวลาอัปเดตจาก Z1 (คอลัมน์ที่ 26 -> index 25)
         if (rows.length > 0 && rows[0][25]) {
           setLastUpdated(rows[0][25] as string);
         } else {
@@ -30,16 +29,16 @@ export default function Home() {
         const formatted = rows.map((row: any) => {
           if (!row[1] || !row[2] || row[1] === 'เลขทะเบียน') return null;
           return {
-            id: String(row[1]).trim(),        // เลขคำสั่ง
-            name: String(row[2]).trim(),      // ชื่อ-สกุล
-            date: row[3],                     // วันที่
-            days: parseInt(row[4]) || 0,      // จำนวนวัน
-            location: row[5] || '',           // สถานที่
-            detail: row[6] || '',             // งาน
-            approver: row[7] || '',           // ผู้อนุมัติ
-            empId: row[8] ? String(row[8]).trim() : '', // รหัสพนักงาน (คอลัมน์ I)
-            department: row[9] || '-',        // สังกัด (คอลัมน์ J)
-            phone: row[10] || '-'             // เบอร์โทร (คอลัมน์ K)
+            id: String(row[1]).trim(),        
+            name: String(row[2]).trim(),      
+            date: row[3],                     
+            days: parseInt(row[4]) || 0,      
+            location: row[5] || '',           
+            detail: row[6] || '',             
+            approver: row[7] || '',           
+            empId: row[8] ? String(row[8]).trim() : '', 
+            department: row[9] || '-',        
+            phone: row[10] || '-'             
           };
         }).filter(Boolean);
         
@@ -53,7 +52,6 @@ export default function Home() {
     });
   }, []);
 
-  // จับคู่ข้อมูลผู้ใช้งานแบบ Unique สำหรับตอนค้นหา
   const uniqueUsers = Array.from(new Map(data.map(d => [d.name, d])).entries()).map(([name, d]) => d);
   const filteredUsers = uniqueUsers.filter(user => user.name.includes(search) && search !== '');
   
@@ -99,7 +97,7 @@ export default function Home() {
       <div>
         <div className="text-center py-6 mb-2">
           <div className="inline-block bg-blue-100 p-3 rounded-full text-blue-600 mb-2 shadow-inner">📊</div>
-          <h1 className="text-2xl font-bold text-gray-800">สรุปจำนวนวันออกงาน</h1>
+          <h1 className="text-2xl font-bold text-gray-800">สรุปจำนวนวันปฏิบัติงาน</h1>
           <p className="text-sm text-gray-500 mt-1">จำนวนวันและรายละเอียดตามคำสั่งทั้งหมด</p>
           <p className="text-xs text-gray-400 mt-1">🔄 ข้อมูลอัปเดตล่าสุด: {lastUpdated}</p>
         </div>
@@ -121,7 +119,6 @@ export default function Home() {
                     src={`/staff-images/${user.empId}.png`} 
                     onError={(e) => { 
                       e.currentTarget.onerror = null; 
-                      // Fallback เผื่อโหลดจากโฟลเดอร์ไม่ได้ จะลองดึงจากเว็บโดยตรง
                       e.currentTarget.src = `http://mmdapp.egat.co.th/mmdstaff/images_new/${user.empId}.png`; 
                     }}
                     className="w-10 h-10 rounded-full object-cover border border-gray-200 bg-gray-100 shrink-0" 
@@ -157,7 +154,7 @@ export default function Home() {
                 />
                 <div className="space-y-1">
                   <h2 className="text-xl font-bold leading-tight">{selectedUserInfo.name}</h2>
-                  <p className="text-sm text-blue-100">รหัส: {selectedUserInfo.empId}</p>
+                  <p className="text-sm text-blue-100">เลขประจำตัว: {selectedUserInfo.empId}</p>
                   <p className="text-sm text-blue-100">สังกัด: {selectedUserInfo.department}</p>
                   <p className="text-sm text-blue-100">โทร: {selectedUserInfo.phone}</p>
                 </div>
@@ -169,7 +166,7 @@ export default function Home() {
 
             <details className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 group cursor-pointer" open>
               <summary className="font-bold text-gray-800 outline-none flex justify-between items-center select-none">
-                <span>📊 สรุปจำนวนวันออกงาน (รวม {summary.total} วัน)</span><span className="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+                <span>📊 สรุปจำนวนวันปฏิบัติงาน (รวม {summary.total} วัน)</span><span className="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
               <div className="grid grid-cols-2 gap-3 mt-4 text-sm font-medium">
                 <div onClick={() => setModalCategory('tcw')} className="bg-blue-50 p-3.5 rounded-xl text-blue-700 border border-blue-100 cursor-pointer hover:bg-blue-100 active:scale-95 transition-all flex justify-between items-center">
@@ -230,53 +227,6 @@ export default function Home() {
           </div>
         )}
       </div>
-
-      <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
-        สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง
-      </div>
-
-      {modalCategory && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
-            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-gray-800 text-base">
-                {modalCategory === 'meet' && '📝 รายละเอียด: ประชุม'}
-                {modalCategory === 'train' && '📚 รายละเอียด: อบรม'}
-                {modalCategory === 'visit' && '🔎 รายละเอียด: ตรวจเยี่ยม Site'}
-                {modalCategory === 'tcw' && '🚗 รายละเอียด: ต่างจังหวัด'}
-                {modalCategory === 'bkk' && '🏙️ รายละเอียด: ปริมณฑล'}
-              </h3>
-              <button onClick={() => setModalCategory(null)} className="text-gray-400 hover:text-red-500 bg-gray-200 hover:bg-red-100 rounded-full w-8 h-8 flex items-center justify-center font-bold">✕</button>
-            </div>
-            
-            <div className="p-4 overflow-y-auto space-y-3">
-              {getJobsByCategory(modalCategory).length > 0 ? (
-                getJobsByCategory(modalCategory).map((job, idx) => (
-                  <div key={idx} className="bg-white border border-gray-200 rounded-xl p-3.5 text-sm shadow-sm relative pl-4">
-                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${
-                      modalCategory === 'meet' ? 'bg-purple-400' :
-                      modalCategory === 'train' ? 'bg-amber-400' :
-                      modalCategory === 'visit' ? 'bg-rose-400' :
-                      modalCategory === 'bkk' ? 'bg-emerald-400' : 'bg-blue-400'
-                    }`}></div>
-                    <p className="font-bold text-gray-800 mb-1">{job.location}</p>
-                    <p className="text-gray-600 mb-2 text-xs leading-relaxed">{job.detail}</p>
-                    <div className="flex justify-between items-end border-t border-gray-100 pt-2 mt-2">
-                       <span className="text-xs text-gray-400">📅 {job.date}</span>
-                       <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-md">รวม {job.days} วัน</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-12 text-gray-400">ไม่มีข้อมูลในหมวดหมู่นี้</div>
-              )}
-            </div>
-            <div className="p-4 border-t bg-gray-50">
-               <button onClick={() => setModalCategory(null)} className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 active:scale-95 transition-all shadow-sm">ปิดหน้าต่าง</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
