@@ -19,7 +19,7 @@ export default function Home() {
       download: true,
       header: false,
       complete: (results) => {
-        const rows = results.data;
+        const rows = results.data as any[][];
         
         // ดึงเวลาอัปเดตจากเซลล์ I1 (แถวแรก คอลัมน์ที่ 9 หรือ index 8)
         if (rows.length > 0 && rows[0][8]) {
