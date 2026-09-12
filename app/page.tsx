@@ -99,8 +99,8 @@ export default function Home() {
           <div className="inline-block bg-blue-100 p-3 rounded-full text-blue-600 mb-2 shadow-inner">
             📊
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">ระบบสรุปจำนวนวันออกงาน</h1>
-          <p className="text-sm text-gray-500 mt-1">ค้นหารายชื่อผู้ปฏิบัติงานเพื่อดูสรุปและรายละเอียด</p>
+          <h1 className="text-2xl font-bold text-gray-800">สรุปจำนวนวันออกงาน</h1>
+          <p className="text-sm text-gray-500 mt-1">จำนวนวันและรายละเอียดตามคำสั่งทั้งหมด</p>
         </div>
 
         {/* กล่องค้นหา */}
@@ -144,7 +144,7 @@ export default function Home() {
                 onClick={() => { setSelectedName(''); setSearch(''); }}
                 className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors"
               >
-                เปลี่ยนชื่อ
+                ค้นหาใหม่
               </button>
             </div>
 
@@ -235,7 +235,7 @@ export default function Home() {
         ) : (
           /* หน้าต้อนรับเมื่อยังไม่ได้เลือกชื่อ */
           <div className="text-center py-12 px-6 bg-white rounded-2xl border border-dashed border-gray-300 shadow-sm mt-4">
-            <div className="text-4xl mb-3">👋</div>
+            <div className="text-4xl mb-3">🕵️</div>
             <h3 className="font-bold text-gray-700 text-base mb-1">ยังไม่ได้เลือกรายชื่อผู้ปฏิบัติงาน</h3>
             <p className="text-xs text-gray-400 leading-relaxed">กรุณาพิมพ์ชื่อหรือนามสกุลในช่องค้นหาด้านบน เพื่อเรียกดูข้อมูลตารางการออกงานครับ</p>
           </div>
@@ -244,7 +244,7 @@ export default function Home() {
 
       {/* Footer เล็กๆ ด้านล่าง */}
       <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
-        ระบบบันทึกและสรุปข้อมูลการออกปฏิบัติงานภาคสนาม
+        สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง
       </div>
 
       {/* Modal Popup แสดงรายละเอียดแยกหมวดหมู่ */}
