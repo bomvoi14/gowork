@@ -115,15 +115,20 @@ export default function Home() {
             <ul className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-xl max-h-60 overflow-y-auto z-20">
               {filteredUsers.map(user => (
                 <li key={user.name} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors flex items-center gap-3" onClick={() => { setSelectedName(user.name); setSearch(user.name); }}>
-                  <img 
-                    src={`/staff-images/${user.empId}.png`} 
-                    onError={(e) => { 
-                      e.currentTarget.onerror = null; 
-                      e.currentTarget.src = `http://mmdapp.egat.co.th/mmdstaff/images_new/${user.empId}.png`; 
-                    }}
-                    className="w-10 h-10 rounded-full object-cover border border-gray-200 bg-gray-100 shrink-0" 
-                    alt="profile"
-                  />
+                  
+                  {/* แก้รูปตอนค้นหา */}
+                  <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
+                    <img 
+                      src={`/staff-images/${user.empId}.png`} 
+                      onError={(e) => { 
+                        e.currentTarget.onerror = null; 
+                        e.currentTarget.src = `http://mmdapp.egat.co.th/mmdstaff/images_new/${user.empId}.png`; 
+                      }}
+                      className="w-full h-full object-cover object-top" 
+                      alt="profile"
+                    />
+                  </div>
+
                   <div className="flex flex-col">
                     <span>{user.name}</span>
                     <span className="text-xs text-gray-500">{user.department}</span>
@@ -143,15 +148,20 @@ export default function Home() {
           <div className="animate-fade-in space-y-4">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 rounded-xl shadow-md text-white flex justify-between items-start">
               <div className="flex items-start gap-4">
-                <img 
-                  src={`/staff-images/${selectedUserInfo.empId}.png`} 
-                  onError={(e) => { 
-                    e.currentTarget.onerror = null; 
-                    e.currentTarget.src = `http://mmdapp.egat.co.th/mmdstaff/images_new/${selectedUserInfo.empId}.png`; 
-                  }}
-                  className="w-16 h-16 rounded-full border-2 border-white/50 object-cover bg-gray-200 shadow-sm shrink-0 mt-1" 
-                  alt="profile"
-                />
+                
+                {/* แก้รูปโปรไฟล์หลัก */}
+                <div className="w-16 h-16 shrink-0 mt-1 rounded-full overflow-hidden border-2 border-white/50 bg-gray-200 shadow-sm">
+                  <img 
+                    src={`/staff-images/${selectedUserInfo.empId}.png`} 
+                    onError={(e) => { 
+                      e.currentTarget.onerror = null; 
+                      e.currentTarget.src = `http://mmdapp.egat.co.th/mmdstaff/images_new/${selectedUserInfo.empId}.png`; 
+                    }}
+                    className="w-full h-full object-cover object-top" 
+                    alt="profile"
+                  />
+                </div>
+
                 <div className="space-y-1">
                   <h2 className="text-xl font-bold leading-tight">{selectedUserInfo.name}</h2>
                   <p className="text-sm text-blue-100">เลขประจำตัว: {selectedUserInfo.empId}</p>
