@@ -1,6 +1,5 @@
 "use client"
 import { useState, useMemo, useEffect } from 'react';
-import Papa from 'papaparse';
 
 export default function Home() {
   const [data, setData] = useState<any[]>([]);
@@ -9,30 +8,23 @@ export default function Home() {
   const [selectedName, setSelectedName] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modalCategory, setModalCategory] = useState<string | null>(null);
-
-  // สร้างฟังก์ชันเก็บวัน-เวลาปัจจุบันตอนเปิดหน้าเว็บ
-  const [currentTime] = useState(() => {
-    const now = new Date();
-    return now.toLocaleDateString('th-TH', { 
-      year: 'numeric', month: 'short', day: 'numeric', 
-      hour: '2-digit', minute: '2-digit' 
-    });
-  });
+  const [lastUpdated, setLastUpdated] = useState('');
 
   useEffect(() => {
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
+    // เอา Web App URL มาใส่ตรงนี้
+    const scriptUrl = "ใส่_WEB_APP_URL_ตรงนี้";
     
-    Papa.parse(sheetUrl, {
-      download: true,
-      header: false,
-      complete: (results) => {
-        const rows = results.data;
+    fetch(scriptUrl)
+      .then(res => res.json())
+      .then(result => {
+        setLastUpdated(result.lastUpdated);
+        const rows = result.data;
         const formatted = rows.map((row: any) => {
           if (!row[1] || !row[2] || row[1] === 'เลขทะเบียน') return null;
           
           return {
             id: row[1],
-            name: row[2].trim(),
+            name: String(row[2]).trim(),
             date: row[3],
             days: parseInt(row[4]) || 0,
             location: row[5] || '',
@@ -43,25 +35,22 @@ export default function Home() {
         
         setData(formatted);
         setLoading(false);
-      },
-      error: (err) => {
+      })
+      .catch(err => {
         console.error("ดึงข้อมูลพลาด:", err);
         setLoading(false);
-      }
-    });
+      });
   }, []);
 
   const uniqueNames = Array.from(new Set(data.map(d => d.name)));
   const filteredNames = uniqueNames.filter(name => name.includes(search) && search !== '');
   const userJobs = data.filter(d => d.name === selectedName);
 
-  // ฟังก์ชันเช็คพื้นที่
   const isBkkLocation = (job: any) => {
     const text = (job.location + ' ' + job.detail).toLowerCase();
     return ['พระนคร', 'นวนคร', 'หนองจอก', 'น้ำเย็น', 'ไทรน้อย'].some(w => text.includes(w));
   };
 
-  // ฟังก์ชันจัดหมวดหมู่หลัก (แยกประเภทงานกับพื้นที่อิสระจากกัน)
   const getJobCategory = (job: any) => {
     const text = (job.location + ' ' + job.detail).toLowerCase();
     
@@ -69,7 +58,6 @@ export default function Home() {
     if (['ตรวจเยี่ยม', 'เยี่ยม', 'site survey'].some(w => text.includes(w))) return 'visit';
     if (text.includes('ประชุม')) return 'meet';
     
-    // ถ้าไม่ใช่ประเภทงานพิเศษ ให้แยกระหว่าง ปริมณฑล กับ ต่างจังหวัด
     if (isBkkLocation(job)) return 'bkk';
     return 'tcw';
   };
@@ -79,17 +67,12 @@ export default function Home() {
     userJobs.forEach(job => {
       const text = (job.location + ' ' + job.detail).toLowerCase();
       
-      // 1. นับประเภทงานอิสระ
       if (['อบรม', 'หลักสูตร'].some(w => text.includes(w))) train += job.days;
       else if (['ตรวจเยี่ยม', 'เยี่ยม', 'site survey'].some(w => text.includes(w))) visit += job.days;
       else if (text.includes('ประชุม')) meet += job.days;
 
-      // 2. นับพื้นที่ (แยกอิสระ ไม่ปะปนกับประเภทงาน)
-      if (isBkkLocation(job)) {
-        bkk += job.days;
-      } else {
-        tcw += job.days;
-      }
+      if (isBkkLocation(job)) bkk += job.days;
+      else tcw += job.days;
     });
     return { tcw, bkk, meet, train, visit, total: userJobs.reduce((sum, j) => sum + j.days, 0) };
   }, [userJobs]);
@@ -103,17 +86,13 @@ export default function Home() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-4 relative flex flex-col justify-between">
       <div>
-        {/* หัวเว็บ / โลโก้ต้อนรับ */}
         <div className="text-center py-6 mb-2">
-          <div className="inline-block bg-blue-100 p-3 rounded-full text-blue-600 mb-2 shadow-inner">
-            📊
-          </div>
+          <div className="inline-block bg-blue-100 p-3 rounded-full text-blue-600 mb-2 shadow-inner">📊</div>
           <h1 className="text-2xl font-bold text-gray-800">สรุปจำนวนวันออกงาน</h1>
           <p className="text-sm text-gray-500 mt-1">จำนวนวันและรายละเอียดตามคำสั่งทั้งหมด</p>
-          <p className="text-xs text-gray-400 mt-1">🔄 ข้อมูลอัปเดตล่าสุด: {currentTime}</p>
+          <p className="text-xs text-gray-400 mt-1">🔄 อัปเดตล่าสุด: {lastUpdated}</p>
         </div>
 
-        {/* กล่องค้นหา */}
         <div className="relative mb-6 z-10">
           <label className="block text-gray-700 text-sm font-semibold mb-2">ค้นหารายชื่อผู้ปฏิบัติงาน</label>
           <input 
@@ -141,7 +120,7 @@ export default function Home() {
         {loading ? (
           <div className="text-center text-gray-500 py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mb-2"></div>
-            <p>⏳ กำลังโหลดข้อมูลจาก Google Sheets...</p>
+            <p>⏳ กำลังโหลดข้อมูล...</p>
           </div>
         ) : selectedName ? (
           <div className="animate-fade-in space-y-4">
@@ -164,35 +143,20 @@ export default function Home() {
                 <span className="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
               <div className="grid grid-cols-2 gap-3 mt-4 text-sm font-medium">
-                <div 
-                  onClick={() => setModalCategory('tcw')}
-                  className="bg-blue-50 p-3.5 rounded-xl text-blue-700 border border-blue-100 cursor-pointer hover:bg-blue-100 active:scale-95 transition-all flex justify-between items-center">
-                  <span>ตจว.: {summary.tcw} วัน</span>
-                  <span className="text-blue-400 text-base">🔍</span>
+                <div onClick={() => setModalCategory('tcw')} className="bg-blue-50 p-3.5 rounded-xl text-blue-700 border border-blue-100 cursor-pointer hover:bg-blue-100 active:scale-95 transition-all flex justify-between items-center">
+                  <span>ตจว.: {summary.tcw} วัน</span><span className="text-blue-400 text-base">🔍</span>
                 </div>
-                <div 
-                  onClick={() => setModalCategory('bkk')}
-                  className="bg-emerald-50 p-3.5 rounded-xl text-emerald-700 border border-emerald-100 cursor-pointer hover:bg-emerald-100 active:scale-95 transition-all flex justify-between items-center">
-                  <span>ปริมณฑล: {summary.bkk} วัน</span>
-                  <span className="text-emerald-400 text-base">🔍</span>
+                <div onClick={() => setModalCategory('bkk')} className="bg-emerald-50 p-3.5 rounded-xl text-emerald-700 border border-emerald-100 cursor-pointer hover:bg-emerald-100 active:scale-95 transition-all flex justify-between items-center">
+                  <span>ปริมณฑล: {summary.bkk} วัน</span><span className="text-emerald-400 text-base">🔍</span>
                 </div>
-                <div 
-                  onClick={() => setModalCategory('meet')}
-                  className="bg-purple-50 p-3.5 rounded-xl text-purple-700 border border-purple-100 cursor-pointer hover:bg-purple-100 active:scale-95 transition-all flex justify-between items-center">
-                  <span>ประชุม: {summary.meet} วัน</span>
-                  <span className="text-purple-400 text-base">🔍</span>
+                <div onClick={() => setModalCategory('meet')} className="bg-purple-50 p-3.5 rounded-xl text-purple-700 border border-purple-100 cursor-pointer hover:bg-purple-100 active:scale-95 transition-all flex justify-between items-center">
+                  <span>ประชุม: {summary.meet} วัน</span><span className="text-purple-400 text-base">🔍</span>
                 </div>
-                <div 
-                  onClick={() => setModalCategory('train')}
-                  className="bg-amber-50 p-3.5 rounded-xl text-amber-700 border border-amber-100 cursor-pointer hover:bg-amber-100 active:scale-95 transition-all flex justify-between items-center">
-                  <span>อบรม: {summary.train} วัน</span>
-                  <span className="text-amber-400 text-base">🔍</span>
+                <div onClick={() => setModalCategory('train')} className="bg-amber-50 p-3.5 rounded-xl text-amber-700 border border-amber-100 cursor-pointer hover:bg-amber-100 active:scale-95 transition-all flex justify-between items-center">
+                  <span>อบรม: {summary.train} วัน</span><span className="text-amber-400 text-base">🔍</span>
                 </div>
-                <div 
-                  onClick={() => setModalCategory('visit')}
-                  className="bg-rose-50 p-3.5 rounded-xl text-rose-700 border border-rose-100 col-span-2 cursor-pointer hover:bg-rose-100 active:scale-95 transition-all flex justify-between items-center">
-                  <span>ตรวจเยี่ยม Site: {summary.visit} วัน</span>
-                  <span className="text-rose-400 text-base">🔍</span>
+                <div onClick={() => setModalCategory('visit')} className="bg-rose-50 p-3.5 rounded-xl text-rose-700 border border-rose-100 col-span-2 cursor-pointer hover:bg-rose-100 active:scale-95 transition-all flex justify-between items-center">
+                  <span>ตรวจเยี่ยม Site: {summary.visit} วัน</span><span className="text-rose-400 text-base">🔍</span>
                 </div>
               </div>
             </details>
@@ -201,17 +165,12 @@ export default function Home() {
             <div className="space-y-3 pb-8">
               {userJobs.map((job, idx) => {
                 const isBkk = isBkkLocation(job);
-                const regionTag = isBkk ? '(ปริมณฑล)' : '(ต่างจังหวัด)';
-
                 return (
                   <div key={idx} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden transition-all hover:border-gray-300">
-                    <button 
-                      className="w-full p-4 text-left flex justify-between items-center focus:outline-none"
-                      onClick={() => setExpandedId(expandedId === idx.toString() ? null : idx.toString())}
-                    >
+                    <button className="w-full p-4 text-left flex justify-between items-center focus:outline-none" onClick={() => setExpandedId(expandedId === idx.toString() ? null : idx.toString())}>
                       <div className="truncate pr-4 flex-1">
                         <p className="text-sm font-bold text-gray-800 truncate mb-1">
-                          {job.location} <span className={isBkk ? "text-emerald-600 font-semibold" : "text-blue-600 font-semibold"}>{regionTag}</span>
+                          {job.location} <span className={isBkk ? "text-emerald-600 font-semibold" : "text-blue-600 font-semibold"}>{isBkk ? '(ปริมณฑล)' : '(ต่างจังหวัด)'}</span>
                         </p>
                         <p className="text-xs text-gray-500">📅 {job.date} ({job.days} วัน)</p>
                       </div>
@@ -219,21 +178,13 @@ export default function Home() {
                         {expandedId === idx.toString() ? 'ปิด ✕' : '🔍'}
                       </span>
                     </button>
-                    
                     {expandedId === idx.toString() && (
                       <div className="p-4 bg-gray-50 text-sm text-gray-700 border-t border-gray-100 space-y-2">
                         <div className="grid grid-cols-[80px_1fr] gap-2">
-                          <span className="text-gray-400 font-medium">เลขคำสั่ง:</span>
-                          <span className="font-mono text-gray-900 font-semibold">{job.id}</span>
-                          
-                          <span className="text-gray-400 font-medium">สถานที่:</span>
-                          <span className="text-gray-900 leading-relaxed">{job.location}</span>
-
-                          <span className="text-gray-400 font-medium">งาน:</span>
-                          <span className="text-gray-900 leading-relaxed">{job.detail}</span>
-                          
-                          <span className="text-gray-400 font-medium">ผู้อนุมัติ:</span>
-                          <span className="text-gray-900">{job.approver}</span>
+                          <span className="text-gray-400 font-medium">เลขคำสั่ง:</span><span className="font-mono text-gray-900 font-semibold">{job.id}</span>
+                          <span className="text-gray-400 font-medium">สถานที่:</span><span className="text-gray-900 leading-relaxed">{job.location}</span>
+                          <span className="text-gray-400 font-medium">งาน:</span><span className="text-gray-900 leading-relaxed">{job.detail}</span>
+                          <span className="text-gray-400 font-medium">ผู้อนุมัติ:</span><span className="text-gray-900">{job.approver}</span>
                         </div>
                       </div>
                     )}
@@ -243,21 +194,18 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          /* หน้าต้อนรับเมื่อยังไม่ได้เลือกชื่อ */
           <div className="text-center py-12 px-6 bg-white rounded-2xl border border-dashed border-gray-300 shadow-sm mt-4">
             <div className="text-4xl mb-3">🕵️</div>
             <h3 className="font-bold text-gray-700 text-base mb-1">ยังไม่ได้เลือกรายชื่อผู้ปฏิบัติงาน</h3>
-            <p className="text-xs text-gray-400 leading-relaxed">กรุณาพิมพ์ชื่อหรือนามสกุลในช่องค้นหาด้านบน เพื่อเรียกดูข้อมูลตารางการออกงานครับ</p>
+            <p className="text-xs text-gray-400 leading-relaxed">กรุณาพิมพ์ชื่อหรือนามสกุลในช่องค้นหาด้านบน เพื่อเรียกดูข้อมูล</p>
           </div>
         )}
       </div>
 
-      {/* Footer เล็กๆ ด้านล่าง */}
       <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
         สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง
       </div>
 
-      {/* Modal Popup แสดงรายละเอียดแยกหมวดหมู่ */}
       {modalCategory && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
@@ -269,12 +217,7 @@ export default function Home() {
                 {modalCategory === 'tcw' && '🚗 รายละเอียด: ต่างจังหวัด'}
                 {modalCategory === 'bkk' && '🏙️ รายละเอียด: ปริมณฑล'}
               </h3>
-              <button 
-                onClick={() => setModalCategory(null)}
-                className="text-gray-400 hover:text-red-500 bg-gray-200 hover:bg-red-100 rounded-full w-8 h-8 flex items-center justify-center font-bold transition-colors"
-              >
-                ✕
-              </button>
+              <button onClick={() => setModalCategory(null)} className="text-gray-400 hover:text-red-500 bg-gray-200 hover:bg-red-100 rounded-full w-8 h-8 flex items-center justify-center font-bold">✕</button>
             </div>
             
             <div className="p-4 overflow-y-auto space-y-3">
@@ -299,14 +242,8 @@ export default function Home() {
                 <div className="text-center py-12 text-gray-400">ไม่มีข้อมูลในหมวดหมู่นี้</div>
               )}
             </div>
-            
             <div className="p-4 border-t bg-gray-50">
-               <button 
-                  onClick={() => setModalCategory(null)}
-                  className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 active:scale-95 transition-all shadow-sm"
-               >
-                 ปิดหน้าต่าง
-               </button>
+               <button onClick={() => setModalCategory(null)} className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 active:scale-95 transition-all shadow-sm">ปิดหน้าต่าง</button>
             </div>
           </div>
         </div>
