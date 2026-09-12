@@ -12,7 +12,6 @@ export default function Home() {
   const [lastUpdated, setLastUpdated] = useState('กำลังตรวจสอบ...');
 
   useEffect(() => {
-    // กลับมาใช้ลิงก์ CSV ตัวเดิมที่เสถียร
     const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
     
     Papa.parse(sheetUrl, {
@@ -21,24 +20,26 @@ export default function Home() {
       complete: (results) => {
         const rows = results.data as any[][];
         
-        // ดึงเวลาอัปเดตจากเซลล์ I1 (แถวแรก คอลัมน์ที่ 9 หรือ index 8)
-        if (rows.length > 0 && rows[0][8]) {
-          setLastUpdated(rows[0][8] as string);
+        // ดึงเวลาอัปเดตจาก Z1 (คอลัมน์ที่ 26 -> index 25)
+        if (rows.length > 0 && rows[0][25]) {
+          setLastUpdated(rows[0][25] as string);
         } else {
-          setLastUpdated('ไม่พบข้อมูลเวลา');
+          setLastUpdated('ไม่พบข้อมูลเวลา (Z1)');
         }
 
         const formatted = rows.map((row: any) => {
           if (!row[1] || !row[2] || row[1] === 'เลขทะเบียน') return null;
-          
           return {
-            id: row[1],
-            name: String(row[2]).trim(),
-            date: row[3],
-            days: parseInt(row[4]) || 0,
-            location: row[5] || '',
-            detail: row[6] || '',
-            approver: row[7] || ''
+            id: String(row[1]).trim(),        // เลขคำสั่ง
+            name: String(row[2]).trim(),      // ชื่อ-สกุล
+            date: row[3],                     // วันที่
+            days: parseInt(row[4]) || 0,      // จำนวนวัน
+            location: row[5] || '',           // สถานที่
+            detail: row[6] || '',             // งาน
+            approver: row[7] || '',           // ผู้อนุมัติ
+            empId: row[8] ? String(row[8]).trim() : '', // รหัสพนักงาน (คอลัมน์ I)
+            department: row[9] || '-',        // สังกัด (คอลัมน์ J)
+            phone: row[10] || '-'             // เบอร์โทร (คอลัมน์ K)
           };
         }).filter(Boolean);
         
@@ -52,9 +53,12 @@ export default function Home() {
     });
   }, []);
 
-  const uniqueNames = Array.from(new Set(data.map(d => d.name)));
-  const filteredNames = uniqueNames.filter(name => name.includes(search) && search !== '');
+  // จับคู่ข้อมูลผู้ใช้งานแบบ Unique สำหรับตอนค้นหา
+  const uniqueUsers = Array.from(new Map(data.map(d => [d.name, d])).entries()).map(([name, d]) => d);
+  const filteredUsers = uniqueUsers.filter(user => user.name.includes(search) && search !== '');
+  
   const userJobs = data.filter(d => d.name === selectedName);
+  const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
 
   const isBkkLocation = (job: any) => {
     const text = (job.location + ' ' + job.detail).toLowerCase();
@@ -95,7 +99,7 @@ export default function Home() {
       <div>
         <div className="text-center py-6 mb-2">
           <div className="inline-block bg-blue-100 p-3 rounded-full text-blue-600 mb-2 shadow-inner">📊</div>
-          <h1 className="text-2xl font-bold text-gray-800">สรุปจำนวนวันปฏิบัติงาน</h1>
+          <h1 className="text-2xl font-bold text-gray-800">สรุปจำนวนวันออกงาน</h1>
           <p className="text-sm text-gray-500 mt-1">จำนวนวันและรายละเอียดตามคำสั่งทั้งหมด</p>
           <p className="text-xs text-gray-400 mt-1">🔄 ข้อมูลอัปเดตล่าสุด: {lastUpdated}</p>
         </div>
@@ -109,11 +113,24 @@ export default function Home() {
             value={search}
             onChange={(e) => { setSearch(e.target.value); setSelectedName(''); setModalCategory(null); }}
           />
-          {filteredNames.length > 0 && search !== selectedName && (
+          {filteredUsers.length > 0 && search !== selectedName && (
             <ul className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-xl max-h-60 overflow-y-auto z-20">
-              {filteredNames.map(name => (
-                <li key={name} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors" onClick={() => { setSelectedName(name); setSearch(name); }}>
-                  👤 {name}
+              {filteredUsers.map(user => (
+                <li key={user.name} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors flex items-center gap-3" onClick={() => { setSelectedName(user.name); setSearch(user.name); }}>
+                  <img 
+                    src={`/staff-images/${user.empId}.png`} 
+                    onError={(e) => { 
+                      e.currentTarget.onerror = null; 
+                      // Fallback เผื่อโหลดจากโฟลเดอร์ไม่ได้ จะลองดึงจากเว็บโดยตรง
+                      e.currentTarget.src = `http://mmdapp.egat.co.th/mmdstaff/images_new/${user.empId}.png`; 
+                    }}
+                    className="w-10 h-10 rounded-full object-cover border border-gray-200 bg-gray-100 shrink-0" 
+                    alt="profile"
+                  />
+                  <div className="flex flex-col">
+                    <span>{user.name}</span>
+                    <span className="text-xs text-gray-500">{user.department}</span>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -125,15 +142,28 @@ export default function Home() {
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mb-2"></div>
             <p>⏳ กำลังโหลดข้อมูล...</p>
           </div>
-        ) : selectedName ? (
+        ) : selectedUserInfo ? (
           <div className="animate-fade-in space-y-4">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-xl shadow-md text-white flex justify-between items-center">
-              <div>
-                <p className="text-xs text-blue-100 uppercase tracking-wider font-semibold">ผู้ปฏิบัติงาน</p>
-                <h2 className="text-xl font-bold">👤 {selectedName}</h2>
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 rounded-xl shadow-md text-white flex justify-between items-start">
+              <div className="flex items-start gap-4">
+                <img 
+                  src={`/staff-images/${selectedUserInfo.empId}.png`} 
+                  onError={(e) => { 
+                    e.currentTarget.onerror = null; 
+                    e.currentTarget.src = `http://mmdapp.egat.co.th/mmdstaff/images_new/${selectedUserInfo.empId}.png`; 
+                  }}
+                  className="w-16 h-16 rounded-full border-2 border-white/50 object-cover bg-gray-200 shadow-sm shrink-0 mt-1" 
+                  alt="profile"
+                />
+                <div className="space-y-1">
+                  <h2 className="text-xl font-bold leading-tight">{selectedUserInfo.name}</h2>
+                  <p className="text-sm text-blue-100">รหัส: {selectedUserInfo.empId}</p>
+                  <p className="text-sm text-blue-100">สังกัด: {selectedUserInfo.department}</p>
+                  <p className="text-sm text-blue-100">โทร: {selectedUserInfo.phone}</p>
+                </div>
               </div>
-              <button onClick={() => { setSelectedName(''); setSearch(''); }} className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors">
-                ค้นหาใหม่
+              <button onClick={() => { setSelectedName(''); setSearch(''); }} className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors shrink-0">
+                ✕ ปิด
               </button>
             </div>
 
