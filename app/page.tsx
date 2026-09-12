@@ -95,7 +95,7 @@ export default function Home() {
       <div>
         <div className="text-center py-6 mb-2">
           <div className="inline-block bg-blue-100 p-3 rounded-full text-blue-600 mb-2 shadow-inner">📊</div>
-          <h1 className="text-2xl font-bold text-gray-800">สรุปจำนวนวันออกงาน</h1>
+          <h1 className="text-2xl font-bold text-gray-800">สรุปจำนวนวันปฏิบัติงาน</h1>
           <p className="text-sm text-gray-500 mt-1">จำนวนวันและรายละเอียดตามคำสั่งทั้งหมด</p>
           <p className="text-xs text-gray-400 mt-1">🔄 ข้อมูลอัปเดตล่าสุด: {lastUpdated}</p>
         </div>
