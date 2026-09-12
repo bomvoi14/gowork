@@ -115,8 +115,6 @@ export default function Home() {
             <ul className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-xl max-h-60 overflow-y-auto z-20">
               {filteredUsers.map(user => (
                 <li key={user.name} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors flex items-center gap-3" onClick={() => { setSelectedName(user.name); setSearch(user.name); }}>
-                  
-                  {/* แก้รูปตอนค้นหา */}
                   <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
                     <img 
                       src={`/staff-images/${user.empId}.png`} 
@@ -128,7 +126,6 @@ export default function Home() {
                       alt="profile"
                     />
                   </div>
-
                   <div className="flex flex-col">
                     <span>{user.name}</span>
                     <span className="text-xs text-gray-500">{user.department}</span>
@@ -148,8 +145,6 @@ export default function Home() {
           <div className="animate-fade-in space-y-4">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 rounded-xl shadow-md text-white flex justify-between items-start">
               <div className="flex items-start gap-4">
-                
-                {/* แก้รูปโปรไฟล์หลัก */}
                 <div className="w-16 h-16 shrink-0 mt-1 rounded-full overflow-hidden border-2 border-white/50 bg-gray-200 shadow-sm">
                   <img 
                     src={`/staff-images/${selectedUserInfo.empId}.png`} 
@@ -161,7 +156,6 @@ export default function Home() {
                     alt="profile"
                   />
                 </div>
-
                 <div className="space-y-1">
                   <h2 className="text-xl font-bold leading-tight">{selectedUserInfo.name}</h2>
                   <p className="text-sm text-blue-100">เลขประจำตัว: {selectedUserInfo.empId}</p>
@@ -237,6 +231,54 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
+        สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง
+      </div>
+
+      {/* ส่วน Modal ที่หล่นหายไป */}
+      {modalCategory && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-gray-800 text-base">
+                {modalCategory === 'meet' && '📝 รายละเอียด: ประชุม'}
+                {modalCategory === 'train' && '📚 รายละเอียด: อบรม'}
+                {modalCategory === 'visit' && '🔎 รายละเอียด: ตรวจเยี่ยม Site'}
+                {modalCategory === 'tcw' && '🚗 รายละเอียด: ต่างจังหวัด'}
+                {modalCategory === 'bkk' && '🏙️ รายละเอียด: ปริมณฑล'}
+              </h3>
+              <button onClick={() => setModalCategory(null)} className="text-gray-400 hover:text-red-500 bg-gray-200 hover:bg-red-100 rounded-full w-8 h-8 flex items-center justify-center font-bold">✕</button>
+            </div>
+            
+            <div className="p-4 overflow-y-auto space-y-3">
+              {getJobsByCategory(modalCategory).length > 0 ? (
+                getJobsByCategory(modalCategory).map((job, idx) => (
+                  <div key={idx} className="bg-white border border-gray-200 rounded-xl p-3.5 text-sm shadow-sm relative pl-4">
+                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${
+                      modalCategory === 'meet' ? 'bg-purple-400' :
+                      modalCategory === 'train' ? 'bg-amber-400' :
+                      modalCategory === 'visit' ? 'bg-rose-400' :
+                      modalCategory === 'bkk' ? 'bg-emerald-400' : 'bg-blue-400'
+                    }`}></div>
+                    <p className="font-bold text-gray-800 mb-1">{job.location}</p>
+                    <p className="text-gray-600 mb-2 text-xs leading-relaxed">{job.detail}</p>
+                    <div className="flex justify-between items-end border-t border-gray-100 pt-2 mt-2">
+                       <span className="text-xs text-gray-400">📅 {job.date}</span>
+                       <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-md">รวม {job.days} วัน</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-12 text-gray-400">ไม่มีข้อมูลในหมวดหมู่นี้</div>
+              )}
+            </div>
+            <div className="p-4 border-t bg-gray-50">
+               <button onClick={() => setModalCategory(null)} className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 active:scale-95 transition-all shadow-sm">ปิดหน้าต่าง</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
