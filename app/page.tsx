@@ -1,5 +1,6 @@
 "use client"
 import { useState, useMemo, useEffect } from 'react';
+import Papa from 'papaparse';
 
 export default function Home() {
   const [data, setData] = useState<any[]>([]);
@@ -8,17 +9,25 @@ export default function Home() {
   const [selectedName, setSelectedName] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modalCategory, setModalCategory] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState('');
+  const [lastUpdated, setLastUpdated] = useState('กำลังตรวจสอบ...');
 
   useEffect(() => {
-    // เอา Web App URL มาใส่ตรงนี้
-    const scriptUrl = "https://script.google.com/macros/s/AKfycbzCHgXH4L74QA0tKw-GIS2moFPCcfBEiwkN38Ejj-Y_k2vLOWxXo1MLFfHiKYF1qrCI/exec";
+    // กลับมาใช้ลิงก์ CSV ตัวเดิมที่เสถียร
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
     
-    fetch(scriptUrl)
-      .then(res => res.json())
-      .then(result => {
-        setLastUpdated(result.lastUpdated);
-        const rows = result.data;
+    Papa.parse(sheetUrl, {
+      download: true,
+      header: false,
+      complete: (results) => {
+        const rows = results.data;
+        
+        // ดึงเวลาอัปเดตจากเซลล์ I1 (แถวแรก คอลัมน์ที่ 9 หรือ index 8)
+        if (rows.length > 0 && rows[0][8]) {
+          setLastUpdated(rows[0][8] as string);
+        } else {
+          setLastUpdated('ไม่พบข้อมูลเวลา');
+        }
+
         const formatted = rows.map((row: any) => {
           if (!row[1] || !row[2] || row[1] === 'เลขทะเบียน') return null;
           
@@ -35,11 +44,12 @@ export default function Home() {
         
         setData(formatted);
         setLoading(false);
-      })
-      .catch(err => {
+      },
+      error: (err) => {
         console.error("ดึงข้อมูลพลาด:", err);
         setLoading(false);
-      });
+      }
+    });
   }, []);
 
   const uniqueNames = Array.from(new Set(data.map(d => d.name)));
@@ -53,11 +63,9 @@ export default function Home() {
 
   const getJobCategory = (job: any) => {
     const text = (job.location + ' ' + job.detail).toLowerCase();
-    
     if (['อบรม', 'หลักสูตร'].some(w => text.includes(w))) return 'train';
     if (['ตรวจเยี่ยม', 'เยี่ยม', 'site survey'].some(w => text.includes(w))) return 'visit';
     if (text.includes('ประชุม')) return 'meet';
-    
     if (isBkkLocation(job)) return 'bkk';
     return 'tcw';
   };
@@ -66,7 +74,6 @@ export default function Home() {
     let tcw = 0, bkk = 0, meet = 0, train = 0, visit = 0;
     userJobs.forEach(job => {
       const text = (job.location + ' ' + job.detail).toLowerCase();
-      
       if (['อบรม', 'หลักสูตร'].some(w => text.includes(w))) train += job.days;
       else if (['ตรวจเยี่ยม', 'เยี่ยม', 'site survey'].some(w => text.includes(w))) visit += job.days;
       else if (text.includes('ประชุม')) meet += job.days;
@@ -90,7 +97,7 @@ export default function Home() {
           <div className="inline-block bg-blue-100 p-3 rounded-full text-blue-600 mb-2 shadow-inner">📊</div>
           <h1 className="text-2xl font-bold text-gray-800">สรุปจำนวนวันออกงาน</h1>
           <p className="text-sm text-gray-500 mt-1">จำนวนวันและรายละเอียดตามคำสั่งทั้งหมด</p>
-          <p className="text-xs text-gray-400 mt-1">🔄 อัปเดตล่าสุด: {lastUpdated}</p>
+          <p className="text-xs text-gray-400 mt-1">🔄 ข้อมูลอัปเดตล่าสุด: {lastUpdated}</p>
         </div>
 
         <div className="relative mb-6 z-10">
@@ -105,11 +112,7 @@ export default function Home() {
           {filteredNames.length > 0 && search !== selectedName && (
             <ul className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-xl max-h-60 overflow-y-auto z-20">
               {filteredNames.map(name => (
-                <li 
-                  key={name} 
-                  className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors"
-                  onClick={() => { setSelectedName(name); setSearch(name); }}
-                >
+                <li key={name} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors" onClick={() => { setSelectedName(name); setSearch(name); }}>
                   👤 {name}
                 </li>
               ))}
@@ -129,18 +132,14 @@ export default function Home() {
                 <p className="text-xs text-blue-100 uppercase tracking-wider font-semibold">ผู้ปฏิบัติงาน</p>
                 <h2 className="text-xl font-bold">👤 {selectedName}</h2>
               </div>
-              <button 
-                onClick={() => { setSelectedName(''); setSearch(''); }}
-                className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors"
-              >
+              <button onClick={() => { setSelectedName(''); setSearch(''); }} className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors">
                 ค้นหาใหม่
               </button>
             </div>
 
             <details className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 group cursor-pointer" open>
               <summary className="font-bold text-gray-800 outline-none flex justify-between items-center select-none">
-                <span>📊 สรุปจำนวนวันออกงาน (รวม {summary.total} วัน)</span>
-                <span className="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+                <span>📊 สรุปจำนวนวันออกงาน (รวม {summary.total} วัน)</span><span className="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
               <div className="grid grid-cols-2 gap-3 mt-4 text-sm font-medium">
                 <div onClick={() => setModalCategory('tcw')} className="bg-blue-50 p-3.5 rounded-xl text-blue-700 border border-blue-100 cursor-pointer hover:bg-blue-100 active:scale-95 transition-all flex justify-between items-center">
