@@ -186,7 +186,7 @@ export default function Home() {
                   <span>อบรม: {summary.train} วัน</span><span className="text-amber-400 text-base">🔍</span>
                 </div>
                 <div onClick={() => setModalCategory('visit')} className="bg-rose-50 p-3.5 rounded-xl text-rose-700 border border-rose-100 col-span-2 cursor-pointer hover:bg-rose-100 active:scale-95 transition-all flex justify-between items-center">
-                  <span>ตรวจเยี่ยม Site: {summary.visit} วัน</span><span className="text-rose-400 text-base">🔍</span>
+                  <span>ตรวจเยี่ยม/Site Survey: {summary.visit} วัน</span><span className="text-rose-400 text-base">🔍</span>
                 </div>
               </div>
             </details>
@@ -244,7 +244,7 @@ export default function Home() {
               <h3 className="font-bold text-gray-800 text-base">
                 {modalCategory === 'meet' && '📝 รายละเอียด: ประชุม'}
                 {modalCategory === 'train' && '📚 รายละเอียด: อบรม'}
-                {modalCategory === 'visit' && '🔎 รายละเอียด: ตรวจเยี่ยม Site'}
+                {modalCategory === 'visit' && '🔎 รายละเอียด: ตรวจเยี่ยม Site/ตรวจเยี่ยม/Site Survey'}
                 {modalCategory === 'tcw' && '🚗 รายละเอียด: ต่างจังหวัด'}
                 {modalCategory === 'bkk' && '🏙️ รายละเอียด: ปริมณฑล'}
               </h3>
