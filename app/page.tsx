@@ -10,6 +10,15 @@ export default function Home() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modalCategory, setModalCategory] = useState<string | null>(null);
 
+  // สร้างฟังก์ชันเก็บวัน-เวลาปัจจุบันตอนเปิดหน้าเว็บ
+  const [currentTime] = useState(() => {
+    const now = new Date();
+    return now.toLocaleDateString('th-TH', { 
+      year: 'numeric', month: 'short', day: 'numeric', 
+      hour: '2-digit', minute: '2-digit' 
+    });
+  });
+
   useEffect(() => {
     const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
     
@@ -101,6 +110,7 @@ export default function Home() {
           </div>
           <h1 className="text-2xl font-bold text-gray-800">สรุปจำนวนวันออกงาน</h1>
           <p className="text-sm text-gray-500 mt-1">จำนวนวันและรายละเอียดตามคำสั่งทั้งหมด</p>
+          <p className="text-xs text-gray-400 mt-1">🔄 ข้อมูลอัปเดตล่าสุด: {currentTime}</p>
         </div>
 
         {/* กล่องค้นหา */}
