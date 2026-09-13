@@ -72,25 +72,6 @@ export default function Home() {
     return 'tcw';
   };
 
-  // ⭐️ เพิ่มการคำนวณ 10 อันดับแรก
-  const topUsers = useMemo(() => {
-    const stats = new Map();
-    data.forEach(job => {
-      if (!stats.has(job.name)) {
-        stats.set(job.name, { name: job.name, empId: job.empId, total: 0, tcw: 0, bkk: 0 });
-      }
-      const st = stats.get(job.name);
-      st.total += job.days;
-      
-      const cat = getJobCategory(job);
-      if (cat === 'tcw') st.tcw += job.days;
-      else if (cat === 'bkk') st.bkk += job.days;
-    });
-    return Array.from(stats.values())
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 10);
-  }, [data]);
-
   const summary = useMemo(() => {
     let tcw = 0, bkk = 0, meet = 0, train = 0, visit = 0;
     userJobs.forEach(job => {
@@ -136,7 +117,7 @@ export default function Home() {
                       src={`/staff-images/${user.empId}.png`} 
                       onError={(e) => { 
                         e.currentTarget.onerror = null; 
-                        e.currentTarget.src = `http://mmdapp.egat.co.th/mmdstaff/images_new/${user.empId}.png`; 
+                        e.currentTarget.src = '/staff-images/default.png'; 
                       }}
                       className="w-full h-full object-cover object-top" 
                       alt="profile"
@@ -166,7 +147,7 @@ export default function Home() {
                     src={`/staff-images/${selectedUserInfo.empId}.png`} 
                     onError={(e) => { 
                       e.currentTarget.onerror = null; 
-                      e.currentTarget.src = `http://mmdapp.egat.co.th/mmdstaff/images_new/${selectedUserInfo.empId}.png`; 
+                      e.currentTarget.src = '/staff-images/default.png'; 
                     }}
                     className="w-full h-full object-cover object-top" 
                     alt="profile"
@@ -240,43 +221,10 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          /* ⭐️ ส่วน Top 10 ที่เข้ามาแทนที่หน้าว่าง */
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm mt-4 overflow-hidden animate-fade-in">
-            <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-4 text-white text-center font-bold">
-              🏆 10 อันดับผู้ปฏิบัติงานภาคสนามสูงสุด
-            </div>
-            <div className="divide-y divide-gray-100">
-              {topUsers.map((u, i) => (
-                <div key={u.name} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => { setSelectedName(u.name); setSearch(u.name); }}>
-                  <div className={`w-6 font-bold text-center ${i < 3 ? 'text-amber-500' : 'text-gray-400'}`}>{i + 1}</div>
-                  <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
-                    <img 
-                      src={`/staff-images/${u.empId}.png`} 
-                      onError={(e) => { 
-                        e.currentTarget.onerror = null; 
-                        e.currentTarget.src = `http://mmdapp.egat.co.th/mmdstaff/images_new/${u.empId}.png`; 
-                      }}
-                      className="w-full h-full object-cover object-top" 
-                      alt="profile"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm text-gray-800 truncate">{u.name}</div>
-                    <div className="text-xs text-gray-500 flex gap-3 mt-0.5">
-                      <span className="text-blue-600 font-medium">ตจว: {u.tcw}</span>
-                      <span className="text-emerald-600 font-medium">ปริมณฑล: {u.bkk}</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-lg text-gray-800 leading-none">{u.total}</div>
-                    <div className="text-[10px] text-gray-400 mt-1">วัน</div>
-                  </div>
-                </div>
-              ))}
-              {topUsers.length === 0 && (
-                <div className="p-6 text-center text-gray-400 text-sm">ไม่พบข้อมูลการออกงาน</div>
-              )}
-            </div>
+          <div className="text-center py-12 px-6 bg-white rounded-2xl border border-dashed border-gray-300 shadow-sm mt-4">
+            <div className="text-4xl mb-3">🕵️</div>
+            <h3 className="font-bold text-gray-700 text-base mb-1">ยังไม่ได้เลือกรายชื่อผู้ปฏิบัติงาน</h3>
+            <p className="text-xs text-gray-400 leading-relaxed">กรุณาพิมพ์ชื่อหรือนามสกุลในช่องค้นหาด้านบน เพื่อเรียกดูข้อมูล</p>
           </div>
         )}
       </div>
