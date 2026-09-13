@@ -10,6 +10,9 @@ export default function Home() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modalCategory, setModalCategory] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState('กำลังตรวจสอบ...');
+  
+  // ⭐️ เพิ่ม State สำหรับกรอง Craft
+  const [selectedCraft, setSelectedCraft] = useState<string>('All');
 
   useEffect(() => {
     const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
@@ -38,7 +41,8 @@ export default function Home() {
             approver: row[7] || '',           
             empId: row[8] ? String(row[8]).trim() : '', 
             department: row[9] || '-',        
-            phone: row[10] || '-'             
+            phone: row[10] || '-',
+            craft: row[13] ? String(row[13]).trim() : '-' // ⭐️ ดึงข้อมูล Craft จากคอลัมน์ N (Index 13)
           };
         }).filter(Boolean);
         
@@ -58,6 +62,12 @@ export default function Home() {
   const userJobs = data.filter(d => d.name === selectedName);
   const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
 
+  // ⭐️ สร้างรายการ Craft ที่มีทั้งหมดแบบไม่ซ้ำกัน
+  const craftsList = useMemo(() => {
+    const c = Array.from(new Set(data.map(d => d.craft).filter(c => c && c !== '-')));
+    return ['All', ...c.sort()];
+  }, [data]);
+
   const isBkkLocation = (job: any) => {
     const text = (job.location + ' ' + job.detail).toLowerCase();
     return ['พระนคร', 'นวนคร', 'หนองจอก', 'น้ำเย็น', 'ไทรน้อย'].some(w => text.includes(w));
@@ -72,11 +82,15 @@ export default function Home() {
     return 'tcw';
   };
 
+  // ⭐️ คำนวณ Top 10 โดยรวมเงื่อนไขการกรอง Craft เข้าไปด้วย
   const topUsers = useMemo(() => {
     const stats = new Map();
     data.forEach(job => {
+      // ถ้าเลือก Craft ไว้ และไม่ตรงกับของคนนี้ ให้ข้ามไป
+      if (selectedCraft !== 'All' && job.craft !== selectedCraft) return;
+
       if (!stats.has(job.name)) {
-        stats.set(job.name, { name: job.name, empId: job.empId, total: 0, tcw: 0, bkk: 0 });
+        stats.set(job.name, { name: job.name, empId: job.empId, total: 0, tcw: 0, bkk: 0, craft: job.craft });
       }
       const st = stats.get(job.name);
       st.total += job.days;
@@ -88,7 +102,7 @@ export default function Home() {
     return Array.from(stats.values())
       .sort((a, b) => b.total - a.total)
       .slice(0, 10);
-  }, [data]);
+  }, [data, selectedCraft]);
 
   const summary = useMemo(() => {
     let tcw = 0, bkk = 0, meet = 0, train = 0, visit = 0;
@@ -143,7 +157,12 @@ export default function Home() {
                   </div>
                   <div className="flex flex-col">
                     <span>{user.name}</span>
-                    <span className="text-xs text-gray-500">{user.department}</span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-gray-500">{user.department}</span>
+                      {user.craft !== '-' && (
+                        <span className="text-[10px] bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full">{user.craft}</span>
+                      )}
+                    </div>
                   </div>
                 </li>
               ))}
@@ -173,6 +192,11 @@ export default function Home() {
                 </div>
                 <div className="space-y-1">
                   <h2 className="text-xl font-bold leading-tight">{selectedUserInfo.name}</h2>
+                  {selectedUserInfo.craft !== '-' && (
+                    <span className="inline-block text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full mb-1">
+                      {selectedUserInfo.craft}
+                    </span>
+                  )}
                   <p className="text-sm text-blue-100">เลขประจำตัว: {selectedUserInfo.empId}</p>
                   <p className="text-sm text-blue-100">สังกัด: {selectedUserInfo.department}</p>
                   <p className="text-sm text-blue-100">โทร: {selectedUserInfo.phone}</p>
@@ -239,12 +263,32 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm mt-4 overflow-hidden animate-fade-in">
-            <div className="bg-blue-600 p-4 text-white text-center font-bold flex items-center justify-center gap-3">
-              <span className="text-4xl drop-shadow-md">🏆</span>
-              <span className="text-lg">10 อันดับผู้ปฏิบัติงานภาคสนามสูงสุด</span>
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm mt-4 overflow-hidden animate-fade-in flex flex-col max-h-[800px]">
+            <div className="bg-blue-600 p-4 text-white text-center font-bold flex flex-col items-center justify-center gap-1 shrink-0">
+              <div className="flex items-center gap-3">
+                <span className="text-4xl drop-shadow-md">🏆</span>
+                <span className="text-lg">10 อันดับผู้ปฏิบัติงานภาคสนาม</span>
+              </div>
             </div>
-            <div className="divide-y divide-gray-100">
+            
+            {/* ⭐️ แถบเลื่อนเลือก Craft */}
+            <div className="bg-gray-50 border-b border-gray-100 flex gap-2 overflow-x-auto p-3 scrollbar-hide shrink-0 shadow-inner">
+              {craftsList.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setSelectedCraft(c)}
+                  className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    selectedCraft === c 
+                      ? 'bg-gray-800 text-white shadow-md' 
+                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {c === 'All' ? '🌟 ทั้งหมด' : c}
+                </button>
+              ))}
+            </div>
+
+            <div className="divide-y divide-gray-100 overflow-y-auto">
               {topUsers.map((u, i) => (
                 <div key={u.name} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => { setSelectedName(u.name); setSearch(u.name); }}>
                   <div className={`w-8 font-bold text-center text-xl ${i > 2 ? 'text-gray-400 text-lg' : ''}`}>
@@ -262,8 +306,13 @@ export default function Home() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm text-gray-800 truncate">{u.name}</div>
-                    <div className="text-xs text-gray-500 flex gap-3 mt-0.5">
+                    <div className="font-bold text-sm text-gray-800 truncate flex items-center gap-2">
+                      {u.name}
+                    </div>
+                    <div className="text-xs text-gray-500 flex items-center gap-2 mt-0.5 flex-wrap">
+                      {u.craft !== '-' && (
+                        <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full text-[10px]">{u.craft}</span>
+                      )}
                       <span className="text-blue-600 font-medium">ตจว: {u.tcw}</span>
                       <span className="text-emerald-600 font-medium">ปริมณฑล: {u.bkk}</span>
                     </div>
@@ -275,7 +324,7 @@ export default function Home() {
                 </div>
               ))}
               {topUsers.length === 0 && (
-                <div className="p-6 text-center text-gray-400 text-sm">ไม่พบข้อมูลการออกงาน</div>
+                <div className="p-6 text-center text-gray-400 text-sm">ไม่พบข้อมูลในหมวดหมู่นี้</div>
               )}
             </div>
           </div>
