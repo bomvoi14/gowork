@@ -75,20 +75,17 @@ export default function Home() {
   const summary = useMemo(() => {
     let tcw = 0, bkk = 0, meet = 0, train = 0, visit = 0;
     userJobs.forEach(job => {
-      const text = (job.location + ' ' + job.detail).toLowerCase();
-      if (['อบรม', 'หลักสูตร'].some(w => text.includes(w))) train += job.days;
-      else if (['ตรวจเยี่ยม', 'เยี่ยม', 'site survey'].some(w => text.includes(w))) visit += job.days;
-      else if (text.includes('ประชุม')) meet += job.days;
-
-      if (isBkkLocation(job)) bkk += job.days;
+      const cat = getJobCategory(job);
+      if (cat === 'train') train += job.days;
+      else if (cat === 'visit') visit += job.days;
+      else if (cat === 'meet') meet += job.days;
+      else if (cat === 'bkk') bkk += job.days;
       else tcw += job.days;
     });
     return { tcw, bkk, meet, train, visit, total: userJobs.reduce((sum, j) => sum + j.days, 0) };
   }, [userJobs]);
 
   const getJobsByCategory = (category: string) => {
-    if (category === 'tcw') return userJobs.filter(job => !isBkkLocation(job));
-    if (category === 'bkk') return userJobs.filter(job => isBkkLocation(job));
     return userJobs.filter(job => getJobCategory(job) === category);
   };
 
@@ -186,7 +183,7 @@ export default function Home() {
                   <span>อบรม: {summary.train} วัน</span><span className="text-amber-400 text-base">🔍</span>
                 </div>
                 <div onClick={() => setModalCategory('visit')} className="bg-rose-50 p-3.5 rounded-xl text-rose-700 border border-rose-100 col-span-2 cursor-pointer hover:bg-rose-100 active:scale-95 transition-all flex justify-between items-center">
-                  <span>ตรวจเยี่ยม/Site Survey: {summary.visit} วัน</span><span className="text-rose-400 text-base">🔍</span>
+                  <span>ตรวจเยี่ยม Site/Site Survey: {summary.visit} วัน</span><span className="text-rose-400 text-base">🔍</span>
                 </div>
               </div>
             </details>
@@ -236,7 +233,6 @@ export default function Home() {
         สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง
       </div>
 
-      {/* ส่วน Modal ที่หล่นหายไป */}
       {modalCategory && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
@@ -244,7 +240,7 @@ export default function Home() {
               <h3 className="font-bold text-gray-800 text-base">
                 {modalCategory === 'meet' && '📝 รายละเอียด: ประชุม'}
                 {modalCategory === 'train' && '📚 รายละเอียด: อบรม'}
-                {modalCategory === 'visit' && '🔎 รายละเอียด: ตรวจเยี่ยม Site/ตรวจเยี่ยม/Site Survey'}
+                {modalCategory === 'visit' && '🔎 รายละเอียด: ตรวจเยี่ยม Site/Site Survey'}
                 {modalCategory === 'tcw' && '🚗 รายละเอียด: ต่างจังหวัด'}
                 {modalCategory === 'bkk' && '🏙️ รายละเอียด: ปริมณฑล'}
               </h3>
