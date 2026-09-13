@@ -247,7 +247,9 @@ export default function Home() {
             <div className="divide-y divide-gray-100">
               {topUsers.map((u, i) => (
                 <div key={u.name} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => { setSelectedName(u.name); setSearch(u.name); }}>
-                  <div className={`w-6 font-bold text-center text-lg ${i < 3 ? 'text-blue-600' : 'text-gray-400'}`}>{i + 1}</div>
+                  <div className={`w-8 font-bold text-center text-xl ${i > 2 ? 'text-gray-400 text-lg' : ''}`}>
+                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
+                  </div>
                   <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
                     <img 
                       src={`/staff-images/${u.empId}.png`} 
