@@ -42,7 +42,7 @@ export default function Home() {
             empId: row[8] ? String(row[8]).trim() : '', 
             department: row[9] || '-',        
             phone: row[10] || '-',
-            craft: row[13] ? String(row[13]).trim() : '-' // ⭐️ ดึงข้อมูล Craft จากคอลัมน์ N (Index 13)
+            craft: row[11] ? String(row[11]).trim() : '-' // ⭐️ ดึงข้อมูล Craft จากคอลัมน์ L (Index 11)
           };
         }).filter(Boolean);
         
