@@ -240,13 +240,13 @@ export default function Home() {
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm mt-4 overflow-hidden animate-fade-in">
-            <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-4 text-white text-center font-bold">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white text-center font-bold">
               🏆 10 อันดับผู้ปฏิบัติงานภาคสนามสูงสุด
             </div>
             <div className="divide-y divide-gray-100">
               {topUsers.map((u, i) => (
                 <div key={u.name} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => { setSelectedName(u.name); setSearch(u.name); }}>
-                  <div className={`w-6 font-bold text-center ${i < 3 ? 'text-amber-500' : 'text-gray-400'}`}>{i + 1}</div>
+                  <div className={`w-6 font-bold text-center ${i < 3 ? 'text-blue-600' : 'text-gray-400'}`}>{i + 1}</div>
                   <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
                     <img 
                       src={`/staff-images/${u.empId}.png`} 
