@@ -41,7 +41,6 @@ export default function Home() {
             empId: row[8] ? String(row[8]).trim() : '', 
             department: row[9] || '-',        
             phone: row[10] || '-',
-            // ⚠️ ตรงนี้สำคัญ! ลองเปลี่ยนเลข 13 เป็น 11 หรือ 12 ถ้าข้อมูลไม่ขึ้น
             craft: row[11] ? String(row[11]).trim() : '-' 
           };
         }).filter(Boolean);
@@ -260,7 +259,7 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm mt-4 overflow-hidden animate-fade-in flex flex-col max-h-[800px]">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm mt-4 overflow-hidden animate-fade-in flex flex-col">
             <div className="bg-blue-600 p-4 text-white text-center font-bold flex flex-col items-center justify-center gap-1 shrink-0">
               <div className="flex items-center gap-3">
                 <span className="text-4xl drop-shadow-md">🏆</span>
@@ -281,7 +280,7 @@ export default function Home() {
               </select>
             </div>
 
-            <div className="divide-y divide-gray-100 overflow-y-auto">
+            <div className="divide-y divide-gray-100">
               {topUsers.map((u, i) => (
                 <div key={u.name} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => { setSelectedName(u.name); setSearch(u.name); }}>
                   <div className={`w-8 font-bold text-center text-xl ${i > 2 ? 'text-gray-400 text-lg' : ''}`}>
