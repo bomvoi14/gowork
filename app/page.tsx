@@ -11,7 +11,6 @@ export default function Home() {
   const [modalCategory, setModalCategory] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState('กำลังตรวจสอบ...');
   
-  // ⭐️ เพิ่ม State สำหรับกรอง Craft
   const [selectedCraft, setSelectedCraft] = useState<string>('All');
 
   useEffect(() => {
@@ -42,7 +41,8 @@ export default function Home() {
             empId: row[8] ? String(row[8]).trim() : '', 
             department: row[9] || '-',        
             phone: row[10] || '-',
-            craft: row[11] ? String(row[11]).trim() : '-' // ⭐️ ดึงข้อมูล Craft จากคอลัมน์ L (Index 11)
+            // เช็คดัชนีคอลัมน์ N ให้ตรง (ถ้าผิดแก้เลข 13 เป็นตัวอื่น เช่น 11)
+            craft: row[13] ? String(row[13]).trim() : '-' 
           };
         }).filter(Boolean);
         
@@ -62,7 +62,6 @@ export default function Home() {
   const userJobs = data.filter(d => d.name === selectedName);
   const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
 
-  // ⭐️ สร้างรายการ Craft ที่มีทั้งหมดแบบไม่ซ้ำกัน
   const craftsList = useMemo(() => {
     const c = Array.from(new Set(data.map(d => d.craft).filter(c => c && c !== '-')));
     return ['All', ...c.sort()];
@@ -82,11 +81,9 @@ export default function Home() {
     return 'tcw';
   };
 
-  // ⭐️ คำนวณ Top 10 โดยรวมเงื่อนไขการกรอง Craft เข้าไปด้วย
   const topUsers = useMemo(() => {
     const stats = new Map();
     data.forEach(job => {
-      // ถ้าเลือก Craft ไว้ และไม่ตรงกับของคนนี้ ให้ข้ามไป
       if (selectedCraft !== 'All' && job.craft !== selectedCraft) return;
 
       if (!stats.has(job.name)) {
@@ -271,21 +268,18 @@ export default function Home() {
               </div>
             </div>
             
-            {/* ⭐️ แถบเลื่อนเลือก Craft */}
-            <div className="bg-gray-50 border-b border-gray-100 flex gap-2 overflow-x-auto p-3 scrollbar-hide shrink-0 shadow-inner">
-              {craftsList.map(c => (
-                <button
-                  key={c}
-                  onClick={() => setSelectedCraft(c)}
-                  className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
-                    selectedCraft === c 
-                      ? 'bg-gray-800 text-white shadow-md' 
-                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  {c === 'All' ? '🌟 ทั้งหมด' : c}
-                </button>
-              ))}
+            {/* ⭐️ Dropdown เลือก Craft */}
+            <div className="bg-gray-50 border-b border-gray-200 p-3 shrink-0 flex items-center gap-2">
+              <label className="text-sm font-bold text-gray-600 whitespace-nowrap">หมวดหมู่:</label>
+              <select 
+                value={selectedCraft}
+                onChange={(e) => setSelectedCraft(e.target.value)}
+                className="w-full bg-white border border-gray-300 text-gray-700 rounded-lg px-3 py-2 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              >
+                {craftsList.map(c => (
+                  <option key={c} value={c}>{c === 'All' ? '🌟 ดูทุก Craft (ทั้งหมด)' : c}</option>
+                ))}
+              </select>
             </div>
 
             <div className="divide-y divide-gray-100 overflow-y-auto">
