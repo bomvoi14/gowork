@@ -42,7 +42,7 @@ export default function Home() {
             department: row[9] || '-',        
             phone: row[10] || '-',
             // ⚠️ ตรงนี้สำคัญ! ลองเปลี่ยนเลข 13 เป็น 11 หรือ 12 ถ้าข้อมูลไม่ขึ้น
-            craft: row[13] ? String(row[13]).trim() : '-' 
+            craft: row[11] ? String(row[11]).trim() : '-' 
           };
         }).filter(Boolean);
         
