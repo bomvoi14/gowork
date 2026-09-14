@@ -128,11 +128,11 @@ export default function Home() {
         </div>
 
         <div className="relative mb-6 z-10">
-          <label className="block text-gray-700 text-sm font-semibold mb-2">ค้นหารายชื่อผู้ปฏิบัติงาน</label>
+          <label className="block text-gray-800 text-base font-bold mb-2">ค้นหารายชื่อผู้ปฏิบัติงาน</label>
           <input 
             type="text" 
             placeholder="🔍 พิมพ์ชื่อ หรือนามสกุล..." 
-            className="w-full p-3.5 border border-gray-300 rounded-xl bg-white text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="w-full p-4 border-2 border-blue-200 rounded-xl bg-white text-gray-900 text-base shadow-md focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder-gray-400"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setSelectedName(''); setModalCategory(null); }}
           />
@@ -263,7 +263,7 @@ export default function Home() {
             <div className="bg-blue-600 p-4 text-white text-center font-bold flex flex-col items-center justify-center gap-1 shrink-0">
               <div className="flex items-center gap-3">
                 <span className="text-4xl drop-shadow-md">🏆</span>
-                <span className="text-lg">10 อันดับผู้ปฏิบัติงานภาคสนาม</span>
+                <span className="text-lg">10 อันดับวันปฏิบัติงาน Site</span>
               </div>
             </div>
             
