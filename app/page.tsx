@@ -41,7 +41,7 @@ export default function Home() {
             empId: row[8] ? String(row[8]).trim() : '', 
             department: row[9] || '-',        
             phone: row[10] || '-',
-            // เช็คดัชนีคอลัมน์ N ให้ตรง (ถ้าผิดแก้เลข 13 เป็นตัวอื่น เช่น 11)
+            // ⚠️ ตรงนี้สำคัญ! ลองเปลี่ยนเลข 13 เป็น 11 หรือ 12 ถ้าข้อมูลไม่ขึ้น
             craft: row[13] ? String(row[13]).trim() : '-' 
           };
         }).filter(Boolean);
@@ -268,7 +268,6 @@ export default function Home() {
               </div>
             </div>
             
-            {/* ⭐️ Dropdown เลือก Craft */}
             <div className="bg-gray-50 border-b border-gray-200 p-3 shrink-0 flex items-center gap-2">
               <label className="text-sm font-bold text-gray-600 whitespace-nowrap">หมวดหมู่:</label>
               <select 
@@ -277,7 +276,7 @@ export default function Home() {
                 className="w-full bg-white border border-gray-300 text-gray-700 rounded-lg px-3 py-2 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
                 {craftsList.map(c => (
-                  <option key={c} value={c}>{c === 'All' ? '🌟 ดูทุก Craft (ทั้งหมด)' : c}</option>
+                  <option key={c} value={c}>{c === 'All' ? '🌟 ทั้งหมด' : c}</option>
                 ))}
               </select>
             </div>
