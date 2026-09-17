@@ -45,14 +45,23 @@ export default function Home() {
           };
         }).filter(Boolean);
 
-        // ⭐️ แก้ปัญหาตัวเลขไม่ตรง: ถ้าระบุ Craft มาแค่บางบรรทัด ให้เติมใส่บรรทัดที่ว่างของคนนั้นให้ครบ
+        // ⭐️ เติม Craft และ Name ให้เหมือนกันทุกแถวโดยอิงจาก empId
         const craftMap = new Map();
+        const nameMap = new Map();
         formatted.forEach(r => {
-          if (r.craft && r.craft !== '-') craftMap.set(r.name, r.craft);
+          if (r.empId) {
+             if (r.craft && r.craft !== '-') craftMap.set(r.empId, r.craft);
+             // ยึดชื่อที่ยาวที่สุด (กันชื่อย่อ)
+             if (!nameMap.has(r.empId) || r.name.length > nameMap.get(r.empId).length) {
+                nameMap.set(r.empId, r.name);
+             }
+          }
         });
+
         formatted.forEach(r => {
-          if (r.craft === '-' && craftMap.has(r.name)) {
-            r.craft = craftMap.get(r.name);
+          if (r.empId) {
+             if (r.craft === '-' && craftMap.has(r.empId)) r.craft = craftMap.get(r.empId);
+             if (nameMap.has(r.empId)) r.name = nameMap.get(r.empId);
           }
         });
         
@@ -93,19 +102,25 @@ export default function Home() {
 
   const topUsers = useMemo(() => {
     const stats = new Map();
+    
+    // วนลูปตามข้อมูลทั้งหมด (ไม่ได้อิงจาก selectedName)
     data.forEach(job => {
+      // เช็คว่าอยู่ในหมวดหมู่ที่เลือกไหม (ถ้าเลือก All ก็ข้ามเงื่อนไขนี้ไป)
       if (selectedCraft !== 'All' && job.craft !== selectedCraft) return;
 
       if (!stats.has(job.name)) {
         stats.set(job.name, { name: job.name, empId: job.empId, total: 0, tcw: 0, bkk: 0, craft: job.craft });
       }
+      
       const st = stats.get(job.name);
-      st.total += job.days;
       
       const cat = getJobCategory(job);
-      if (cat === 'tcw') st.tcw += job.days;
-      else if (cat === 'bkk') st.bkk += job.days;
+      // นับ total เฉพาะที่เป็น tcw และ bkk (อิงจากภาพแรกของคุณที่นับแค่ 2 หมวดนี้)
+      // หรือถ้านับรวมทั้งหมด ให้เอา 2 บรรทัดด้านล่างออก แล้วใช้ st.total += job.days;
+      if (cat === 'tcw') { st.tcw += job.days; st.total += job.days; }
+      else if (cat === 'bkk') { st.bkk += job.days; st.total += job.days; }
     });
+    
     return Array.from(stats.values())
       .sort((a, b) => b.total - a.total)
       .slice(0, 10);
@@ -121,7 +136,9 @@ export default function Home() {
       else if (cat === 'bkk') bkk += job.days;
       else tcw += job.days;
     });
-    return { tcw, bkk, meet, train, visit, total: userJobs.reduce((sum, j) => sum + j.days, 0) };
+    
+    // รวม Total แบบเดียวกันกับหน้า Top 10 เพื่อให้ตัวเลขตรงกัน (เฉพาะ ตจว. และ ปริมณฑล)
+    return { tcw, bkk, meet, train, visit, total: tcw + bkk }; 
   }, [userJobs]);
 
   const getJobsByCategory = (category: string) => {
