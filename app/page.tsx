@@ -44,6 +44,17 @@ export default function Home() {
             craft: row[11] ? String(row[11]).trim() : '-' 
           };
         }).filter(Boolean);
+
+        // ⭐️ แก้ปัญหาตัวเลขไม่ตรง: ถ้าระบุ Craft มาแค่บางบรรทัด ให้เติมใส่บรรทัดที่ว่างของคนนั้นให้ครบ
+        const craftMap = new Map();
+        formatted.forEach(r => {
+          if (r.craft && r.craft !== '-') craftMap.set(r.name, r.craft);
+        });
+        formatted.forEach(r => {
+          if (r.craft === '-' && craftMap.has(r.name)) {
+            r.craft = craftMap.get(r.name);
+          }
+        });
         
         setData(formatted);
         setLoading(false);
