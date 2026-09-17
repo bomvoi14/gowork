@@ -69,14 +69,15 @@ export default function Home() {
           } as Job;
         }).filter((item): item is Job => item !== null);
 
-        // รวมกลุ่มด้วยเลขประจำตัว (empId) เพื่อป้องกันปัญหาพิมพ์ชื่อไม่ตรงกัน
         const craftMap = new Map<string, string>();
         const nameMap = new Map<string, string>();
         
         formatted.forEach(r => {
           if (r.empId) {
-             if (r.craft && r.craft !== '-') craftMap.set(r.empId, r.craft);
-             // เก็บชื่อที่ยาวที่สุดไว้เป็นชื่อหลัก
+             // ⭐️ เก็บหมวดหมู่ (ถ้าไม่ใช่ค่าว่าง)
+             if (r.craft && r.craft !== '-' && r.craft !== '') {
+                 craftMap.set(r.empId, r.craft);
+             }
              const currentName = nameMap.get(r.empId) || '';
              if (r.name.length > currentName.length) {
                 nameMap.set(r.empId, r.name);
@@ -86,8 +87,13 @@ export default function Home() {
 
         formatted.forEach(r => {
           if (r.empId) {
-             if (r.craft === '-' && craftMap.has(r.empId)) r.craft = craftMap.get(r.empId)!;
-             if (nameMap.has(r.empId)) r.name = nameMap.get(r.empId)!;
+             // ⭐️ บังคับถมหมวดหมู่ให้เหมือนกันทุกแถว 100%
+             if (craftMap.has(r.empId)) {
+                 r.craft = craftMap.get(r.empId)!;
+             }
+             if (nameMap.has(r.empId)) {
+                 r.name = nameMap.get(r.empId)!;
+             }
           }
         });
         
@@ -104,7 +110,6 @@ export default function Home() {
   const uniqueUsers = Array.from(new Map(data.filter(d => d.empId).map(d => [d.empId, d])).values());
   const filteredUsers = uniqueUsers.filter(user => user.name.includes(search) && search !== '');
   
-  // ดึงข้อมูลรายคนจาก empId เท่านั้น
   const userJobs = data.filter(d => d.empId === selectedEmpId && selectedEmpId !== '');
   const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
 
