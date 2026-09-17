@@ -1,12 +1,36 @@
+/* eslint-disable @next/next/no-img-element */
 "use client"
 import { useState, useMemo, useEffect } from 'react';
 import Papa from 'papaparse';
 
+interface Job {
+  id: string;
+  name: string;
+  date: string;
+  days: number;
+  location: string;
+  detail: string;
+  approver: string;
+  empId: string;
+  department: string;
+  phone: string;
+  craft: string;
+}
+
+interface UserStat {
+  name: string;
+  empId: string;
+  total: number;
+  tcw: number;
+  bkk: number;
+  craft: string;
+}
+
 export default function Home() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedName, setSelectedName] = useState('');
+  const [selectedEmpId, setSelectedEmpId] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modalCategory, setModalCategory] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState('กำลังตรวจสอบ...');
@@ -20,15 +44,15 @@ export default function Home() {
       download: true,
       header: false,
       complete: (results) => {
-        const rows = results.data as any[][];
+        const rows = results.data as string[][];
         
         if (rows.length > 0 && rows[0][25]) {
-          setLastUpdated(rows[0][25] as string);
+          setLastUpdated(rows[0][25]);
         } else {
           setLastUpdated('ไม่พบข้อมูลเวลา (Z1)');
         }
 
-        const formatted = rows.map((row: any) => {
+        const formatted = rows.map((row) => {
           if (!row[1] || !row[2] || row[1] === 'เลขทะเบียน') return null;
           return {
             id: String(row[1]).trim(),        
@@ -42,15 +66,19 @@ export default function Home() {
             department: row[9] || '-',        
             phone: row[10] || '-',
             craft: row[11] ? String(row[11]).trim() : '-' 
-          };
-        }).filter(Boolean);
+          } as Job;
+        }).filter((item): item is Job => item !== null);
 
-        const craftMap = new Map();
-        const nameMap = new Map();
+        // รวมกลุ่มด้วยเลขประจำตัว (empId) เพื่อป้องกันปัญหาพิมพ์ชื่อไม่ตรงกัน
+        const craftMap = new Map<string, string>();
+        const nameMap = new Map<string, string>();
+        
         formatted.forEach(r => {
           if (r.empId) {
              if (r.craft && r.craft !== '-') craftMap.set(r.empId, r.craft);
-             if (!nameMap.has(r.empId) || r.name.length > nameMap.get(r.empId).length) {
+             // เก็บชื่อที่ยาวที่สุดไว้เป็นชื่อหลัก
+             const currentName = nameMap.get(r.empId) || '';
+             if (r.name.length > currentName.length) {
                 nameMap.set(r.empId, r.name);
              }
           }
@@ -58,8 +86,8 @@ export default function Home() {
 
         formatted.forEach(r => {
           if (r.empId) {
-             if (r.craft === '-' && craftMap.has(r.empId)) r.craft = craftMap.get(r.empId);
-             if (nameMap.has(r.empId)) r.name = nameMap.get(r.empId);
+             if (r.craft === '-' && craftMap.has(r.empId)) r.craft = craftMap.get(r.empId)!;
+             if (nameMap.has(r.empId)) r.name = nameMap.get(r.empId)!;
           }
         });
         
@@ -73,10 +101,11 @@ export default function Home() {
     });
   }, []);
 
-  const uniqueUsers = Array.from(new Map(data.map(d => [d.name, d])).entries()).map(([name, d]) => d);
+  const uniqueUsers = Array.from(new Map(data.filter(d => d.empId).map(d => [d.empId, d])).values());
   const filteredUsers = uniqueUsers.filter(user => user.name.includes(search) && search !== '');
   
-  const userJobs = data.filter(d => d.name === selectedName);
+  // ดึงข้อมูลรายคนจาก empId เท่านั้น
+  const userJobs = data.filter(d => d.empId === selectedEmpId && selectedEmpId !== '');
   const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
 
   const craftsList = useMemo(() => {
@@ -84,12 +113,12 @@ export default function Home() {
     return ['All', ...c.sort()];
   }, [data]);
 
-  const isBkkLocation = (job: any) => {
+  const isBkkLocation = (job: Job) => {
     const text = (job.location + ' ' + job.detail).toLowerCase();
     return ['พระนคร', 'นวนคร', 'หนองจอก', 'น้ำเย็น', 'ไทรน้อย'].some(w => text.includes(w));
   };
 
-  const getJobCategory = (job: any) => {
+  const getJobCategory = (job: Job) => {
     const text = (job.location + ' ' + job.detail).toLowerCase();
     if (['อบรม', 'หลักสูตร'].some(w => text.includes(w))) return 'train';
     if (['ตรวจเยี่ยม', 'เยี่ยม', 'site survey'].some(w => text.includes(w))) return 'visit';
@@ -99,17 +128,18 @@ export default function Home() {
   };
 
   const topUsers = useMemo(() => {
-    const stats = new Map();
+    const stats = new Map<string, UserStat>();
     
     data.forEach(job => {
+      if (!job.empId) return;
       if (selectedCraft !== 'All' && job.craft !== selectedCraft) return;
 
-      if (!stats.has(job.name)) {
-        stats.set(job.name, { name: job.name, empId: job.empId, total: 0, tcw: 0, bkk: 0, craft: job.craft });
+      if (!stats.has(job.empId)) {
+        stats.set(job.empId, { name: job.name, empId: job.empId, total: 0, tcw: 0, bkk: 0, craft: job.craft });
       }
       
-      const st = stats.get(job.name);
-      st.total += job.days; // นับรวมทุกหมวดหมู่
+      const st = stats.get(job.empId)!;
+      st.total += job.days;
       
       const cat = getJobCategory(job);
       if (cat === 'tcw') st.tcw += job.days;
@@ -156,12 +186,13 @@ export default function Home() {
             placeholder="🔍 พิมพ์ชื่อ หรือนามสกุล..." 
             className="w-full p-4 border-2 border-blue-200 rounded-xl bg-white text-gray-900 text-base shadow-md focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder-gray-400"
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setSelectedName(''); setModalCategory(null); }}
+            onChange={(e) => { setSearch(e.target.value); setSelectedEmpId(''); setModalCategory(null); }}
           />
-          {filteredUsers.length > 0 && search !== selectedName && (
+          {filteredUsers.length > 0 && selectedEmpId === '' && (
             <ul className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-xl max-h-60 overflow-y-auto z-20">
               {filteredUsers.map(user => (
-                <li key={user.name} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors flex items-center gap-3" onClick={() => { setSelectedName(user.name); setSearch(user.name); }}>
+                <li key={user.empId} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors flex items-center gap-3" 
+                    onClick={() => { setSelectedEmpId(user.empId); setSearch(user.name); }}>
                   <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
                     <img 
                       src={`/staff-images/${user.empId}.png`} 
@@ -220,7 +251,7 @@ export default function Home() {
                   <p className="text-sm text-blue-100">โทร: {selectedUserInfo.phone}</p>
                 </div>
               </div>
-              <button onClick={() => { setSelectedName(''); setSearch(''); }} className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors shrink-0">
+              <button onClick={() => { setSelectedEmpId(''); setSearch(''); }} className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors shrink-0">
                 ✕ ปิด
               </button>
             </div>
@@ -243,7 +274,7 @@ export default function Home() {
                   <span>อบรม: {summary.train} วัน</span><span className="text-amber-400 text-base">🔍</span>
                 </div>
                 <div onClick={() => setModalCategory('visit')} className="bg-rose-50 p-3.5 rounded-xl text-rose-700 border border-rose-100 col-span-2 cursor-pointer hover:bg-rose-100 active:scale-95 transition-all flex justify-between items-center">
-                  <span>ตรวจเยี่ยม Site/Site Survey: {summary.visit} วัน</span><span className="text-rose-400 text-base">🔍</span>
+                  <span>ตรวจเยี่ยม Site: {summary.visit} วัน</span><span className="text-rose-400 text-base">🔍</span>
                 </div>
               </div>
             </details>
@@ -304,7 +335,8 @@ export default function Home() {
 
             <div className="divide-y divide-gray-100">
               {topUsers.map((u, i) => (
-                <div key={u.name} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => { setSelectedName(u.name); setSearch(u.name); }}>
+                <div key={u.empId} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" 
+                     onClick={() => { setSelectedEmpId(u.empId); setSearch(u.name); }}>
                   <div className={`w-8 font-bold text-center text-xl ${i > 2 ? 'text-gray-400 text-lg' : ''}`}>
                     {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
                   </div>
@@ -356,7 +388,7 @@ export default function Home() {
               <h3 className="font-bold text-gray-800 text-base">
                 {modalCategory === 'meet' && '📝 รายละเอียด: ประชุม'}
                 {modalCategory === 'train' && '📚 รายละเอียด: อบรม'}
-                {modalCategory === 'visit' && '🔎 รายละเอียด: ตรวจเยี่ยม Site/Site Survey'}
+                {modalCategory === 'visit' && '🔎 รายละเอียด: ตรวจเยี่ยม Site'}
                 {modalCategory === 'tcw' && '🚗 รายละเอียด: ต่างจังหวัด'}
                 {modalCategory === 'bkk' && '🏙️ รายละเอียด: ปริมณฑล'}
               </h3>
