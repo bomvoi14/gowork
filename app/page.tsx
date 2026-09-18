@@ -324,7 +324,7 @@ export default function Home() {
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm mt-4 overflow-hidden animate-fade-in flex flex-col">
             <div className="bg-blue-600 p-4 text-white text-center font-bold flex flex-col items-center justify-center gap-1 shrink-0">
               <div className="flex items-center gap-3">
-                <img src="/trophy.png" alt="trophy" className="w-9 h-9 object-contain drop-shadow-md" />
+                <img src="/trophy.png" alt="trophy" className="w-9 h-9 object-contain drop-shadow-md scale-125" />
                 <span className="text-lg">จัดอันดับวันปฏิบัติงาน Site</span>
               </div>
             </div>
