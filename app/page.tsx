@@ -36,6 +36,9 @@ export default function Home() {
   const [lastUpdated, setLastUpdated] = useState('กำลังตรวจสอบ...');
   
   const [selectedCraft, setSelectedCraft] = useState<string>('All');
+  // 1. เพิ่ม State สำหรับจัดการหน้า
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
@@ -130,6 +133,7 @@ export default function Home() {
     return 'tcw';
   };
 
+  // 2. ดึงข้อมูลทั้งหมด ไม่ตัดแค่ 10 อันดับแล้ว
   const topUsers = useMemo(() => {
     const stats = new Map<string, UserStat>();
     
@@ -144,7 +148,6 @@ export default function Home() {
       const st = stats.get(job.empId)!;
       const cat = getJobCategory(job);
       
-      // นับรวมเฉพาะ ตจว. และ ปริมณฑล
       if (cat === 'tcw') {
         st.tcw += job.days;
         st.total += job.days;
@@ -155,9 +158,12 @@ export default function Home() {
     });
     
     return Array.from(stats.values())
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 10);
+      .sort((a, b) => b.total - a.total);
   }, [data, selectedCraft]);
+
+  // 3. คำนวณข้อมูลสำหรับหน้าที่เลือก
+  const totalPages = Math.ceil(topUsers.length / itemsPerPage);
+  const paginatedUsers = topUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const summary = useMemo(() => {
     let tcw = 0, bkk = 0, meet = 0, train = 0, visit = 0;
@@ -170,7 +176,6 @@ export default function Home() {
       else tcw += job.days;
     });
     
-    // Total แสดงเฉพาะ ตจว. + ปริมณฑล
     return { tcw, bkk, meet, train, visit, total: tcw + bkk }; 
   }, [userJobs]);
 
@@ -330,10 +335,10 @@ export default function Home() {
             </div>
             
             <div className="bg-gray-50 border-b border-gray-200 p-3 shrink-0 flex items-center gap-2">
-              <label className="text-sm font-bold text-gray-600 whitespace-nowrap">หมวดหมู่:</label>
+              <label className="text-sm font-bold text-gray-600 whitespace-nowrap">Group:</label>
               <select 
                 value={selectedCraft}
-                onChange={(e) => setSelectedCraft(e.target.value)}
+                onChange={(e) => { setSelectedCraft(e.target.value); setCurrentPage(1); }}
                 className="w-full bg-white border border-gray-300 text-gray-700 rounded-lg px-3 py-2 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
                 {craftsList.map(c => (
@@ -343,45 +348,73 @@ export default function Home() {
             </div>
 
             <div className="divide-y divide-gray-100">
-              {topUsers.map((u, i) => (
-                <div key={u.empId} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" 
-                     onClick={() => { setSelectedEmpId(u.empId); setSearch(u.name); }}>
-                  <div className={`w-8 font-bold text-center text-xl ${i > 2 ? 'text-gray-400 text-lg' : ''}`}>
-                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
-                  </div>
-                  <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
-                    <img 
-                      src={`/staff-images/${u.empId}.png`} 
-                      onError={(e) => { 
-                        e.currentTarget.onerror = null; 
-                        e.currentTarget.src = '/staff-images/default.png'; 
-                      }}
-                      className="w-full h-full object-cover object-top" 
-                      alt="profile"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm text-gray-800 truncate flex items-center gap-2">
-                      {u.name}
+              {paginatedUsers.map((u, index) => {
+                // คำนวณอันดับจริง (รวมหน้าที่ผ่านมา)
+                const actualRank = (currentPage - 1) * itemsPerPage + index;
+                
+                return (
+                  <div key={u.empId} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" 
+                       onClick={() => { setSelectedEmpId(u.empId); setSearch(u.name); }}>
+                    <div className={`w-8 font-bold text-center text-xl ${actualRank > 2 ? 'text-gray-400 text-lg' : ''}`}>
+                      {actualRank === 0 ? '🥇' : actualRank === 1 ? '🥈' : actualRank === 2 ? '🥉' : actualRank + 1}
                     </div>
-                    <div className="text-xs text-gray-500 flex items-center gap-2 mt-0.5 flex-wrap">
-                      {u.craft !== '-' && (
-                        <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full text-[10px]">{u.craft}</span>
-                      )}
-                      <span className="text-blue-600 font-medium">ตจว: {u.tcw}</span>
-                      <span className="text-emerald-600 font-medium">ปริมณฑล: {u.bkk}</span>
+                    <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
+                      <img 
+                        src={`/staff-images/${u.empId}.png`} 
+                        onError={(e) => { 
+                          e.currentTarget.onerror = null; 
+                          e.currentTarget.src = '/staff-images/default.png'; 
+                        }}
+                        className="w-full h-full object-cover object-top" 
+                        alt="profile"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-sm text-gray-800 truncate flex items-center gap-2">
+                        {u.name}
+                      </div>
+                      <div className="text-xs text-gray-500 flex items-center gap-2 mt-0.5 flex-wrap">
+                        {u.craft !== '-' && (
+                          <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full text-[10px]">{u.craft}</span>
+                        )}
+                        <span className="text-blue-600 font-medium">ตจว: {u.tcw}</span>
+                        <span className="text-emerald-600 font-medium">ปริมณฑล: {u.bkk}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-lg text-gray-800 leading-none">{u.total}</div>
+                      <div className="text-[10px] text-gray-400 mt-1">วัน</div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-lg text-gray-800 leading-none">{u.total}</div>
-                    <div className="text-[10px] text-gray-400 mt-1">วัน</div>
-                  </div>
-                </div>
-              ))}
-              {topUsers.length === 0 && (
+                );
+              })}
+              {paginatedUsers.length === 0 && (
                 <div className="p-6 text-center text-gray-400 text-sm">ไม่พบข้อมูลในหมวดหมู่นี้</div>
               )}
             </div>
+
+            {/* 4. กล่องปุ่มเปลี่ยนหน้า (Pagination Controls) */}
+            {totalPages > 1 && (
+              <div className="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                <button 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-bold rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 active:scale-95 transition-all"
+                >
+                  ◀ ก่อนหน้า
+                </button>
+                <span className="text-sm font-medium text-gray-600">
+                  หน้า {currentPage} / {totalPages}
+                </span>
+                <button 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-bold rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 active:scale-95 transition-all"
+                >
+                  ถัดไป ▶
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
