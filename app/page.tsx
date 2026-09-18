@@ -36,7 +36,6 @@ export default function Home() {
   const [lastUpdated, setLastUpdated] = useState('กำลังตรวจสอบ...');
   
   const [selectedCraft, setSelectedCraft] = useState<string>('All');
-  // 1. เพิ่ม State สำหรับจัดการหน้า
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -133,7 +132,6 @@ export default function Home() {
     return 'tcw';
   };
 
-  // 2. ดึงข้อมูลทั้งหมด ไม่ตัดแค่ 10 อันดับแล้ว
   const topUsers = useMemo(() => {
     const stats = new Map<string, UserStat>();
     
@@ -161,7 +159,6 @@ export default function Home() {
       .sort((a, b) => b.total - a.total);
   }, [data, selectedCraft]);
 
-  // 3. คำนวณข้อมูลสำหรับหน้าที่เลือก
   const totalPages = Math.ceil(topUsers.length / itemsPerPage);
   const paginatedUsers = topUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -207,7 +204,7 @@ export default function Home() {
               {filteredUsers.map(user => (
                 <li key={user.empId} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors flex items-center gap-3" 
                     onClick={() => { setSelectedEmpId(user.empId); setSearch(user.name); }}>
-                  <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
+                  <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
                     <img 
                       src={`/staff-images/${user.empId}.png`} 
                       onError={(e) => { 
@@ -242,7 +239,7 @@ export default function Home() {
           <div className="animate-fade-in space-y-4">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 rounded-xl shadow-md text-white flex justify-between items-start">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 shrink-0 mt-1 rounded-full overflow-hidden border-2 border-white/50 bg-gray-200 shadow-sm">
+                <div className="w-20 h-20 shrink-0 mt-1 rounded-full overflow-hidden border-2 border-white/50 bg-gray-200 shadow-sm">
                   <img 
                     src={`/staff-images/${selectedUserInfo.empId}.png`} 
                     onError={(e) => { 
@@ -349,7 +346,6 @@ export default function Home() {
 
             <div className="divide-y divide-gray-100">
               {paginatedUsers.map((u, index) => {
-                // คำนวณอันดับจริง (รวมหน้าที่ผ่านมา)
                 const actualRank = (currentPage - 1) * itemsPerPage + index;
                 
                 return (
@@ -358,7 +354,7 @@ export default function Home() {
                     <div className={`w-8 font-bold text-center text-xl ${actualRank > 2 ? 'text-gray-400 text-lg' : ''}`}>
                       {actualRank === 0 ? '🥇' : actualRank === 1 ? '🥈' : actualRank === 2 ? '🥉' : actualRank + 1}
                     </div>
-                    <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
+                    <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
                       <img 
                         src={`/staff-images/${u.empId}.png`} 
                         onError={(e) => { 
@@ -393,7 +389,6 @@ export default function Home() {
               )}
             </div>
 
-            {/* 4. กล่องปุ่มเปลี่ยนหน้า (Pagination Controls) */}
             {totalPages > 1 && (
               <div className="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
                 <button 
