@@ -39,8 +39,8 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // State สำหรับแจ้งแก้ไข
-  const [reportModal, setReportModal] = useState<{isOpen: boolean, job: Job | null}>({isOpen: false, job: null});
+  // เพิ่ม type เพื่อแยกว่าแก้ประวัติ หรือ แก้งาน
+  const [reportModal, setReportModal] = useState<{isOpen: boolean, job: Job | null, type: 'job' | 'profile'}>({isOpen: false, job: null, type: 'job'});
   const [reportMessage, setReportMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -125,12 +125,12 @@ export default function Home() {
         body: JSON.stringify({
           empId: reportModal.job.empId,
           name: reportModal.job.name,
-          jobId: reportModal.job.id,
+          jobId: reportModal.type === 'profile' ? 'แก้ไขประวัติบุคคล' : reportModal.job.id,
           message: reportMessage
         })
       });
       alert("ส่งข้อมูลสำเร็จ!");
-      setReportModal({isOpen: false, job: null});
+      setReportModal({isOpen: false, job: null, type: 'job'});
       setReportMessage('');
     } catch (e) {
       alert("ส่งไม่สำเร็จ กรุณาลองใหม่");
@@ -295,9 +295,14 @@ export default function Home() {
                   <p className="text-sm text-blue-100">โทร: {selectedUserInfo.phone}</p>
                 </div>
               </div>
-              <button onClick={() => { setSelectedEmpId(''); setSearch(''); }} className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors shrink-0">
-                ✕ ปิด
-              </button>
+              <div className="flex flex-col gap-2 shrink-0">
+                <button onClick={() => { setSelectedEmpId(''); setSearch(''); }} className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center">
+                  ✕ ปิด
+                </button>
+                <button onClick={() => setReportModal({isOpen: true, job: selectedUserInfo, type: 'profile'})} className="text-[10px] bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors border border-white/20 w-full text-center">
+                  ✏️ แก้ประวัติ
+                </button>
+              </div>
             </div>
 
             <details className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 group cursor-pointer" open>
@@ -350,7 +355,7 @@ export default function Home() {
                         </div>
                         <div className="mt-4 pt-3 border-t border-gray-200 flex justify-end">
                           <button 
-                            onClick={() => setReportModal({isOpen: true, job})}
+                            onClick={() => setReportModal({isOpen: true, job, type: 'job'})}
                             className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-medium border border-red-100 transition-colors"
                           >
                             ⚠️ แจ้งแก้ไขงานนี้
@@ -491,22 +496,33 @@ export default function Home() {
       {reportModal.isOpen && (
         <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white p-5 rounded-2xl w-full max-w-sm shadow-2xl">
-            <h3 className="font-bold text-lg text-gray-800 mb-1">แจ้งแก้ไขข้อมูลงาน</h3>
+            <h3 className="font-bold text-lg text-gray-800 mb-1">
+              {reportModal.type === 'profile' ? 'แจ้งแก้ไขข้อมูลส่วนบุคคล' : 'แจ้งแก้ไขข้อมูลงาน'}
+            </h3>
             <p className="text-xs text-gray-500 mb-4 bg-gray-100 p-2 rounded">
-              รหัสงาน: <span className="font-mono font-bold text-gray-700">{reportModal.job?.id}</span><br/>
-              สถานที่: {reportModal.job?.location}
+              {reportModal.type === 'profile' ? (
+                <>
+                  รหัสพนักงาน: <span className="font-mono font-bold text-gray-700">{reportModal.job?.empId}</span><br/>
+                  ชื่อ: {reportModal.job?.name}
+                </>
+              ) : (
+                <>
+                  รหัสงาน: <span className="font-mono font-bold text-gray-700">{reportModal.job?.id}</span><br/>
+                  สถานที่: {reportModal.job?.location}
+                </>
+              )}
             </p>
             <textarea 
               className="w-full border-2 border-gray-200 p-3 text-sm rounded-xl focus:outline-none focus:border-red-400 bg-gray-50" 
               rows={4} 
-              placeholder="ระบุสิ่งที่ต้องการให้แอดมินแก้ไข..."
+              placeholder={reportModal.type === 'profile' ? "ระบุ สังกัด, Craft หรือเบอร์โทร ที่ถูกต้อง..." : "ระบุสิ่งที่ต้องการให้แอดมินแก้ไข..."}
               value={reportMessage}
               onChange={e => setReportMessage(e.target.value)}
             />
             <div className="flex gap-2 mt-5">
               <button 
                 className="flex-1 bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-300" 
-                onClick={() => setReportModal({isOpen:false, job:null})}
+                onClick={() => setReportModal({isOpen:false, job:null, type: 'job'})}
               >
                 ยกเลิก
               </button>
