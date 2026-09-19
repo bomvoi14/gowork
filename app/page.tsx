@@ -39,15 +39,14 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Modal สำหรับแจ้งแก้ไข
   const [reportModal, setReportModal] = useState<{isOpen: boolean, job: Job | null, type: 'job' | 'profile'}>({isOpen: false, job: null, type: 'job'});
   const [reportMessage, setReportMessage] = useState('');
   
-  // State เพิ่มเติมสำหรับแก้ไขประวัติ
   const [editPhone, setEditPhone] = useState('');
   const [editCraft, setEditCraft] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // ⚠️ ถ้า Deploy Apps Script ใหม่ ได้ URL ใหม่ เอามาเปลี่ยนตรงนี้นะ
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
 
   useEffect(() => {
@@ -126,15 +125,11 @@ export default function Home() {
   const handleReportSubmit = async () => {
     if (!reportModal.job) return;
     
-    let finalMessage = reportMessage;
-    
-    // ตรวจสอบความถูกต้องถ้าเป็นการแก้ประวัติ
     if (reportModal.type === 'profile') {
       if (editPhone.length > 0 && editPhone.length < 10) {
         alert("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก");
         return;
       }
-      finalMessage = `แจ้งขอแก้ประวัติบุคคล -> Craft: ${editCraft || 'ไม่ระบุ'}, เบอร์โทร: ${editPhone || 'ไม่ระบุ'}`;
     } else {
       if (!reportMessage.trim()) return;
     }
@@ -148,8 +143,11 @@ export default function Home() {
         body: JSON.stringify({
           empId: reportModal.job.empId,
           name: reportModal.job.name,
-          jobId: reportModal.type === 'profile' ? 'แก้ไขประวัติบุคคล' : reportModal.job.id,
-          message: finalMessage
+          type: reportModal.type === 'profile' ? 'แก้ประวัติ' : 'แก้งาน',
+          jobId: reportModal.type === 'profile' ? '-' : reportModal.job.id,
+          editCraft: reportModal.type === 'profile' ? editCraft : '',
+          editPhone: reportModal.type === 'profile' ? editPhone : '',
+          message: reportModal.type === 'profile' ? '' : reportMessage
         })
       });
       alert("ส่งข้อมูลแก้ไขสำเร็จ!");
@@ -489,6 +487,38 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
+        สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง
+      </div>
+
+      {modalCategory && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-gray-800 text-base">รายละเอียด</h3>
+              <button onClick={() => setModalCategory(null)} className="text-gray-400 hover:text-red-500 bg-gray-200 hover:bg-red-100 rounded-full w-8 h-8 flex items-center justify-center font-bold">✕</button>
+            </div>
+            <div className="p-4 overflow-y-auto space-y-3">
+              {getJobsByCategory(modalCategory).length > 0 ? (
+                getJobsByCategory(modalCategory).map((job, idx) => (
+                  <div key={idx} className="bg-white border border-gray-200 rounded-xl p-3.5 text-sm shadow-sm relative pl-4">
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl bg-blue-400"></div>
+                    <p className="font-bold text-gray-800 mb-1">{job.location}</p>
+                    <p className="text-gray-600 mb-2 text-xs leading-relaxed">{job.detail}</p>
+                    <div className="flex justify-between items-end border-t border-gray-100 pt-2 mt-2">
+                       <span className="text-xs text-gray-400">📅 {job.date}</span>
+                       <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-md">รวม {job.days} วัน</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-12 text-gray-400">ไม่มีข้อมูลในหมวดหมู่นี้</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal แจ้งแก้ไข */}
       {reportModal.isOpen && (
