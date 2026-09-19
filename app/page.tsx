@@ -522,7 +522,7 @@ export default function Home() {
                 <h3 className="font-bold text-lg text-gray-800 mb-4 border-b pb-2">แก้ไขข้อมูล</h3>
                 <div className="space-y-4">
                   <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-700">
-                    <div className="grid grid-cols-[80px_1fr] gap-1.5">
+                    <div className="grid grid-cols-[90px_1fr] gap-1.5">
                       <span className="text-gray-500 font-medium">ชื่อ:</span>
                       <span className="font-bold text-gray-900">{selectedUserInfo?.name}</span>
                       
