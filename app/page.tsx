@@ -205,7 +205,7 @@ export default function Home() {
             <ul className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-xl max-h-60 overflow-y-auto z-20">
               {filteredUsers.map(user => (
                 <li key={user.empId} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors flex items-center gap-3" 
-                    onClick={() => { setSelectedEmpId(user.empId); setSearch(user.name); }}>
+                    onClick={() => { setSelectedEmpId(user.empId); setSearch(user.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                   <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
                     <img 
                       src={`/staff-images/${user.empId}.png`} 
@@ -352,7 +352,7 @@ export default function Home() {
                 
                 return (
                   <div key={u.empId} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" 
-                       onClick={() => { setSelectedEmpId(u.empId); setSearch(u.name); }}>
+                       onClick={() => { setSelectedEmpId(u.empId); setSearch(u.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                     <div className={`w-8 font-bold text-center text-xl ${actualRank > 2 ? 'text-gray-400 text-lg' : ''}`}>
                       {actualRank === 0 ? '🥇' : actualRank === 1 ? '🥈' : actualRank === 2 ? '🥉' : actualRank + 1}
                     </div>
