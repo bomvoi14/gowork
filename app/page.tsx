@@ -39,6 +39,13 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // State สำหรับแจ้งแก้ไข
+  const [reportModal, setReportModal] = useState<{isOpen: boolean, job: Job | null}>({isOpen: false, job: null});
+  const [reportMessage, setReportMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
+
   useEffect(() => {
     const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
     
@@ -106,6 +113,30 @@ export default function Home() {
       }
     });
   }, []);
+
+  const handleReportSubmit = async () => {
+    if (!reportMessage.trim() || !reportModal.job) return;
+    setIsSubmitting(true);
+    
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          empId: reportModal.job.empId,
+          name: reportModal.job.name,
+          jobId: reportModal.job.id,
+          message: reportMessage
+        })
+      });
+      alert("ส่งข้อมูลสำเร็จ!");
+      setReportModal({isOpen: false, job: null});
+      setReportMessage('');
+    } catch (e) {
+      alert("ส่งไม่สำเร็จ กรุณาลองใหม่");
+    }
+    setIsSubmitting(false);
+  };
 
   const uniqueUsers = Array.from(new Map(data.filter(d => d.empId).map(d => [d.empId, d])).values());
   const filteredUsers = uniqueUsers.filter(user => user.name.includes(search) && search !== '');
@@ -185,8 +216,8 @@ export default function Home() {
       <div>
         <div className="text-center py-6 mb-2">
           <div className="inline-block mb-2">
-  <img src="/header.png" alt="icon" className="w-16 h-16 object-contain drop-shadow-md" />
-</div>
+            <img src="/header.png" alt="icon" className="w-16 h-16 object-contain drop-shadow-md" />
+          </div>
           <h1 className="text-2xl font-bold text-gray-800">สรุปจำนวนวันปฏิบัติงาน</h1>
           <p className="text-sm text-gray-500 mt-1">จำนวนวันและรายละเอียดตามคำสั่งทั้งหมด</p>
           <p className="text-xs text-gray-400 mt-1">🔄 ข้อมูลอัปเดตล่าสุด: {lastUpdated}</p>
@@ -317,6 +348,14 @@ export default function Home() {
                           <span className="text-gray-400 font-medium">งาน:</span><span className="text-gray-900 leading-relaxed">{job.detail}</span>
                           <span className="text-gray-400 font-medium">ผู้อนุมัติ:</span><span className="text-gray-900">{job.approver}</span>
                         </div>
+                        <div className="mt-4 pt-3 border-t border-gray-200 flex justify-end">
+                          <button 
+                            onClick={() => setReportModal({isOpen: true, job})}
+                            className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-medium border border-red-100 transition-colors"
+                          >
+                            ⚠️ แจ้งแก้ไขงานนี้
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -424,26 +463,14 @@ export default function Home() {
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
             <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-gray-800 text-base">
-                {modalCategory === 'meet' && '📝 รายละเอียด: ประชุม'}
-                {modalCategory === 'train' && '📚 รายละเอียด: อบรม'}
-                {modalCategory === 'visit' && '🔎 รายละเอียด: ตรวจเยี่ยม Site'}
-                {modalCategory === 'tcw' && '🚗 รายละเอียด: ต่างจังหวัด'}
-                {modalCategory === 'bkk' && '🏙️ รายละเอียด: ปริมณฑล'}
-              </h3>
+              <h3 className="font-bold text-gray-800 text-base">รายละเอียด</h3>
               <button onClick={() => setModalCategory(null)} className="text-gray-400 hover:text-red-500 bg-gray-200 hover:bg-red-100 rounded-full w-8 h-8 flex items-center justify-center font-bold">✕</button>
             </div>
-            
             <div className="p-4 overflow-y-auto space-y-3">
               {getJobsByCategory(modalCategory).length > 0 ? (
                 getJobsByCategory(modalCategory).map((job, idx) => (
                   <div key={idx} className="bg-white border border-gray-200 rounded-xl p-3.5 text-sm shadow-sm relative pl-4">
-                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${
-                      modalCategory === 'meet' ? 'bg-purple-400' :
-                      modalCategory === 'train' ? 'bg-amber-400' :
-                      modalCategory === 'visit' ? 'bg-rose-400' :
-                      modalCategory === 'bkk' ? 'bg-emerald-400' : 'bg-blue-400'
-                    }`}></div>
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl bg-blue-400"></div>
                     <p className="font-bold text-gray-800 mb-1">{job.location}</p>
                     <p className="text-gray-600 mb-2 text-xs leading-relaxed">{job.detail}</p>
                     <div className="flex justify-between items-end border-t border-gray-100 pt-2 mt-2">
@@ -456,8 +483,40 @@ export default function Home() {
                 <div className="text-center py-12 text-gray-400">ไม่มีข้อมูลในหมวดหมู่นี้</div>
               )}
             </div>
-            <div className="p-4 border-t bg-gray-50">
-               <button onClick={() => setModalCategory(null)} className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 active:scale-95 transition-all shadow-sm">ปิดหน้าต่าง</button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal แจ้งแก้ไข */}
+      {reportModal.isOpen && (
+        <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white p-5 rounded-2xl w-full max-w-sm shadow-2xl">
+            <h3 className="font-bold text-lg text-gray-800 mb-1">แจ้งแก้ไขข้อมูลงาน</h3>
+            <p className="text-xs text-gray-500 mb-4 bg-gray-100 p-2 rounded">
+              รหัสงาน: <span className="font-mono font-bold text-gray-700">{reportModal.job?.id}</span><br/>
+              สถานที่: {reportModal.job?.location}
+            </p>
+            <textarea 
+              className="w-full border-2 border-gray-200 p-3 text-sm rounded-xl focus:outline-none focus:border-red-400 bg-gray-50" 
+              rows={4} 
+              placeholder="ระบุสิ่งที่ต้องการให้แอดมินแก้ไข..."
+              value={reportMessage}
+              onChange={e => setReportMessage(e.target.value)}
+            />
+            <div className="flex gap-2 mt-5">
+              <button 
+                className="flex-1 bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-300" 
+                onClick={() => setReportModal({isOpen:false, job:null})}
+              >
+                ยกเลิก
+              </button>
+              <button 
+                className="flex-1 bg-red-500 text-white font-bold py-2.5 rounded-xl hover:bg-red-600 disabled:opacity-50 flex justify-center items-center gap-2" 
+                onClick={handleReportSubmit} 
+                disabled={isSubmitting || !reportMessage.trim()}
+              >
+                {isSubmitting ? '⏳ กำลังส่ง...' : '📤 ส่งแจ้งเตือน'}
+              </button>
             </div>
           </div>
         </div>
