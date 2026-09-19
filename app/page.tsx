@@ -39,7 +39,6 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // เพิ่มสถานะ success สำหรับหน้าต่างแจ้งเสร็จสมบูรณ์
   const [profileModalStep, setProfileModalStep] = useState<'hidden' | 'edit' | 'confirm' | 'no-change' | 'success'>('hidden');
   const [editPhone, setEditPhone] = useState('');
   const [editCraft, setEditCraft] = useState('');
@@ -146,16 +145,15 @@ export default function Home() {
     try {
       await fetch(SCRIPT_URL, {
         method: "POST",
+        mode: 'no-cors',
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           empId: selectedUserInfo.empId,
           name: selectedUserInfo.name,
           editCraft: editCraft,
-          // เติมเครื่องหมาย ' นำหน้าเลข 0 จะได้ไม่หายตอนลง Google Sheet
           editPhone: editPhone ? "'" + editPhone : "", 
         })
       });
-      // เปลี่ยนเป็นโชว์หน้าต่าง Success แทน Alert
       setProfileModalStep('success');
     } catch (e) {
       alert("ส่งไม่สำเร็จ กรุณาลองใหม่");
@@ -318,7 +316,6 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* ปุ่ม ปิด (แดง) และ แก้ไข (เหลือง) */}
               <div className="flex flex-col gap-2 shrink-0 w-[60px]">
                 <button onClick={() => { setSelectedEmpId(''); setSearch(''); }} className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm">
                   ✕ ปิด
@@ -329,9 +326,9 @@ export default function Home() {
                     setEditPhone(origPhone);
                     setProfileModalStep('edit');
                   }} 
-                  className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm"
+                  className="text-xs bg-[#ff8c00] hover:bg-[#e67e00] text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm"
                 >
-                  ✏️ แก้ไข
+                  แก้ไข
                 </button>
               </div>
             </div>
@@ -520,7 +517,6 @@ export default function Home() {
         <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white p-5 rounded-2xl w-full max-w-sm shadow-2xl">
             
-            {/* สถานะ 1: ฟอร์มแก้ไขข้อมูล */}
             {profileModalStep === 'edit' && (
               <>
                 <h3 className="font-bold text-lg text-gray-800 mb-4 border-b pb-2">แก้ไขข้อมูล</h3>
@@ -586,7 +582,6 @@ export default function Home() {
               </>
             )}
 
-            {/* สถานะ 2: แจ้งเตือนเมื่อไม่มีการแก้ไข */}
             {profileModalStep === 'no-change' && (
               <div className="text-center py-4">
                 <div className="text-4xl mb-3">⚠️</div>
@@ -610,7 +605,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* สถานะ 3: ทวนรายการและยืนยัน */}
             {profileModalStep === 'confirm' && (
               <div>
                 <h3 className="font-bold text-lg text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
@@ -659,17 +653,16 @@ export default function Home() {
               </div>
             )}
             
-            {/* สถานะ 4: เสร็จสมบูรณ์ */}
             {profileModalStep === 'success' && (
               <div className="text-center py-6">
                 <div className="text-5xl mb-4">✅</div>
-                <h3 className="font-bold text-xl text-emerald-600 mb-2">การแก้ไขเสร็จสมบูรณ์</h3>
+                <h3 className="font-bold text-xl text-blue-600 mb-2">การแก้ไขเสร็จสมบูรณ์</h3>
                 <p className="text-sm text-gray-600 mb-6 leading-relaxed">
                   โปรดรีเฟรชหน้าแอพเพื่ออัพเดทข้อมูลล่าสุด
                 </p>
                 
                 <button 
-                  className="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl hover:bg-emerald-600 transition-colors shadow-md" 
+                  className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-md" 
                   onClick={() => {
                     setProfileModalStep('hidden');
                     window.location.reload(); 
