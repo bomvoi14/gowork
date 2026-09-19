@@ -39,14 +39,13 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const [reportModal, setReportModal] = useState<{isOpen: boolean, job: Job | null, type: 'job' | 'profile'}>({isOpen: false, job: null, type: 'job'});
-  const [reportMessage, setReportMessage] = useState('');
-  
+  // State จัดการหน้าต่างแก้ไขประวัติ (hidden, edit, confirm, no-change)
+  const [profileModalStep, setProfileModalStep] = useState<'hidden' | 'edit' | 'confirm' | 'no-change'>('hidden');
   const [editPhone, setEditPhone] = useState('');
   const [editCraft, setEditCraft] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ⚠️ ถ้า Deploy Apps Script ใหม่ ได้ URL ใหม่ เอามาเปลี่ยนตรงนี้นะ
+  // ⚠️ เปลี่ยน URL ตรงนี้ถ้าคุณ Deploy Apps Script ใหม่
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
 
   useEffect(() => {
@@ -117,23 +116,33 @@ export default function Home() {
     });
   }, []);
 
+  const userJobs = data.filter(d => d.empId === selectedEmpId && selectedEmpId !== '');
+  const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
+
+  // ดึงค่าเดิมของพนักงานคนปัจจุบันเพื่อเอามาเทียบ
+  const origCraft = selectedUserInfo?.craft && selectedUserInfo.craft !== '-' ? selectedUserInfo.craft : '';
+  const origPhone = selectedUserInfo?.phone && selectedUserInfo.phone !== '-' ? selectedUserInfo.phone.replace(/\D/g, '') : '';
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/\D/g, '');
     if (val.length <= 10) setEditPhone(val);
   };
 
-  const handleReportSubmit = async () => {
-    if (!reportModal.job) return;
-    
-    if (reportModal.type === 'profile') {
-      if (editPhone.length > 0 && editPhone.length < 10) {
-        alert("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก");
-        return;
-      }
-    } else {
-      if (!reportMessage.trim()) return;
+  const handleInitialSubmit = () => {
+    if (editPhone.length > 0 && editPhone.length < 10) {
+      alert("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก");
+      return;
     }
 
+    if (editCraft === origCraft && editPhone === origPhone) {
+      setProfileModalStep('no-change');
+    } else {
+      setProfileModalStep('confirm');
+    }
+  };
+
+  const handleFinalSubmit = async () => {
+    if (!selectedUserInfo) return;
     setIsSubmitting(true);
     
     try {
@@ -141,18 +150,14 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
-          empId: reportModal.job.empId,
-          name: reportModal.job.name,
-          type: reportModal.type === 'profile' ? 'แก้ประวัติ' : 'แก้งาน',
-          jobId: reportModal.type === 'profile' ? '-' : reportModal.job.id,
-          editCraft: reportModal.type === 'profile' ? editCraft : '',
-          editPhone: reportModal.type === 'profile' ? editPhone : '',
-          message: reportModal.type === 'profile' ? '' : reportMessage
+          empId: selectedUserInfo.empId,
+          name: selectedUserInfo.name,
+          editCraft: editCraft,
+          editPhone: editPhone,
         })
       });
       alert("ส่งข้อมูลแก้ไขสำเร็จ!");
-      setReportModal({isOpen: false, job: null, type: 'job'});
-      setReportMessage('');
+      setProfileModalStep('hidden');
     } catch (e) {
       alert("ส่งไม่สำเร็จ กรุณาลองใหม่");
     }
@@ -162,9 +167,6 @@ export default function Home() {
   const uniqueUsers = Array.from(new Map(data.filter(d => d.empId).map(d => [d.empId, d])).values());
   const filteredUsers = uniqueUsers.filter(user => user.name.includes(search) && search !== '');
   
-  const userJobs = data.filter(d => d.empId === selectedEmpId && selectedEmpId !== '');
-  const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
-
   const craftsList = useMemo(() => {
     const c = Array.from(new Set(data.map(d => d.craft).filter(c => c && c !== '-')));
     return ['All', ...c.sort()];
@@ -322,13 +324,13 @@ export default function Home() {
                 </button>
                 <button 
                   onClick={() => {
-                    setEditCraft(selectedUserInfo.craft !== '-' ? selectedUserInfo.craft : '');
-                    setEditPhone(selectedUserInfo.phone !== '-' ? selectedUserInfo.phone.replace(/\D/g, '') : '');
-                    setReportModal({isOpen: true, job: selectedUserInfo, type: 'profile'});
+                    setEditCraft(origCraft);
+                    setEditPhone(origPhone);
+                    setProfileModalStep('edit');
                   }} 
-                  className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center"
+                  className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center border border-white/20"
                 >
-                  ✏️ แก้ไข
+                  แก้ไข
                 </button>
               </div>
             </div>
@@ -380,14 +382,6 @@ export default function Home() {
                           <span className="text-gray-400 font-medium">สถานที่:</span><span className="text-gray-900 leading-relaxed">{job.location}</span>
                           <span className="text-gray-400 font-medium">งาน:</span><span className="text-gray-900 leading-relaxed">{job.detail}</span>
                           <span className="text-gray-400 font-medium">ผู้อนุมัติ:</span><span className="text-gray-900">{job.approver}</span>
-                        </div>
-                        <div className="mt-4 pt-3 border-t border-gray-200 flex justify-end">
-                          <button 
-                            onClick={() => setReportModal({isOpen: true, job, type: 'job'})}
-                            className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-medium border border-red-100 transition-colors"
-                          >
-                            ⚠️ แจ้งแก้ไขงานนี้
-                          </button>
                         </div>
                       </div>
                     )}
@@ -520,92 +514,150 @@ export default function Home() {
         </div>
       )}
 
-      {/* Modal แจ้งแก้ไข */}
-      {reportModal.isOpen && (
+      {/* ----------------- Modal แก้ไขประวัติ (จัดการ 3 สถานะ) ----------------- */}
+      {profileModalStep !== 'hidden' && (
         <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white p-5 rounded-2xl w-full max-w-sm shadow-2xl">
-            <h3 className="font-bold text-lg text-gray-800 mb-4 border-b pb-2">
-              {reportModal.type === 'profile' ? 'แก้ไขข้อมูล' : 'แจ้งแก้ไขข้อมูลงาน'}
-            </h3>
             
-            {reportModal.type === 'profile' ? (
-              <div className="space-y-4">
-                {/* ข้อมูลปัจจุบัน */}
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-700">
-                  <div className="grid grid-cols-[80px_1fr] gap-1.5">
-                    <span className="text-gray-500 font-medium">ชื่อ:</span>
-                    <span className="font-bold text-gray-900">{reportModal.job?.name}</span>
-                    
-                    <span className="text-gray-500 font-medium">เลขประจำตัว:</span>
-                    <span className="font-mono text-gray-900">{reportModal.job?.empId}</span>
-                    
-                    <span className="text-gray-500 font-medium">สังกัด:</span>
-                    <span className="text-gray-900">{reportModal.job?.department}</span>
-                    
-                    <span className="text-gray-500 font-medium">เบอร์โทร:</span>
-                    <span className="text-gray-900">{reportModal.job?.phone}</span>
+            {/* สถานะ 1: ฟอร์มแก้ไขข้อมูล */}
+            {profileModalStep === 'edit' && (
+              <>
+                <h3 className="font-bold text-lg text-gray-800 mb-4 border-b pb-2">แก้ไขข้อมูล</h3>
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-700">
+                    <div className="grid grid-cols-[80px_1fr] gap-1.5">
+                      <span className="text-gray-500 font-medium">ชื่อ:</span>
+                      <span className="font-bold text-gray-900">{selectedUserInfo?.name}</span>
+                      
+                      <span className="text-gray-500 font-medium">เลขประจำตัว:</span>
+                      <span className="font-mono text-gray-900">{selectedUserInfo?.empId}</span>
+                      
+                      <span className="text-gray-500 font-medium">สังกัด:</span>
+                      <span className="text-gray-900">{selectedUserInfo?.department}</span>
+                      
+                      <span className="text-gray-500 font-medium">เบอร์โทร:</span>
+                      <span className="text-gray-900">{selectedUserInfo?.phone}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">เปลี่ยน Craft</label>
+                    <select 
+                      className={`w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 bg-white transition-colors ${editCraft !== origCraft ? 'text-red-500 font-bold' : 'text-gray-900'}`}
+                      value={editCraft}
+                      onChange={e => setEditCraft(e.target.value)}
+                    >
+                      <option value="" className="text-gray-900">-- เลือก Craft --</option>
+                      {craftsList.filter(c => c !== 'All').map(c => (
+                        <option key={c} value={c} className="text-gray-900">{c}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">แก้ไขเบอร์โทรศัพท์</label>
+                    <input 
+                      type="text"
+                      maxLength={10}
+                      placeholder="ระบุตัวเลข 10 หลัก"
+                      className={`w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors ${editPhone !== origPhone ? 'text-red-500 font-bold' : 'text-gray-900'}`}
+                      value={editPhone}
+                      onChange={handlePhoneChange}
+                    />
+                    <p className="text-[10px] text-gray-400 mt-1">* กรอกเฉพาะตัวเลข 10 หลัก</p>
                   </div>
                 </div>
-
-                {/* ฟอร์มแก้ไข */}
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">ปรับปรุง Craft</label>
-                  <select 
-                    className="w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
-                    value={editCraft}
-                    onChange={e => setEditCraft(e.target.value)}
+                
+                <div className="flex gap-2 mt-6">
+                  <button 
+                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200" 
+                    onClick={() => setProfileModalStep('hidden')}
                   >
-                    <option value="">-- เลือก Craft --</option>
-                    {craftsList.filter(c => c !== 'All').map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
+                    ยกเลิก
+                  </button>
+                  <button 
+                    className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 transition-colors" 
+                    onClick={handleInitialSubmit} 
+                  >
+                    ส่งแก้ไข
+                  </button>
                 </div>
+              </>
+            )}
 
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">เบอร์โทรศัพท์ใหม่</label>
-                  <input 
-                    type="text"
-                    maxLength={10}
-                    placeholder="ระบุตัวเลข 10 หลัก"
-                    className="w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    value={editPhone}
-                    onChange={handlePhoneChange}
-                  />
-                  <p className="text-[10px] text-gray-400 mt-1">* กรอกเฉพาะตัวเลข 10 หลัก</p>
+            {/* สถานะ 2: แจ้งเตือนเมื่อไม่มีการแก้ไข */}
+            {profileModalStep === 'no-change' && (
+              <div className="text-center py-4">
+                <div className="text-4xl mb-3">⚠️</div>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">ไม่มีการแก้ไขข้อมูล</h3>
+                <p className="text-sm text-gray-500 mb-6">คุณยังไม่ได้เปลี่ยนข้อมูลใดๆ เลย</p>
+                
+                <div className="flex flex-col gap-2">
+                  <button 
+                    className="w-full bg-blue-50 text-blue-600 font-bold py-2.5 rounded-xl hover:bg-blue-100 transition-colors border border-blue-100" 
+                    onClick={() => setProfileModalStep('edit')}
+                  >
+                    กลับไปแก้ไข
+                  </button>
+                  <button 
+                    className="w-full bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200" 
+                    onClick={() => setProfileModalStep('hidden')}
+                  >
+                    ยกเลิกการแก้ไข
+                  </button>
                 </div>
-              </div>
-            ) : (
-              <div>
-                <p className="text-xs text-gray-500 mb-4 bg-gray-100 p-3 rounded-xl border border-gray-200">
-                  รหัสงาน: <span className="font-mono font-bold text-gray-700">{reportModal.job?.id}</span><br/>
-                  สถานที่: {reportModal.job?.location}
-                </p>
-                <textarea 
-                  className="w-full border-2 border-gray-200 p-3 text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white" 
-                  rows={4} 
-                  placeholder="ระบุสิ่งที่ต้องการให้แอดมินแก้ไข..."
-                  value={reportMessage}
-                  onChange={e => setReportMessage(e.target.value)}
-                />
               </div>
             )}
-            
-            <div className="flex gap-2 mt-6">
-              <button 
-                className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200" 
-                onClick={() => setReportModal({isOpen:false, job:null, type: 'job'})}
-              >
-                ยกเลิก
-              </button>
-              <button 
-                className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors" 
-                onClick={handleReportSubmit} 
-                disabled={isSubmitting || (reportModal.type === 'job' && !reportMessage.trim())}
-              >
-                {isSubmitting ? '⏳ กำลังส่ง...' : 'ส่งแก้ไข'}
-              </button>
-            </div>
+
+            {/* สถานะ 3: ทวนรายการและยืนยัน */}
+            {profileModalStep === 'confirm' && (
+              <div>
+                <h3 className="font-bold text-lg text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
+                  <span>📝</span> ยืนยันการแก้ไขข้อมูล
+                </h3>
+                
+                <div className="space-y-3 mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                  {editCraft !== origCraft && (
+                    <div className="text-sm">
+                      <span className="text-gray-500 font-medium block mb-1">Craft:</span>
+                      <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200">
+                        <span className="line-through text-gray-400">{origCraft || 'ไม่ระบุ'}</span>
+                        <span>➔</span>
+                        <span className="font-bold text-red-500">{editCraft || 'ไม่ระบุ'}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {editPhone !== origPhone && (
+                    <div className="text-sm">
+                      <span className="text-gray-500 font-medium block mb-1">เบอร์โทรศัพท์:</span>
+                      <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200">
+                        <span className="line-through text-gray-400">{origPhone || 'ไม่ระบุ'}</span>
+                        <span>➔</span>
+                        <span className="font-bold text-red-500">{editPhone || 'ไม่ระบุ'}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex gap-2">
+                  <button 
+                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200" 
+                    onClick={() => setProfileModalStep('edit')}
+                  >
+                    ยกเลิก
+                  </button>
+                  <button 
+                    className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors" 
+                    onClick={handleFinalSubmit} 
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? '⏳ กำลังส่ง...' : 'ส่งแก้ไข'}
+                  </button>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       )}
