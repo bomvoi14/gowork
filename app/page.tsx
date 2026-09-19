@@ -39,13 +39,12 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // State จัดการหน้าต่างแก้ไขประวัติ (hidden, edit, confirm, no-change)
-  const [profileModalStep, setProfileModalStep] = useState<'hidden' | 'edit' | 'confirm' | 'no-change'>('hidden');
+  // เพิ่มสถานะ success สำหรับหน้าต่างแจ้งเสร็จสมบูรณ์
+  const [profileModalStep, setProfileModalStep] = useState<'hidden' | 'edit' | 'confirm' | 'no-change' | 'success'>('hidden');
   const [editPhone, setEditPhone] = useState('');
   const [editCraft, setEditCraft] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ⚠️ เปลี่ยน URL ตรงนี้ถ้าคุณ Deploy Apps Script ใหม่
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
 
   useEffect(() => {
@@ -119,7 +118,6 @@ export default function Home() {
   const userJobs = data.filter(d => d.empId === selectedEmpId && selectedEmpId !== '');
   const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
 
-  // ดึงค่าเดิมของพนักงานคนปัจจุบันเพื่อเอามาเทียบ
   const origCraft = selectedUserInfo?.craft && selectedUserInfo.craft !== '-' ? selectedUserInfo.craft : '';
   const origPhone = selectedUserInfo?.phone && selectedUserInfo.phone !== '-' ? selectedUserInfo.phone.replace(/\D/g, '') : '';
 
@@ -153,11 +151,12 @@ export default function Home() {
           empId: selectedUserInfo.empId,
           name: selectedUserInfo.name,
           editCraft: editCraft,
-          editPhone: editPhone,
+          // เติมเครื่องหมาย ' นำหน้าเลข 0 จะได้ไม่หายตอนลง Google Sheet
+          editPhone: editPhone ? "'" + editPhone : "", 
         })
       });
-      alert("ส่งข้อมูลแก้ไขสำเร็จ!");
-      setProfileModalStep('hidden');
+      // เปลี่ยนเป็นโชว์หน้าต่าง Success แทน Alert
+      setProfileModalStep('success');
     } catch (e) {
       alert("ส่งไม่สำเร็จ กรุณาลองใหม่");
     }
@@ -318,8 +317,10 @@ export default function Home() {
                   <p className="text-sm text-blue-100">โทร: {selectedUserInfo.phone}</p>
                 </div>
               </div>
+              
+              {/* ปุ่ม ปิด (แดง) และ แก้ไข (เหลือง) */}
               <div className="flex flex-col gap-2 shrink-0 w-[60px]">
-                <button onClick={() => { setSelectedEmpId(''); setSearch(''); }} className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center">
+                <button onClick={() => { setSelectedEmpId(''); setSearch(''); }} className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm">
                   ✕ ปิด
                 </button>
                 <button 
@@ -328,9 +329,9 @@ export default function Home() {
                     setEditPhone(origPhone);
                     setProfileModalStep('edit');
                   }} 
-                  className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center border border-white/20"
+                  className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm"
                 >
-                  แก้ไข
+                  ✏️ แก้ไข
                 </button>
               </div>
             </div>
@@ -514,7 +515,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* ----------------- Modal แก้ไขประวัติ (จัดการ 3 สถานะ) ----------------- */}
+      {/* ----------------- Modal แก้ไขประวัติ (จัดการ 4 สถานะ) ----------------- */}
       {profileModalStep !== 'hidden' && (
         <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white p-5 rounded-2xl w-full max-w-sm shadow-2xl">
@@ -613,7 +614,7 @@ export default function Home() {
             {profileModalStep === 'confirm' && (
               <div>
                 <h3 className="font-bold text-lg text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
-                  <span>📝</span> ยืนยันการแก้ไขข้อมูล
+                  <span>📝</span> ตรวจสอบการแก้ไข
                 </h3>
                 
                 <div className="space-y-3 mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100">
@@ -655,6 +656,27 @@ export default function Home() {
                     {isSubmitting ? '⏳ กำลังส่ง...' : 'ส่งแก้ไข'}
                   </button>
                 </div>
+              </div>
+            )}
+            
+            {/* สถานะ 4: เสร็จสมบูรณ์ */}
+            {profileModalStep === 'success' && (
+              <div className="text-center py-6">
+                <div className="text-5xl mb-4">✅</div>
+                <h3 className="font-bold text-xl text-emerald-600 mb-2">การแก้ไขเสร็จสมบูรณ์</h3>
+                <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                  โปรดรีเฟรชหน้าแอพเพื่ออัพเดทข้อมูลล่าสุด
+                </p>
+                
+                <button 
+                  className="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl hover:bg-emerald-600 transition-colors shadow-md" 
+                  onClick={() => {
+                    setProfileModalStep('hidden');
+                    window.location.reload(); 
+                  }}
+                >
+                  ตกลง / รีเฟรช
+                </button>
               </div>
             )}
 
