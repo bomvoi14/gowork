@@ -393,7 +393,7 @@ export default function Home() {
             <div className="bg-blue-600 p-4 text-white text-center font-bold flex flex-col items-center justify-center gap-1 shrink-0">
               <div className="flex items-center gap-3">
                 <img src="/trophy.png" alt="trophy" className="w-9 h-9 object-contain drop-shadow-md scale-125" />
-                <span className="text-lg">อันดับวันปฏิบัติงาน Site</span>
+                <span className="text-lg">จำนวนวันปฏิบัติงาน Site</span>
               </div>
             </div>
             
