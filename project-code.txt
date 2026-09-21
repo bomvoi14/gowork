@@ -1,3 +1,127 @@
+
+========== FILE: next-env.d.ts ==========
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+import "./.next/dev/types/routes.d.ts";
+import "./.next/dev/types/root-params.d.ts";
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+
+
+========== FILE: next.config.ts ==========
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+
+
+========== FILE: package.json ==========
+{
+  "name": "site-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "deploy": "git add . && git commit -m 'update' && git push"
+  },
+  "dependencies": {
+    "next": "16.3.4",
+    "next-auth": "^4.24.15",
+    "papaparse": "^5.7.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/papaparse": "^5.5.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+
+
+========== FILE: tsconfig.json ==========
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}
+
+
+========== FILE: app\globals.css ==========
+@import "tailwindcss";
+
+========== FILE: app\layout.tsx ==========
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { Providers } from "./providers"; // 👈 1. เพิ่มบรรทัดนี้
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "ระบบรายงาน",
+  description: "สรุปวันปฏิบัติงาน",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <Providers> 
+          {children} 
+        </Providers>
+      </body>
+    </html>
+  );
+}
+
+========== FILE: app\page.tsx ==========
 "use client"
 import { useState, useMemo, useEffect } from 'react';
 import Papa from 'papaparse';
@@ -397,5 +521,49 @@ export default function Home() {
         </div>
       )}
     </div>
+  );
+}
+
+========== FILE: app\providers.tsx ==========
+"use client"
+import { SessionProvider } from "next-auth/react"
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <SessionProvider>{children}</SessionProvider>
+}
+
+========== FILE: app\login\page.tsx ==========
+"use client"
+import { signIn, useSession, SessionProvider } from "next-auth/react";
+
+function LoginTest() {
+  const { data: session } = useSession();
+
+  // ถ้ายังไม่ล็อกอิน ให้แสดงปุ่มกด
+  if (!session) {
+    return (
+      <div className="p-10 text-center">
+        <button onClick={() => signIn('line')} className="bg-green-500 text-white px-4 py-2 rounded-xl font-bold">
+          เข้าสู่ระบบด้วย LINE
+        </button>
+      </div>
+    );
+  }
+  
+  // ถ้าล็อกอินแล้ว แสดงชื่อและรูป
+  return (
+    <div className="p-10 text-center space-y-4">
+      <h2 className="text-xl font-bold">ล็อกอินสำเร็จ!</h2>
+      <img src={session.user?.image || ''} className="w-20 h-20 rounded-full mx-auto" />
+      <p>สวัสดีคุณ: {session.user?.name}</p>
+    </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <SessionProvider>
+      <LoginTest />
+    </SessionProvider>
   );
 }

@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-import { Kanit } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers"; // 👈 1. เพิ่มบรรทัดนี้
 
-const kanit = Kanit({ 
-  subsets: ["latin", "thai"],
-  weight: ['300', '400', '500', '700'] 
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "จำนวนวันตามคำสั่ง",
-  description: "แอปพลิเคชันดูตารางออกไซต์งาน",
+  title: "ระบบรายงาน",
+  description: "สรุปวันปฏิบัติงาน",
 };
 
 export default function RootLayout({
@@ -18,9 +16,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th">
-      <body className={`${kanit.className} bg-gray-100 text-gray-900`}>
-        {children}
+    <html lang="en">
+      <body className={inter.className}>
+        <Providers> 
+          {children} 
+        </Providers>
       </body>
     </html>
   );
