@@ -46,16 +46,17 @@ export default function Home() {
   const [editCraft, setEditCraft] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ⚠️ เปลี่ยน URL ตรงนี้เป็น URL จาก Deploy ล่าสุด
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
 
   useEffect(() => {
     const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
+    
     Papa.parse(sheetUrl, {
       download: true,
       header: false,
       complete: (results) => {
         const rows = results.data as string[][];
+        
         if (rows.length > 0 && rows[0][25]) {
           setLastUpdated(rows[0][25]);
         } else {
@@ -84,20 +85,32 @@ export default function Home() {
         
         formatted.forEach(r => {
           if (r.empId) {
-             if (r.craft && r.craft !== '-' && r.craft !== '') craftMap.set(r.empId, r.craft);
+             if (r.craft && r.craft !== '-' && r.craft !== '') {
+                 craftMap.set(r.empId, r.craft);
+             }
              const currentName = nameMap.get(r.empId) || '';
-             if (r.name.length > currentName.length) nameMap.set(r.empId, r.name);
+             if (r.name.length > currentName.length) {
+                nameMap.set(r.empId, r.name);
+             }
           }
         });
 
         formatted.forEach(r => {
           if (r.empId) {
-             if (craftMap.has(r.empId)) r.craft = craftMap.get(r.empId)!;
-             if (nameMap.has(r.empId)) r.name = nameMap.get(r.empId)!;
+             if (craftMap.has(r.empId)) {
+                 r.craft = craftMap.get(r.empId)!;
+             }
+             if (nameMap.has(r.empId)) {
+                 r.name = nameMap.get(r.empId)!;
+             }
           }
         });
         
         setData(formatted);
+        setLoading(false);
+      },
+      error: (err) => {
+        console.error("ดึงข้อมูลพลาด:", err);
         setLoading(false);
       }
     });
@@ -119,6 +132,7 @@ export default function Home() {
       alert("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก");
       return;
     }
+
     if (editCraft === origCraft && editPhone === origPhone) {
       setProfileModalStep('no-change');
     } else {
@@ -129,6 +143,10 @@ export default function Home() {
   const handleFinalSubmit = async () => {
     if (!selectedUserInfo) return;
     setIsSubmitting(true);
+    
+    // แนบชื่อ LINE ไปด้วยถ้าล็อกอินอยู่
+    const lineName = session?.user?.name || "ไม่ระบุ (ไม่ได้ล็อกอิน)";
+    
     try {
       await fetch(SCRIPT_URL, {
         method: "POST",
@@ -139,7 +157,7 @@ export default function Home() {
           name: selectedUserInfo.name,
           editCraft: editCraft,
           editPhone: editPhone ? "'" + editPhone : "", 
-          editorLineName: session?.user?.name || "ไม่ระบุตัวตน" // ส่งชื่อ LINE 
+          updatedByLine: lineName // ส่งไปเป็น Log
         })
       });
       setProfileModalStep('success');
@@ -173,6 +191,7 @@ export default function Home() {
 
   const topUsers = useMemo(() => {
     const stats = new Map<string, UserStat>();
+    
     data.forEach(job => {
       if (!job.empId) return;
       if (selectedCraft !== 'All' && job.craft !== selectedCraft) return;
@@ -192,7 +211,9 @@ export default function Home() {
         st.total += job.days;
       }
     });
-    return Array.from(stats.values()).sort((a, b) => b.total - a.total);
+    
+    return Array.from(stats.values())
+      .sort((a, b) => b.total - a.total);
   }, [data, selectedCraft]);
 
   const totalPages = Math.ceil(topUsers.length / itemsPerPage);
@@ -208,6 +229,7 @@ export default function Home() {
       else if (cat === 'bkk') bkk += job.days;
       else tcw += job.days;
     });
+    
     return { tcw, bkk, meet, train, visit, total: tcw + bkk }; 
   }, [userJobs]);
 
@@ -218,8 +240,7 @@ export default function Home() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-4 relative flex flex-col justify-between">
       <div>
-        
-        {/* แถบ LINE Profile */}
+        {/* ⭐️ แถบแสดงข้อมูล LINE Profile */}
         <div className="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100">
           {session ? (
             <div className="flex items-center gap-3 w-full justify-between">
@@ -227,7 +248,7 @@ export default function Home() {
                 <img src={session.user?.image || '/staff-images/default.png'} alt="profile" className="w-10 h-10 rounded-full border border-gray-200" />
                 <div>
                   <p className="text-sm font-bold text-gray-800">{session.user?.name}</p>
-                  <p className="text-[10px] text-green-600 flex items-center gap-1">● ออนไลน์</p>
+                  <p className="text-[10px] text-green-600 flex items-center gap-1">● ออนไลน์ (แก้ไขข้อมูลได้)</p>
                 </div>
               </div>
               <button onClick={() => signOut()} className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors">
@@ -330,7 +351,7 @@ export default function Home() {
                 <button onClick={() => { setSelectedEmpId(''); setSearch(''); }} className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm">
                   ✕ ปิด
                 </button>
-                {/* ซ่อนปุ่มถ้าไม่ได้ล็อกอิน */}
+                {/* ⭐️ เงื่อนไข: โชว์ปุ่มแก้ไขเฉพาะตอนล็อกอินแล้ว */}
                 {session && (
                   <button 
                     onClick={() => {
@@ -426,6 +447,7 @@ export default function Home() {
             <div className="divide-y divide-gray-100">
               {paginatedUsers.map((u, index) => {
                 const actualRank = (currentPage - 1) * itemsPerPage + index;
+                
                 return (
                   <div key={u.empId} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" 
                        onClick={() => { setSelectedEmpId(u.empId); setSearch(u.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
@@ -524,7 +546,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Modal แก้ไขประวัติ */}
+      {/* ----------------- Modal แก้ไขประวัติ (จัดการ 4 สถานะ) ----------------- */}
       {profileModalStep !== 'hidden' && (
         <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white p-5 rounded-2xl w-full max-w-sm shadow-2xl">
