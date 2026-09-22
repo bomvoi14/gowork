@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client"
 import { useState, useMemo, useEffect } from 'react';
 import Papa from 'papaparse';
@@ -132,7 +131,6 @@ export default function Home() {
       alert("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก");
       return;
     }
-
     if (editCraft === origCraft && editPhone === origPhone) {
       setProfileModalStep('no-change');
     } else {
@@ -144,9 +142,6 @@ export default function Home() {
     if (!selectedUserInfo) return;
     setIsSubmitting(true);
     
-    // แนบชื่อ LINE ไปด้วยถ้าล็อกอินอยู่
-    const lineName = session?.user?.name || "ไม่ระบุ (ไม่ได้ล็อกอิน)";
-    
     try {
       await fetch(SCRIPT_URL, {
         method: "POST",
@@ -157,7 +152,7 @@ export default function Home() {
           name: selectedUserInfo.name,
           editCraft: editCraft,
           editPhone: editPhone ? "'" + editPhone : "", 
-          updatedByLine: lineName // ส่งไปเป็น Log
+          editorId: session?.user?.name || 'Unknown LINE User' 
         })
       });
       setProfileModalStep('success');
@@ -229,7 +224,6 @@ export default function Home() {
       else if (cat === 'bkk') bkk += job.days;
       else tcw += job.days;
     });
-    
     return { tcw, bkk, meet, train, visit, total: tcw + bkk }; 
   }, [userJobs]);
 
@@ -240,7 +234,6 @@ export default function Home() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-4 relative flex flex-col justify-between">
       <div>
-        {/* ⭐️ แถบแสดงข้อมูล LINE Profile */}
         <div className="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100">
           {session ? (
             <div className="flex items-center gap-3 w-full justify-between">
@@ -248,7 +241,7 @@ export default function Home() {
                 <img src={session.user?.image || '/staff-images/default.png'} alt="profile" className="w-10 h-10 rounded-full border border-gray-200" />
                 <div>
                   <p className="text-sm font-bold text-gray-800">{session.user?.name}</p>
-                  <p className="text-[10px] text-green-600 flex items-center gap-1">● ออนไลน์ (แก้ไขข้อมูลได้)</p>
+                  <p className="text-[10px] text-green-600 flex items-center gap-1">● ล็อกอินแล้ว (แก้ไขข้อมูลได้)</p>
                 </div>
               </div>
               <button onClick={() => signOut()} className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors">
@@ -257,7 +250,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="flex justify-between items-center w-full">
-              <p className="text-sm text-gray-600 font-medium">เข้าสู่ระบบเพื่อแก้ไขข้อมูล</p>
+              <p className="text-sm text-gray-600 font-medium">เข้าสู่ระบบ LINE เพื่อแก้ไขข้อมูล</p>
               <button onClick={() => signIn('line')} className="bg-[#06C755] text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-[#05b34c] transition-colors shadow-sm">
                 LINE Login
               </button>
@@ -347,12 +340,11 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="flex flex-col gap-2 shrink-0 w-[60px]">
+              <div className="flex flex-col gap-2 shrink-0 w-[70px]">
                 <button onClick={() => { setSelectedEmpId(''); setSearch(''); }} className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm">
                   ✕ ปิด
                 </button>
-                {/* ⭐️ เงื่อนไข: โชว์ปุ่มแก้ไขเฉพาะตอนล็อกอินแล้ว */}
-                {session && (
+                {session ? (
                   <button 
                     onClick={() => {
                       setEditCraft(origCraft);
@@ -362,6 +354,13 @@ export default function Home() {
                     className="text-xs bg-[#ff8c00] hover:bg-[#e67e00] text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm"
                   >
                     แก้ไข
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => signIn('line')}
+                    className="text-[10px] bg-gray-400 text-white px-2 py-1.5 rounded-lg w-full text-center shadow-sm"
+                  >
+                    ล็อกอินเพื่อแก้
                   </button>
                 )}
               </div>
@@ -546,7 +545,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* ----------------- Modal แก้ไขประวัติ (จัดการ 4 สถานะ) ----------------- */}
       {profileModalStep !== 'hidden' && (
         <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white p-5 rounded-2xl w-full max-w-sm shadow-2xl">
