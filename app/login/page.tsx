@@ -254,7 +254,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="flex justify-between items-center w-full">
-              <p className="text-sm text-gray-600 font-medium">เข้าสู่ระบบเพื่อใช้งานแก้ไข</p>
+              <p className="text-sm text-gray-600 font-medium">TEST VERCEL 123</p>
               <button onClick={() => signIn('line')} className="bg-[#06C755] text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-[#05b34c] transition-colors shadow-sm">
                 LINE Login
               </button>
