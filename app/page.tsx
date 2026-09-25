@@ -41,12 +41,12 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLineLoggingIn, setIsLineLoggingIn] = useState(false);
   const [showNotice, setShowNotice] = useState(true);
-  const SCRIPT_URL = "https\://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
+  const SCRIPT_URL = "https\\://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
   // บันทึกประวัติ LINE Login อัตโนมัติ 1 ครั้งต่อการ Login
   useEffect(() => {
     if (!session?.user) return;
     const lineUserId = (session.user as any).lineUserId || "";
-    const loginKey = \`line_login_logged\_${lineUserId || session.user.name || "unknown"}\`;
+    const loginKey = `line_login_logged_${lineUserId || session.user.name || "unknown"}`;
     // ป้องกันการบันทึกซ้ำเมื่อ Refresh หรือ React เรียก effect ซ้ำ
     if (sessionStorage.getItem(loginKey)) return;
     // ตั้งค่าก่อนส่ง เพื่อกันการยิงซ้ำพร้อมกัน
@@ -74,7 +74,7 @@ export default function Home() {
     saveLogin();
   }, [session]);
   useEffect(() => {
-    const sheetUrl = "https\://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
+    const sheetUrl = "https\\://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
     Papa.parse(sheetUrl, {
       download: true,
       header: false,
@@ -88,17 +88,17 @@ export default function Home() {
         const formatted = rows.map((row) => {
           if (!row[1] || !row[2] || row[1] === 'เลขทะเบียน') return null;
           return {
-            id: String(row[1]).trim(),        
-            name: String(row[2]).trim(),      
-            date: row[3],                    &#x20;
-            days: parseInt(row[4]) || 0,      
-            location: row[5] || '',          &#x20;
-            detail: row[6] || '',            &#x20;
-            approver: row[7] || '',          &#x20;
-            empId: row[8] ? String(row[8]).trim() : '',&#x20;
-            department: row[9] || '-',        
+            id: String(row[1]).trim(),
+            name: String(row[2]).trim(),
+            date: row[3],
+            days: parseInt(row[4]) || 0,
+            location: row[5] || '',
+            detail: row[6] || '',
+            approver: row[7] || '',
+            empId: row[8] ? String(row[8]).trim() : '',
+            department: row[9] || '-',
             phone: row[10] || '-',
-            craft: row[11] ? String(row[11]).trim() : '-'&#x20;
+            craft: row[11] ? String(row[11]).trim() : '-'
           } as Job;
         }).filter((item): item is Job => item !== null);
         const craftMap = new Map<string, string>();
@@ -164,7 +164,7 @@ export default function Home() {
           empId: selectedUserInfo.empId,
           name: selectedUserInfo.name,
           editCraft: editCraft,
-          editPhone: editPhone ? "'" + editPhone : "",&#x20;
+          editPhone: editPhone ? "'" + editPhone : "",
           editedBy: session?.user?.name || "Unknown" // แอบส่งชื่อคนแก้จาก LINE ไปเก็บเป็นหลักฐาน
         })
       });
@@ -214,7 +214,7 @@ export default function Home() {
       .sort((a, b) => b.total - a.total);
   }, [data, selectedCraft]);
   const totalPages = Math.ceil(topUsers.length / itemsPerPage);
-  const paginatedUsers = topUsers.slice((currentPage - 1) \* itemsPerPage, currentPage \* itemsPerPage);
+  const paginatedUsers = topUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const summary = useMemo(() => {
     let tcw = 0, bkk = 0, meet = 0, train = 0, visit = 0;
     userJobs.forEach(job => {
@@ -225,7 +225,7 @@ export default function Home() {
       else if (cat === 'bkk') bkk += job.days;
       else tcw += job.days;
     });
-    return { tcw, bkk, meet, train, visit, total: tcw + bkk };&#x20;
+    return { tcw, bkk, meet, train, visit, total: tcw + bkk };
   }, [userJobs]);
   const getJobsByCategory = (category: string) => {
     return userJobs.filter(job => getJobCategory(job) === category);
@@ -233,7 +233,7 @@ export default function Home() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-4 relative flex flex-col justify-between">
       <div>
-        {/\* แถบ LINE Login \*/}
+        {/* แถบ LINE Login */}
         <div className="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100">
           {session ? (
             <div className="flex items-center gap-3 w-full justify-between">
@@ -247,7 +247,7 @@ export default function Home() {
               <button
                 onClick={() => {
                   const lineUserId = (session?.user as any)?.lineUserId || "";
-                  const loginKey = \`line_login_logged\_${lineUserId || session?.user?.name || "unknown"}\`;
+                  const loginKey = `line_login_logged_${lineUserId || session?.user?.name || "unknown"}`;
                   sessionStorage.removeItem(loginKey);
                   signOut({ callbackUrl: "/" });
                 }}
@@ -266,14 +266,14 @@ export default function Home() {
                   setIsLineLoggingIn(true);
                   signIn('line', { callbackUrl: '/' });
                 }}
-                className={\`
+                className={`
                   text-white text-sm font-bold px-4 py-2 rounded-lg shadow-sm
                   transition-all duration-150 active:scale-95
                   ${isLineLoggingIn
                     ? 'bg-[#05a847] opacity-80 cursor-wait'
                     : 'bg-[#06C755] hover:bg-[#05b34c]'
                   }
-                \`}
+                `}
               >
                 {isLineLoggingIn ? (
                   <span className="flex items-center gap-2">
@@ -297,9 +297,9 @@ export default function Home() {
         </div>
         <div className="relative mb-6 z-10">
           <label className="block text-gray-800 text-base font-bold mb-2">ค้นหารายชื่อผู้ปฏิบัติงาน</label>
-          <input&#x20;
-            type="text"&#x20;
-            placeholder="🔍 พิมพ์ชื่อ หรือนามสกุล..."&#x20;
+          <input
+            type="text"
+            placeholder="🔍 พิมพ์ชื่อ หรือนามสกุล..."
             className="w-full p-4 border-2 border-blue-200 rounded-xl bg-white text-gray-900 text-base shadow-md focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder-gray-400"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setSelectedEmpId(''); setModalCategory(null); }}
@@ -307,16 +307,16 @@ export default function Home() {
           {filteredUsers.length > 0 && selectedEmpId === '' && (
             <ul className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-xl max-h-60 overflow-y-auto z-20">
               {filteredUsers.map(user => (
-                <li key={user.empId} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors flex items-center gap-3"&#x20;
-                    onClick={() => { setSelectedEmpId(user.empId); setSearch(user.name); window\.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                <li key={user.empId} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors flex items-center gap-3"
+                    onClick={() => { setSelectedEmpId(user.empId); setSearch(user.name); window\\.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                   <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
-                    <img&#x20;
-                      src={\`/staff-images/${user.empId}.png\`}&#x20;
-                      onError={(e) => {&#x20;
-                        e.currentTarget.onerror = null;&#x20;
-                        e.currentTarget.src = '/staff-images/default.png';&#x20;
+                    <img
+                      src={`/staff-images/${user.empId}.png`}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/staff-images/default.png';
                       }}
-                      className="w-full h-full object-cover object-top"&#x20;
+                      className="w-full h-full object-cover object-top"
                       alt="profile"
                     />
                   </div>
@@ -344,13 +344,13 @@ export default function Home() {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 rounded-xl shadow-md text-white flex justify-between items-start">
               <div className="flex items-start gap-4">
                 <div className="w-20 h-20 shrink-0 mt-1 rounded-full overflow-hidden border-2 border-white/50 bg-gray-200 shadow-sm">
-                  <img&#x20;
-                    src={\`/staff-images/${selectedUserInfo.empId}.png\`}&#x20;
-                    onError={(e) => {&#x20;
-                      e.currentTarget.onerror = null;&#x20;
-                      e.currentTarget.src = '/staff-images/default.png';&#x20;
+                  <img
+                    src={`/staff-images/${selectedUserInfo.empId}.png`}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = '/staff-images/default.png';
                     }}
-                    className="w-full h-full object-cover object-top"&#x20;
+                    className="w-full h-full object-cover object-top"
                     alt="profile"
                   />
                 </div>
@@ -370,14 +370,14 @@ export default function Home() {
                 <button onClick={() => { setSelectedEmpId(''); setSearch(''); }} className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm">
                   ✕ ปิด
                 </button>
-                {/\* ซ่อนปุ่มแก้ไขถ้าไม่ล็อกอิน \*/}
+                {/* ซ่อนปุ่มแก้ไขถ้าไม่ล็อกอิน */}
                 {session && (
-                  <button&#x20;
+                  <button
                     onClick={() => {
                       setEditCraft(origCraft);
                       setEditPhone(origPhone);
                       setProfileModalStep('edit');
-                    }}&#x20;
+                    }}
                     className="text-xs bg-[#ff8c00] hover:bg-[#e67e00] text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm"
                   >
                     แก้ไข
@@ -449,7 +449,7 @@ export default function Home() {
             </div>
             <div className="bg-gray-50 border-b border-gray-200 p-3 shrink-0 flex items-center gap-2">
               <label className="text-sm font-bold text-gray-600 whitespace-nowrap">Group:</label>
-              <select&#x20;
+              <select
                 value={selectedCraft}
                 onChange={(e) => { setSelectedCraft(e.target.value); setCurrentPage(1); }}
                 className="w-full bg-white border border-gray-300 text-gray-700 rounded-lg px-3 py-2 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
@@ -461,21 +461,21 @@ export default function Home() {
             </div>
             <div className="divide-y divide-gray-100">
               {paginatedUsers.map((u, index) => {
-                const actualRank = (currentPage - 1) \* itemsPerPage + index;
+                const actualRank = (currentPage - 1) * itemsPerPage + index;
                 return (
-                  <div key={u.empId} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer"&#x20;
-                       onClick={() => { setSelectedEmpId(u.empId); setSearch(u.name); window\.scrollTo({ top: 0, behavior: 'smooth' }); }}>
-                    <div className={\`w-8 font-bold text-center text-xl ${actualRank > 2 ? 'text-gray-400 text-lg' : ''}\`}>
+                  <div key={u.empId} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                       onClick={() => { setSelectedEmpId(u.empId); setSearch(u.name); window\\.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                    <div className={`w-8 font-bold text-center text-xl ${actualRank > 2 ? 'text-gray-400 text-lg' : ''}`}>
                       {actualRank === 0 ? '🥇' : actualRank === 1 ? '🥈' : actualRank === 2 ? '🥉' : actualRank + 1}
                     </div>
                     <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
-                      <img&#x20;
-                        src={\`/staff-images/${u.empId}.png\`}&#x20;
-                        onError={(e) => {&#x20;
-                          e.currentTarget.onerror = null;&#x20;
-                          e.currentTarget.src = '/staff-images/default.png';&#x20;
+                      <img
+                        src={`/staff-images/${u.empId}.png`}
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = '/staff-images/default.png';
                         }}
-                        className="w-full h-full object-cover object-top"&#x20;
+                        className="w-full h-full object-cover object-top"
                         alt="profile"
                       />
                     </div>
@@ -504,7 +504,7 @@ export default function Home() {
             </div>
             {totalPages > 1 && (
               <div className="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
-                <button&#x20;
+                <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                   className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-bold rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 active:scale-95 transition-all"
@@ -514,7 +514,7 @@ export default function Home() {
                 <span className="text-sm font-medium text-gray-600">
                   หน้า {currentPage} / {totalPages}
                 </span>
-                <button&#x20;
+                <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                   className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-bold rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 active:scale-95 transition-all"
@@ -529,7 +529,7 @@ export default function Home() {
       <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
         สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง
       </div>
-      {/\* Welcome Notice \*/}
+      {/* Welcome Notice */}
       {showNotice && (
         <div
           className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/45 backdrop-blur-[3px] px-5 animate-fade-in"
@@ -564,8 +564,8 @@ export default function Home() {
               </p>
               <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-center">
                 <p className="text-[13px] leading-6 text-amber-900">
-                  <span className="mr-1">⚠️</span>
-                  <span className="font-bold">ระบบนี้รายงานตามคำสั่งเต็มเท่านั้น</span>{' '}
+                  <span className="font-bold">⚠️ ระบบนี้รายงานตามคำสั่งเต็มเท่านั้น ⚠️</span>
+                  <br />
                   จึงไม่สามารถใช้อ้างอิงจำนวนวันปฏิบัติงานจริงได้
                 </p>
               </div>
@@ -573,7 +573,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      {/\* Modern Saving Overlay \*/}
+      {/* Modern Saving Overlay */}
       {isSubmitting && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/40 backdrop-blur-sm px-5 animate-fade-in">
           <div className="w-full max-w-[320px] rounded-[28px] bg-white px-7 py-8 text-center shadow-2xl ring-1 ring-black/5">
@@ -619,7 +619,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      {/\* ----------------- Modal แก้ไขประวัติ (จัดการ 4 สถานะ) ----------------- \*/}
+      {/* ----------------- Modal แก้ไขประวัติ (จัดการ 4 สถานะ) ----------------- */}
       {profileModalStep !== 'hidden' && (
         <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white p-5 rounded-2xl w-full max-w-sm shadow-2xl">
@@ -641,8 +641,8 @@ export default function Home() {
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1.5">เปลี่ยน Craft</label>
-                    <select&#x20;
-                      className={\`w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 bg-white transition-colors ${editCraft !== origCraft ? 'text-red-500 font-bold' : 'text-gray-900'}\`}
+                    <select
+                      className={`w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 bg-white transition-colors ${editCraft !== origCraft ? 'text-red-500 font-bold' : 'text-gray-900'}`}
                       value={editCraft}
                       onChange={e => setEditCraft(e.target.value)}
                     >
@@ -654,27 +654,27 @@ export default function Home() {
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1.5">แก้ไขเบอร์โทรศัพท์</label>
-                    <input&#x20;
+                    <input
                       type="text"
                       maxLength={10}
                       placeholder="ระบุตัวเลข 10 หลัก"
-                      className={\`w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors ${editPhone !== origPhone ? 'text-red-500 font-bold' : 'text-gray-900'}\`}
+                      className={`w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors ${editPhone !== origPhone ? 'text-red-500 font-bold' : 'text-gray-900'}`}
                       value={editPhone}
                       onChange={handlePhoneChange}
                     />
-                    <p className="text-[10px] text-gray-400 mt-1">\* กรอกเฉพาะตัวเลข 10 หลัก</p>
+                    <p className="text-[10px] text-gray-400 mt-1">* กรอกเฉพาะตัวเลข 10 หลัก</p>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-6">
-                  <button&#x20;
-                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200"&#x20;
+                  <button
+                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200"
                     onClick={() => setProfileModalStep('hidden')}
                   >
                     ยกเลิก
                   </button>
-                  <button&#x20;
-                    className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 transition-colors"&#x20;
-                    onClick={handleInitialSubmit}&#x20;
+                  <button
+                    className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 transition-colors"
+                    onClick={handleInitialSubmit}
                   >
                     ส่งแก้ไข
                   </button>
@@ -687,14 +687,14 @@ export default function Home() {
                 <h3 className="font-bold text-lg text-gray-800 mb-2">ไม่มีการแก้ไขข้อมูล</h3>
                 <p className="text-sm text-gray-500 mb-6">คุณยังไม่ได้เปลี่ยนข้อมูลใดๆ เลย</p>
                 <div className="flex flex-col gap-2">
-                  <button&#x20;
-                    className="w-full bg-blue-50 text-blue-600 font-bold py-2.5 rounded-xl hover:bg-blue-100 transition-colors border border-blue-100"&#x20;
+                  <button
+                    className="w-full bg-blue-50 text-blue-600 font-bold py-2.5 rounded-xl hover:bg-blue-100 transition-colors border border-blue-100"
                     onClick={() => setProfileModalStep('edit')}
                   >
                     กลับไปแก้ไข
                   </button>
-                  <button&#x20;
-                    className="w-full bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200"&#x20;
+                  <button
+                    className="w-full bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200"
                     onClick={() => setProfileModalStep('hidden')}
                   >
                     ยกเลิกการแก้ไข
@@ -730,15 +730,15 @@ export default function Home() {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <button&#x20;
-                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200"&#x20;
+                  <button
+                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200"
                     onClick={() => setProfileModalStep('edit')}
                   >
                     ยกเลิก
                   </button>
-                  <button&#x20;
-                    className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"&#x20;
-                    onClick={handleFinalSubmit}&#x20;
+                  <button
+                    className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    onClick={handleFinalSubmit}
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? '⏳ กำลังส่ง...' : 'ส่งแก้ไข'}
@@ -753,11 +753,11 @@ export default function Home() {
                 <p className="text-sm text-gray-600 mb-6 leading-relaxed">
                   โปรดรีเฟรชหน้าแอพเพื่ออัพเดทข้อมูลล่าสุด
                 </p>
-                <button&#x20;
-                  className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-md"&#x20;
+                <button
+                  className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-md"
                   onClick={() => {
                     setProfileModalStep('hidden');
-                    window\.location.reload();&#x20;
+                    window\\.location.reload();
                   }}
                 >
                   ตกลง / รีเฟรช
