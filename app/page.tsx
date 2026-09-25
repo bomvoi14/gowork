@@ -40,7 +40,18 @@ export default function Home() {
   const [editCraft, setEditCraft] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLineLoggingIn, setIsLineLoggingIn] = useState(false);
-  const [showNotice, setShowNotice] = useState(true);
+  const [showNotice, setShowNotice] = useState(() => {
+  if (typeof window === "undefined") return true;
+
+  const skipWelcome = sessionStorage.getItem("skipWelcomeOnce");
+
+  if (skipWelcome === "1") {
+    sessionStorage.removeItem("skipWelcomeOnce");
+    return false;
+  }
+
+  return true;
+});
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
   // บันทึกประวัติ LINE Login อัตโนมัติ 1 ครั้งต่อการ Login
   useEffect(() => {
@@ -749,9 +760,10 @@ export default function Home() {
                 <button
                   className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-md"
                   onClick={() => {
-                    setProfileModalStep('hidden');
-                    window.location.reload();
-                  }}
+  setProfileModalStep('hidden');
+  sessionStorage.setItem("skipWelcomeOnce", "1");
+  window.location.reload();
+}}
                 >
                   ตกลง / รีเฟรช
                 </button>
