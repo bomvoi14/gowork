@@ -46,6 +46,7 @@ export default function Home() {
   const [editCraft, setEditCraft] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLineLoggingIn, setIsLineLoggingIn] = useState(false);
+  const [showNotice, setShowNotice] = useState(true);
 
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
 
@@ -583,6 +584,50 @@ export default function Home() {
       <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
         สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง
       </div>
+
+      {/* Welcome Notice */}
+      {showNotice && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/45 backdrop-blur-[3px] px-5 animate-fade-in"
+          onClick={() => setShowNotice(false)}
+        >
+          <div
+            className="relative w-full max-w-[350px] overflow-hidden rounded-[28px] bg-white shadow-2xl ring-1 ring-black/5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowNotice(false)}
+              aria-label="ปิด"
+              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xl leading-none text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-700 active:scale-90"
+            >
+              ×
+            </button>
+            <div className="px-6 pb-6 pt-7 text-center">
+              <img
+                src="/GTD.png"
+                alt="GTD"
+                className="mx-auto mb-3 h-20 w-20 object-contain"
+              />
+              <h2 className="text-[19px] font-bold leading-7 text-slate-800">
+                ระบบรายงานจำนวนวันปฏิบัติงาน (Site)
+              </h2>
+              <p className="mx-auto mt-3 max-w-[290px] text-[14px] leading-6 text-slate-600">
+                หากพบข้อมูลไม่ถูกต้อง สามารถเข้าสู่ระบบผ่าน{' '}
+                <span className="font-bold text-[#06C755]">LINE</span>{' '}
+                เพื่อแจ้งแก้ไขได้
+              </p>
+              <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-left">
+                <p className="text-[13px] leading-6 text-amber-900">
+                  <span className="mr-1">⚠️</span>
+                  <span className="font-bold">ระบบนี้รายงานตามคำสั่งวันเต็มเท่านั้น</span>{' '}
+                  จึงไม่สามารถใช้อ้างอิงจำนวนวันปฏิบัติงานจริงได้
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modern Saving Overlay */}
       {isSubmitting && (
