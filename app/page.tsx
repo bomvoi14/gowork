@@ -451,7 +451,7 @@ export default function Home() {
                   <span>อบรม: {summary.train} วัน</span><span className="text-amber-400 text-base">🔍</span>
                 </div>
                 <div onClick={() => setModalCategory('visit')} className="bg-rose-50 p-3.5 rounded-xl text-rose-700 border border-rose-100 col-span-2 cursor-pointer hover:bg-rose-100 active:scale-95 transition-all flex justify-between items-center">
-                  <span>ตรวจเยี่ยม Site: {summary.visit} วัน</span><span className="text-rose-400 text-base">🔍</span>
+                  <span>ตรวจเยี่ยม Site/Site Survey: {summary.visit} วัน</span><span className="text-rose-400 text-base">🔍</span>
                 </div>
               </div>
             </details>
@@ -493,7 +493,7 @@ export default function Home() {
             <div className="bg-blue-600 p-4 text-white text-center font-bold flex flex-col items-center justify-center gap-1 shrink-0">
               <div className="flex items-center gap-3">
                 <img src="/trophy.png" alt="trophy" className="w-9 h-9 object-contain drop-shadow-md scale-125" />
-                <span className="text-lg">จัดอันดับวันปฏิบัติงาน Site</span>
+                <span className="text-lg">จำนวนวันปฏิบัติงานแยกตาม Group</span>
               </div>
             </div>
             
