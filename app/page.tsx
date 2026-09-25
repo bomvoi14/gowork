@@ -261,7 +261,7 @@ export default function Home() {
                   const lineUserId = (session?.user as any)?.lineUserId || "";
                   const loginKey = "line_login_logged_" + (lineUserId || session?.user?.name || "unknown");
                   sessionStorage.removeItem(loginKey);
-                  signOut({ callbackUrl: "/" });
+                  signOut({ callbackUrl: "/?skipWelcome=1" });
                 }}
                 className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors"
               >
@@ -276,7 +276,7 @@ export default function Home() {
                 onClick={() => {
                   if (isLineLoggingIn) return;
                   setIsLineLoggingIn(true);
-                  signIn('line', { callbackUrl: '/' });
+                  signIn('line', { callbackUrl: '/?skipWelcome=1' });
                 }}
                 className={'text-white text-sm font-bold px-4 py-2 rounded-lg shadow-sm transition-all duration-150 active:scale-95 ' + (isLineLoggingIn ? 'bg-[#05a847] opacity-80 cursor-wait' : 'bg-[#06C755] hover:bg-[#05b34c]')}
               >
