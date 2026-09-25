@@ -49,6 +49,44 @@ export default function Home() {
 
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
 
+  // บันทึกประวัติ LINE Login อัตโนมัติ 1 ครั้งต่อการ Login
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const lineUserId = (session.user as any).lineUserId || "";
+    const loginKey = `line_login_logged_${lineUserId || session.user.name || "unknown"}`;
+
+    // ป้องกันการบันทึกซ้ำเมื่อ Refresh หรือ React เรียก effect ซ้ำ
+    if (sessionStorage.getItem(loginKey)) return;
+
+    // ตั้งค่าก่อนส่ง เพื่อกันการยิงซ้ำพร้อมกัน
+    sessionStorage.setItem(loginKey, "1");
+
+    const saveLogin = async () => {
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "login",
+            lineUserId: lineUserId,
+            lineName: session.user?.name || "",
+            lineImage: session.user?.image || "",
+          }),
+        });
+
+        console.log("LINE Login logged");
+      } catch (error) {
+        // ถ้าส่งไม่สำเร็จ ให้ลองบันทึกใหม่ได้ในครั้งถัดไป
+        sessionStorage.removeItem(loginKey);
+        console.error("บันทึกประวัติ LINE Login ไม่สำเร็จ:", error);
+      }
+    };
+
+    saveLogin();
+  }, [session]);
+
   useEffect(() => {
     const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
     
@@ -249,7 +287,15 @@ export default function Home() {
                   <p className="text-[10px] text-green-600 flex items-center gap-1">● ออนไลน์</p>
                 </div>
               </div>
-              <button onClick={() => signOut()} className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors">
+              <button
+                onClick={() => {
+                  const lineUserId = (session?.user as any)?.lineUserId || "";
+                  const loginKey = `line_login_logged_${lineUserId || session?.user?.name || "unknown"}`;
+                  sessionStorage.removeItem(loginKey);
+                  signOut({ callbackUrl: "/" });
+                }}
+                className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors"
+              >
                 ออก
               </button>
             </div>
@@ -258,22 +304,19 @@ export default function Home() {
               <p className="text-sm text-gray-600 font-medium">เข้าสู่ระบบเพื่อแก้ไขข้อมูล</p>
               <button
                 disabled={isLineLoggingIn}
-                onClick={async () => {
+                onClick={() => {
                   if (isLineLoggingIn) return;
                   setIsLineLoggingIn(true);
-                  try {
-                    await signIn('line');
-                  } catch (error) {
-                    console.error('LINE Login error:', error);
-                    setIsLineLoggingIn(false);
-                    alert('ไม่สามารถเข้าสู่ LINE ได้ กรุณาลองใหม่');
-                  }
+                  signIn('line', { callbackUrl: '/' });
                 }}
-                className={`text-white text-sm font-bold px-4 py-2 rounded-lg shadow-sm transition-all duration-150 active:scale-95 ${
-                  isLineLoggingIn
+                className={`
+                  text-white text-sm font-bold px-4 py-2 rounded-lg shadow-sm
+                  transition-all duration-150 active:scale-95
+                  ${isLineLoggingIn
                     ? 'bg-[#05a847] opacity-80 cursor-wait'
                     : 'bg-[#06C755] hover:bg-[#05b34c]'
-                }`}
+                  }
+                `}
               >
                 {isLineLoggingIn ? (
                   <span className="flex items-center gap-2">
