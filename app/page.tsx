@@ -610,19 +610,27 @@ export default function Home() {
                 className="mx-auto mb-3 h-20 w-20 object-contain"
               />
               <h2 className="text-[19px] font-bold leading-7 text-slate-800">
-                ระบบรายงานจำนวนวันปฏิบัติงาน (Site)
-              </h2>
-              <p className="mx-auto mt-3 max-w-[290px] text-[14px] leading-6 text-slate-600">
-                หากพบข้อมูลไม่ถูกต้อง สามารถเข้าสู่ระบบ{' '}
-                <span className="font-bold text-[#06C755]">LINE Login</span>{' '}
-                เพื่อแก้ไข Carft-เบอร์โทรได้
-              </p>
-              <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-left">
-                <p className="text-[13px] leading-6 text-amber-900">
-                  <span className="mr-1">⚠️</span>
-                  <span className="font-bold">ระบบนี้รายงานตามคำสั่งเต็มเท่านั้น</span>{' '}
-                  จึงไม่สามารถใช้อ้างอิงจำนวนวันปฏิบัติงานจริงได้
-                </p>
+  ระบบรายงานจำนวนวันปฏิบัติงาน (Site)
+</h2>
+
+<p className="mx-auto mt-3 max-w-[290px] text-[14px] leading-6 text-slate-600">
+  หากพบข้อมูลไม่ถูกต้อง สามารถเข้าสู่ระบบ
+  <br />
+  <span className="font-bold text-[#06C755]">LINE Login</span>{' '}
+  เพื่อแก้ไข Craft-เบอร์โทรได้
+</p>
+
+<div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-center">
+  <p className="text-[13px] leading-6 text-amber-900">
+    <span className="font-bold">
+      ⚠️ ระบบนี้รายงานตามคำสั่งเต็มเท่านั้น ⚠️
+    </span>
+    <br />
+    <span className="text-amber-800">
+      จึงไม่สามารถใช้อ้างอิงจำนวนวันปฏิบัติงานจริงได้
+    </span>
+  </p>
+</div>
               </div>
             </div>
           </div>
