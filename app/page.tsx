@@ -45,6 +45,7 @@ export default function Home() {
   const [editPhone, setEditPhone] = useState('');
   const [editCraft, setEditCraft] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLineLoggingIn, setIsLineLoggingIn] = useState(false);
 
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
 
@@ -255,8 +256,33 @@ export default function Home() {
           ) : (
             <div className="flex justify-between items-center w-full">
               <p className="text-sm text-gray-600 font-medium">เข้าสู่ระบบเพื่อแก้ไขข้อมูล</p>
-              <button onClick={() => signIn('line')} className="bg-[#06C755] text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-[#05b34c] transition-colors shadow-sm">
-                LINE Login
+              <button
+                disabled={isLineLoggingIn}
+                onClick={async () => {
+                  if (isLineLoggingIn) return;
+                  setIsLineLoggingIn(true);
+                  try {
+                    await signIn('line');
+                  } catch (error) {
+                    console.error('LINE Login error:', error);
+                    setIsLineLoggingIn(false);
+                    alert('ไม่สามารถเข้าสู่ LINE ได้ กรุณาลองใหม่');
+                  }
+                }}
+                className={`text-white text-sm font-bold px-4 py-2 rounded-lg shadow-sm transition-all duration-150 active:scale-95 ${
+                  isLineLoggingIn
+                    ? 'bg-[#05a847] opacity-80 cursor-wait'
+                    : 'bg-[#06C755] hover:bg-[#05b34c]'
+                }`}
+              >
+                {isLineLoggingIn ? (
+                  <span className="flex items-center gap-2">
+                    <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    กำลังเข้าสู่ LINE...
+                  </span>
+                ) : (
+                  'LINE Login'
+                )}
               </button>
             </div>
           )}
