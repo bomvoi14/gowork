@@ -2,7 +2,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import Papa from 'papaparse';
 import { useSession, signIn, signOut } from 'next-auth/react';
-
 interface Job {
   id: string;
   name: string;
@@ -16,7 +15,6 @@ interface Job {
   phone: string;
   craft: string;
 }
-
 interface UserStat {
   name: string;
   empId: string;
@@ -25,10 +23,8 @@ interface UserStat {
   bkk: number;
   craft: string;
 }
-
 export default function Home() {
   const { data: session } = useSession();
-  
   const [data, setData] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -36,33 +32,25 @@ export default function Home() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modalCategory, setModalCategory] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState('กำลังตรวจสอบ...');
-  
   const [selectedCraft, setSelectedCraft] = useState<string>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
   const [profileModalStep, setProfileModalStep] = useState<'hidden' | 'edit' | 'confirm' | 'no-change' | 'success'>('hidden');
   const [editPhone, setEditPhone] = useState('');
   const [editCraft, setEditCraft] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLineLoggingIn, setIsLineLoggingIn] = useState(false);
   const [showNotice, setShowNotice] = useState(true);
-
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
-
+  const SCRIPT_URL = "https\://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
   // บันทึกประวัติ LINE Login อัตโนมัติ 1 ครั้งต่อการ Login
   useEffect(() => {
     if (!session?.user) return;
-
     const lineUserId = (session.user as any).lineUserId || "";
-    const loginKey = `line_login_logged_${lineUserId || session.user.name || "unknown"}`;
-
+    const loginKey = \`line_login_logged\_${lineUserId || session.user.name || "unknown"}\`;
     // ป้องกันการบันทึกซ้ำเมื่อ Refresh หรือ React เรียก effect ซ้ำ
     if (sessionStorage.getItem(loginKey)) return;
-
     // ตั้งค่าก่อนส่ง เพื่อกันการยิงซ้ำพร้อมกัน
     sessionStorage.setItem(loginKey, "1");
-
     const saveLogin = async () => {
       try {
         await fetch(SCRIPT_URL, {
@@ -76,7 +64,6 @@ export default function Home() {
             lineImage: session.user?.image || "",
           }),
         });
-
         console.log("LINE Login logged");
       } catch (error) {
         // ถ้าส่งไม่สำเร็จ ให้ลองบันทึกใหม่ได้ในครั้งถัดไป
@@ -84,45 +71,38 @@ export default function Home() {
         console.error("บันทึกประวัติ LINE Login ไม่สำเร็จ:", error);
       }
     };
-
     saveLogin();
   }, [session]);
-
   useEffect(() => {
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
-    
+    const sheetUrl = "https\://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
     Papa.parse(sheetUrl, {
       download: true,
       header: false,
       complete: (results) => {
         const rows = results.data as string[][];
-        
         if (rows.length > 0 && rows[0][25]) {
           setLastUpdated(rows[0][25]);
         } else {
           setLastUpdated('ไม่พบข้อมูลเวลา (Z1)');
         }
-
         const formatted = rows.map((row) => {
           if (!row[1] || !row[2] || row[1] === 'เลขทะเบียน') return null;
           return {
             id: String(row[1]).trim(),        
             name: String(row[2]).trim(),      
-            date: row[3],                     
+            date: row[3],                    &#x20;
             days: parseInt(row[4]) || 0,      
-            location: row[5] || '',           
-            detail: row[6] || '',             
-            approver: row[7] || '',           
-            empId: row[8] ? String(row[8]).trim() : '', 
+            location: row[5] || '',          &#x20;
+            detail: row[6] || '',            &#x20;
+            approver: row[7] || '',          &#x20;
+            empId: row[8] ? String(row[8]).trim() : '',&#x20;
             department: row[9] || '-',        
             phone: row[10] || '-',
-            craft: row[11] ? String(row[11]).trim() : '-' 
+            craft: row[11] ? String(row[11]).trim() : '-'&#x20;
           } as Job;
         }).filter((item): item is Job => item !== null);
-
         const craftMap = new Map<string, string>();
         const nameMap = new Map<string, string>();
-        
         formatted.forEach(r => {
           if (r.empId) {
              if (r.craft && r.craft !== '-' && r.craft !== '') {
@@ -134,7 +114,6 @@ export default function Home() {
              }
           }
         });
-
         formatted.forEach(r => {
           if (r.empId) {
              if (craftMap.has(r.empId)) {
@@ -145,7 +124,6 @@ export default function Home() {
              }
           }
         });
-        
         setData(formatted);
         setLoading(false);
       },
@@ -155,35 +133,28 @@ export default function Home() {
       }
     });
   }, []);
-
   const userJobs = data.filter(d => d.empId === selectedEmpId && selectedEmpId !== '');
   const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
-
   const origCraft = selectedUserInfo?.craft && selectedUserInfo.craft !== '-' ? selectedUserInfo.craft : '';
   const origPhone = selectedUserInfo?.phone && selectedUserInfo.phone !== '-' ? selectedUserInfo.phone.replace(/\D/g, '') : '';
-
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/\D/g, '');
     if (val.length <= 10) setEditPhone(val);
   };
-
   const handleInitialSubmit = () => {
     if (editPhone.length > 0 && editPhone.length < 10) {
       alert("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก");
       return;
     }
-
     if (editCraft === origCraft && editPhone === origPhone) {
       setProfileModalStep('no-change');
     } else {
       setProfileModalStep('confirm');
     }
   };
-
   const handleFinalSubmit = async () => {
     if (!selectedUserInfo) return;
     setIsSubmitting(true);
-    
     try {
       await fetch(SCRIPT_URL, {
         method: "POST",
@@ -193,7 +164,7 @@ export default function Home() {
           empId: selectedUserInfo.empId,
           name: selectedUserInfo.name,
           editCraft: editCraft,
-          editPhone: editPhone ? "'" + editPhone : "", 
+          editPhone: editPhone ? "'" + editPhone : "",&#x20;
           editedBy: session?.user?.name || "Unknown" // แอบส่งชื่อคนแก้จาก LINE ไปเก็บเป็นหลักฐาน
         })
       });
@@ -203,20 +174,16 @@ export default function Home() {
     }
     setIsSubmitting(false);
   };
-
   const uniqueUsers = Array.from(new Map(data.filter(d => d.empId).map(d => [d.empId, d])).values());
   const filteredUsers = uniqueUsers.filter(user => user.name.includes(search) && search !== '');
-  
   const craftsList = useMemo(() => {
     const c = Array.from(new Set(data.map(d => d.craft).filter(c => c && c !== '-')));
     return ['All', ...c.sort()];
   }, [data]);
-
   const isBkkLocation = (job: Job) => {
     const text = (job.location + ' ' + job.detail).toLowerCase();
     return ['พระนคร', 'นวนคร', 'หนองจอก', 'น้ำเย็น', 'ไทรน้อย'].some(w => text.includes(w));
   };
-
   const getJobCategory = (job: Job) => {
     const text = (job.location + ' ' + job.detail).toLowerCase();
     if (['อบรม', 'หลักสูตร'].some(w => text.includes(w))) return 'train';
@@ -225,21 +192,16 @@ export default function Home() {
     if (isBkkLocation(job)) return 'bkk';
     return 'tcw';
   };
-
   const topUsers = useMemo(() => {
     const stats = new Map<string, UserStat>();
-    
     data.forEach(job => {
       if (!job.empId) return;
       if (selectedCraft !== 'All' && job.craft !== selectedCraft) return;
-
       if (!stats.has(job.empId)) {
         stats.set(job.empId, { name: job.name, empId: job.empId, total: 0, tcw: 0, bkk: 0, craft: job.craft });
       }
-      
       const st = stats.get(job.empId)!;
       const cat = getJobCategory(job);
-      
       if (cat === 'tcw') {
         st.tcw += job.days;
         st.total += job.days;
@@ -248,14 +210,11 @@ export default function Home() {
         st.total += job.days;
       }
     });
-    
     return Array.from(stats.values())
       .sort((a, b) => b.total - a.total);
   }, [data, selectedCraft]);
-
   const totalPages = Math.ceil(topUsers.length / itemsPerPage);
-  const paginatedUsers = topUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
+  const paginatedUsers = topUsers.slice((currentPage - 1) \* itemsPerPage, currentPage \* itemsPerPage);
   const summary = useMemo(() => {
     let tcw = 0, bkk = 0, meet = 0, train = 0, visit = 0;
     userJobs.forEach(job => {
@@ -266,18 +225,15 @@ export default function Home() {
       else if (cat === 'bkk') bkk += job.days;
       else tcw += job.days;
     });
-    
-    return { tcw, bkk, meet, train, visit, total: tcw + bkk }; 
+    return { tcw, bkk, meet, train, visit, total: tcw + bkk };&#x20;
   }, [userJobs]);
-
   const getJobsByCategory = (category: string) => {
     return userJobs.filter(job => getJobCategory(job) === category);
   };
-
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-4 relative flex flex-col justify-between">
       <div>
-        {/* แถบ LINE Login */}
+        {/\* แถบ LINE Login \*/}
         <div className="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100">
           {session ? (
             <div className="flex items-center gap-3 w-full justify-between">
@@ -291,7 +247,7 @@ export default function Home() {
               <button
                 onClick={() => {
                   const lineUserId = (session?.user as any)?.lineUserId || "";
-                  const loginKey = `line_login_logged_${lineUserId || session?.user?.name || "unknown"}`;
+                  const loginKey = \`line_login_logged\_${lineUserId || session?.user?.name || "unknown"}\`;
                   sessionStorage.removeItem(loginKey);
                   signOut({ callbackUrl: "/" });
                 }}
@@ -310,14 +266,14 @@ export default function Home() {
                   setIsLineLoggingIn(true);
                   signIn('line', { callbackUrl: '/' });
                 }}
-                className={`
+                className={\`
                   text-white text-sm font-bold px-4 py-2 rounded-lg shadow-sm
                   transition-all duration-150 active:scale-95
                   ${isLineLoggingIn
                     ? 'bg-[#05a847] opacity-80 cursor-wait'
                     : 'bg-[#06C755] hover:bg-[#05b34c]'
                   }
-                `}
+                \`}
               >
                 {isLineLoggingIn ? (
                   <span className="flex items-center gap-2">
@@ -331,7 +287,6 @@ export default function Home() {
             </div>
           )}
         </div>
-
         <div className="text-center py-2 mb-2">
           <div className="inline-block mb-2">
             <img src="/header.png" alt="icon" className="w-16 h-16 object-contain drop-shadow-md" />
@@ -340,12 +295,11 @@ export default function Home() {
           <p className="text-sm text-gray-500 mt-1">จำนวนวันและรายละเอียดตามคำสั่งทั้งหมด</p>
           <p className="text-xs text-gray-400 mt-1">🔄 ข้อมูลอัปเดตล่าสุด: {lastUpdated}</p>
         </div>
-
         <div className="relative mb-6 z-10">
           <label className="block text-gray-800 text-base font-bold mb-2">ค้นหารายชื่อผู้ปฏิบัติงาน</label>
-          <input 
-            type="text" 
-            placeholder="🔍 พิมพ์ชื่อ หรือนามสกุล..." 
+          <input&#x20;
+            type="text"&#x20;
+            placeholder="🔍 พิมพ์ชื่อ หรือนามสกุล..."&#x20;
             className="w-full p-4 border-2 border-blue-200 rounded-xl bg-white text-gray-900 text-base shadow-md focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder-gray-400"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setSelectedEmpId(''); setModalCategory(null); }}
@@ -353,16 +307,16 @@ export default function Home() {
           {filteredUsers.length > 0 && selectedEmpId === '' && (
             <ul className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-xl max-h-60 overflow-y-auto z-20">
               {filteredUsers.map(user => (
-                <li key={user.empId} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors flex items-center gap-3" 
-                    onClick={() => { setSelectedEmpId(user.empId); setSearch(user.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                <li key={user.empId} className="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-gray-800 font-medium transition-colors flex items-center gap-3"&#x20;
+                    onClick={() => { setSelectedEmpId(user.empId); setSearch(user.name); window\.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                   <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
-                    <img 
-                      src={`/staff-images/${user.empId}.png`} 
-                      onError={(e) => { 
-                        e.currentTarget.onerror = null; 
-                        e.currentTarget.src = '/staff-images/default.png'; 
+                    <img&#x20;
+                      src={\`/staff-images/${user.empId}.png\`}&#x20;
+                      onError={(e) => {&#x20;
+                        e.currentTarget.onerror = null;&#x20;
+                        e.currentTarget.src = '/staff-images/default.png';&#x20;
                       }}
-                      className="w-full h-full object-cover object-top" 
+                      className="w-full h-full object-cover object-top"&#x20;
                       alt="profile"
                     />
                   </div>
@@ -380,7 +334,6 @@ export default function Home() {
             </ul>
           )}
         </div>
-
         {loading ? (
           <div className="text-center text-gray-500 py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mb-2"></div>
@@ -391,13 +344,13 @@ export default function Home() {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 rounded-xl shadow-md text-white flex justify-between items-start">
               <div className="flex items-start gap-4">
                 <div className="w-20 h-20 shrink-0 mt-1 rounded-full overflow-hidden border-2 border-white/50 bg-gray-200 shadow-sm">
-                  <img 
-                    src={`/staff-images/${selectedUserInfo.empId}.png`} 
-                    onError={(e) => { 
-                      e.currentTarget.onerror = null; 
-                      e.currentTarget.src = '/staff-images/default.png'; 
+                  <img&#x20;
+                    src={\`/staff-images/${selectedUserInfo.empId}.png\`}&#x20;
+                    onError={(e) => {&#x20;
+                      e.currentTarget.onerror = null;&#x20;
+                      e.currentTarget.src = '/staff-images/default.png';&#x20;
                     }}
-                    className="w-full h-full object-cover object-top" 
+                    className="w-full h-full object-cover object-top"&#x20;
                     alt="profile"
                   />
                 </div>
@@ -413,19 +366,18 @@ export default function Home() {
                   <p className="text-sm text-blue-100">โทร: {selectedUserInfo.phone}</p>
                 </div>
               </div>
-              
               <div className="flex flex-col gap-2 shrink-0 w-[60px]">
                 <button onClick={() => { setSelectedEmpId(''); setSearch(''); }} className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm">
                   ✕ ปิด
                 </button>
-                {/* ซ่อนปุ่มแก้ไขถ้าไม่ล็อกอิน */}
+                {/\* ซ่อนปุ่มแก้ไขถ้าไม่ล็อกอิน \*/}
                 {session && (
-                  <button 
+                  <button&#x20;
                     onClick={() => {
                       setEditCraft(origCraft);
                       setEditPhone(origPhone);
                       setProfileModalStep('edit');
-                    }} 
+                    }}&#x20;
                     className="text-xs bg-[#ff8c00] hover:bg-[#e67e00] text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm"
                   >
                     แก้ไข
@@ -433,7 +385,6 @@ export default function Home() {
                 )}
               </div>
             </div>
-
             <details className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 group cursor-pointer" open>
               <summary className="font-bold text-gray-800 outline-none flex justify-between items-center select-none">
                 <span>📊 สรุปจำนวนวันปฏิบัติงาน Site (รวม {summary.total} วัน)</span><span className="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
@@ -456,7 +407,6 @@ export default function Home() {
                 </div>
               </div>
             </details>
-
             <h3 className="font-bold text-gray-700 pt-2 pb-1">รายละเอียดงานทั้งหมด</h3>
             <div className="space-y-3 pb-8">
               {userJobs.map((job, idx) => {
@@ -497,10 +447,9 @@ export default function Home() {
                 <span className="text-lg">จัดอันดับวันปฏิบัติงาน Site</span>
               </div>
             </div>
-            
             <div className="bg-gray-50 border-b border-gray-200 p-3 shrink-0 flex items-center gap-2">
               <label className="text-sm font-bold text-gray-600 whitespace-nowrap">Group:</label>
-              <select 
+              <select&#x20;
                 value={selectedCraft}
                 onChange={(e) => { setSelectedCraft(e.target.value); setCurrentPage(1); }}
                 className="w-full bg-white border border-gray-300 text-gray-700 rounded-lg px-3 py-2 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
@@ -510,25 +459,23 @@ export default function Home() {
                 ))}
               </select>
             </div>
-
             <div className="divide-y divide-gray-100">
               {paginatedUsers.map((u, index) => {
-                const actualRank = (currentPage - 1) * itemsPerPage + index;
-                
+                const actualRank = (currentPage - 1) \* itemsPerPage + index;
                 return (
-                  <div key={u.empId} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer" 
-                       onClick={() => { setSelectedEmpId(u.empId); setSearch(u.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
-                    <div className={`w-8 font-bold text-center text-xl ${actualRank > 2 ? 'text-gray-400 text-lg' : ''}`}>
+                  <div key={u.empId} className="p-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer"&#x20;
+                       onClick={() => { setSelectedEmpId(u.empId); setSearch(u.name); window\.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                    <div className={\`w-8 font-bold text-center text-xl ${actualRank > 2 ? 'text-gray-400 text-lg' : ''}\`}>
                       {actualRank === 0 ? '🥇' : actualRank === 1 ? '🥈' : actualRank === 2 ? '🥉' : actualRank + 1}
                     </div>
                     <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden border border-gray-200 bg-gray-100">
-                      <img 
-                        src={`/staff-images/${u.empId}.png`} 
-                        onError={(e) => { 
-                          e.currentTarget.onerror = null; 
-                          e.currentTarget.src = '/staff-images/default.png'; 
+                      <img&#x20;
+                        src={\`/staff-images/${u.empId}.png\`}&#x20;
+                        onError={(e) => {&#x20;
+                          e.currentTarget.onerror = null;&#x20;
+                          e.currentTarget.src = '/staff-images/default.png';&#x20;
                         }}
-                        className="w-full h-full object-cover object-top" 
+                        className="w-full h-full object-cover object-top"&#x20;
                         alt="profile"
                       />
                     </div>
@@ -555,10 +502,9 @@ export default function Home() {
                 <div className="p-6 text-center text-gray-400 text-sm">ไม่พบข้อมูลในหมวดหมู่นี้</div>
               )}
             </div>
-
             {totalPages > 1 && (
               <div className="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
-                <button 
+                <button&#x20;
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                   className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-bold rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 active:scale-95 transition-all"
@@ -568,7 +514,7 @@ export default function Home() {
                 <span className="text-sm font-medium text-gray-600">
                   หน้า {currentPage} / {totalPages}
                 </span>
-                <button 
+                <button&#x20;
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                   className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-bold rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 active:scale-95 transition-all"
@@ -580,12 +526,10 @@ export default function Home() {
           </div>
         )}
       </div>
-
       <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
         สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง
       </div>
-
-      {/* Welcome Notice */}
+      {/\* Welcome Notice \*/}
       {showNotice && (
         <div
           className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/45 backdrop-blur-[3px] px-5 animate-fade-in"
@@ -610,34 +554,26 @@ export default function Home() {
                 className="mx-auto mb-3 h-20 w-20 object-contain"
               />
               <h2 className="text-[19px] font-bold leading-7 text-slate-800">
-  ระบบรายงานจำนวนวันปฏิบัติงาน (Site)
-</h2>
-
-<p className="mx-auto mt-3 max-w-[290px] text-[14px] leading-6 text-slate-600">
-  หากพบข้อมูลไม่ถูกต้อง สามารถเข้าสู่ระบบ
-  <br />
-  <span className="font-bold text-[#06C755]">LINE Login</span>{' '}
-  เพื่อแก้ไข Craft-เบอร์โทรได้
-</p>
-
-<div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-center">
-  <p className="text-[13px] leading-6 text-amber-900">
-    <span className="font-bold">
-      ⚠️ ระบบนี้รายงานตามคำสั่งเต็มเท่านั้น ⚠️
-    </span>
-    <br />
-    <span className="text-amber-800">
-      จึงไม่สามารถใช้อ้างอิงจำนวนวันปฏิบัติงานจริงได้
-    </span>
-  </p>
-</div>
+                ระบบรายงานจำนวนวันปฏิบัติงาน (Site)
+              </h2>
+              <p className="mx-auto mt-3 max-w-[290px] text-[14px] leading-6 text-slate-600">
+                หากพบข้อมูลไม่ถูกต้อง สามารถเข้าสู่ระบบ
+                <br />
+                <span className="font-bold text-[#06C755]">LINE Login</span>{' '}
+                เพื่อแก้ไข Craft-เบอร์โทรได้
+              </p>
+              <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-center">
+                <p className="text-[13px] leading-6 text-amber-900">
+                  <span className="mr-1">⚠️</span>
+                  <span className="font-bold">ระบบนี้รายงานตามคำสั่งเต็มเท่านั้น</span>{' '}
+                  จึงไม่สามารถใช้อ้างอิงจำนวนวันปฏิบัติงานจริงได้
+                </p>
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Modern Saving Overlay */}
+      {/\* Modern Saving Overlay \*/}
       {isSubmitting && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/40 backdrop-blur-sm px-5 animate-fade-in">
           <div className="w-full max-w-[320px] rounded-[28px] bg-white px-7 py-8 text-center shadow-2xl ring-1 ring-black/5">
@@ -656,7 +592,6 @@ export default function Home() {
           </div>
         </div>
       )}
-
       {modalCategory && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
@@ -684,12 +619,10 @@ export default function Home() {
           </div>
         </div>
       )}
-
-      {/* ----------------- Modal แก้ไขประวัติ (จัดการ 4 สถานะ) ----------------- */}
+      {/\* ----------------- Modal แก้ไขประวัติ (จัดการ 4 สถานะ) ----------------- \*/}
       {profileModalStep !== 'hidden' && (
         <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white p-5 rounded-2xl w-full max-w-sm shadow-2xl">
-            
             {profileModalStep === 'edit' && (
               <>
                 <h3 className="font-bold text-lg text-gray-800 mb-4 border-b pb-2">แก้ไขข้อมูล</h3>
@@ -698,22 +631,18 @@ export default function Home() {
                     <div className="grid grid-cols-[80px_1fr] gap-1.5">
                       <span className="text-gray-500 font-medium">ชื่อ:</span>
                       <span className="font-bold text-gray-900">{selectedUserInfo?.name}</span>
-                      
                       <span className="text-gray-500 font-medium">เลขประจำตัว:</span>
                       <span className="font-mono text-gray-900">{selectedUserInfo?.empId}</span>
-                      
                       <span className="text-gray-500 font-medium">สังกัด:</span>
                       <span className="text-gray-900">{selectedUserInfo?.department}</span>
-                      
                       <span className="text-gray-500 font-medium">เบอร์โทร:</span>
                       <span className="text-gray-900">{selectedUserInfo?.phone}</span>
                     </div>
                   </div>
-
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1.5">เปลี่ยน Craft</label>
-                    <select 
-                      className={`w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 bg-white transition-colors ${editCraft !== origCraft ? 'text-red-500 font-bold' : 'text-gray-900'}`}
+                    <select&#x20;
+                      className={\`w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 bg-white transition-colors ${editCraft !== origCraft ? 'text-red-500 font-bold' : 'text-gray-900'}\`}
                       value={editCraft}
                       onChange={e => setEditCraft(e.target.value)}
                     >
@@ -723,53 +652,49 @@ export default function Home() {
                       ))}
                     </select>
                   </div>
-
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1.5">แก้ไขเบอร์โทรศัพท์</label>
-                    <input 
+                    <input&#x20;
                       type="text"
                       maxLength={10}
                       placeholder="ระบุตัวเลข 10 หลัก"
-                      className={`w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors ${editPhone !== origPhone ? 'text-red-500 font-bold' : 'text-gray-900'}`}
+                      className={\`w-full border-2 border-gray-200 p-2.5 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors ${editPhone !== origPhone ? 'text-red-500 font-bold' : 'text-gray-900'}\`}
                       value={editPhone}
                       onChange={handlePhoneChange}
                     />
-                    <p className="text-[10px] text-gray-400 mt-1">* กรอกเฉพาะตัวเลข 10 หลัก</p>
+                    <p className="text-[10px] text-gray-400 mt-1">\* กรอกเฉพาะตัวเลข 10 หลัก</p>
                   </div>
                 </div>
-                
                 <div className="flex gap-2 mt-6">
-                  <button 
-                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200" 
+                  <button&#x20;
+                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200"&#x20;
                     onClick={() => setProfileModalStep('hidden')}
                   >
                     ยกเลิก
                   </button>
-                  <button 
-                    className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 transition-colors" 
-                    onClick={handleInitialSubmit} 
+                  <button&#x20;
+                    className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 transition-colors"&#x20;
+                    onClick={handleInitialSubmit}&#x20;
                   >
                     ส่งแก้ไข
                   </button>
                 </div>
               </>
             )}
-
             {profileModalStep === 'no-change' && (
               <div className="text-center py-4">
                 <div className="text-4xl mb-3">⚠️</div>
                 <h3 className="font-bold text-lg text-gray-800 mb-2">ไม่มีการแก้ไขข้อมูล</h3>
                 <p className="text-sm text-gray-500 mb-6">คุณยังไม่ได้เปลี่ยนข้อมูลใดๆ เลย</p>
-                
                 <div className="flex flex-col gap-2">
-                  <button 
-                    className="w-full bg-blue-50 text-blue-600 font-bold py-2.5 rounded-xl hover:bg-blue-100 transition-colors border border-blue-100" 
+                  <button&#x20;
+                    className="w-full bg-blue-50 text-blue-600 font-bold py-2.5 rounded-xl hover:bg-blue-100 transition-colors border border-blue-100"&#x20;
                     onClick={() => setProfileModalStep('edit')}
                   >
                     กลับไปแก้ไข
                   </button>
-                  <button 
-                    className="w-full bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200" 
+                  <button&#x20;
+                    className="w-full bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200"&#x20;
                     onClick={() => setProfileModalStep('hidden')}
                   >
                     ยกเลิกการแก้ไข
@@ -777,13 +702,11 @@ export default function Home() {
                 </div>
               </div>
             )}
-
             {profileModalStep === 'confirm' && (
               <div>
                 <h3 className="font-bold text-lg text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
                   <span>📝</span> ตรวจสอบการแก้ไข
                 </h3>
-                
                 <div className="space-y-3 mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100">
                   {editCraft !== origCraft && (
                     <div className="text-sm">
@@ -795,7 +718,6 @@ export default function Home() {
                       </div>
                     </div>
                   )}
-                  
                   {editPhone !== origPhone && (
                     <div className="text-sm">
                       <span className="text-gray-500 font-medium block mb-1">เบอร์โทรศัพท์:</span>
@@ -807,17 +729,16 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-                
                 <div className="flex gap-2">
-                  <button 
-                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200" 
+                  <button&#x20;
+                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition-colors border border-gray-200"&#x20;
                     onClick={() => setProfileModalStep('edit')}
                   >
                     ยกเลิก
                   </button>
-                  <button 
-                    className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors" 
-                    onClick={handleFinalSubmit} 
+                  <button&#x20;
+                    className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"&#x20;
+                    onClick={handleFinalSubmit}&#x20;
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? '⏳ กำลังส่ง...' : 'ส่งแก้ไข'}
@@ -825,7 +746,6 @@ export default function Home() {
                 </div>
               </div>
             )}
-            
             {profileModalStep === 'success' && (
               <div className="text-center py-6">
                 <div className="text-5xl mb-4">✅</div>
@@ -833,19 +753,17 @@ export default function Home() {
                 <p className="text-sm text-gray-600 mb-6 leading-relaxed">
                   โปรดรีเฟรชหน้าแอพเพื่ออัพเดทข้อมูลล่าสุด
                 </p>
-                
-                <button 
-                  className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-md" 
+                <button&#x20;
+                  className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-md"&#x20;
                   onClick={() => {
                     setProfileModalStep('hidden');
-                    window.location.reload(); 
+                    window\.location.reload();&#x20;
                   }}
                 >
                   ตกลง / รีเฟรช
                 </button>
               </div>
             )}
-
           </div>
         </div>
       )}
