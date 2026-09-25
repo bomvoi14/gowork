@@ -613,14 +613,14 @@ export default function Home() {
                 ระบบรายงานจำนวนวันปฏิบัติงาน (Site)
               </h2>
               <p className="mx-auto mt-3 max-w-[290px] text-[14px] leading-6 text-slate-600">
-                หากพบข้อมูลไม่ถูกต้อง สามารถเข้าสู่ระบบผ่าน{' '}
-                <span className="font-bold text-[#06C755]">LINE</span>{' '}
-                เพื่อแจ้งแก้ไขได้
+                หากพบข้อมูลไม่ถูกต้อง สามารถเข้าสู่ระบบ{' '}
+                <span className="font-bold text-[#06C755]">LINE Login</span>{' '}
+                เพื่อแก้ไข Carft-เบอร์โทรได้
               </p>
               <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-left">
                 <p className="text-[13px] leading-6 text-amber-900">
                   <span className="mr-1">⚠️</span>
-                  <span className="font-bold">ระบบนี้รายงานตามคำสั่งวันเต็มเท่านั้น</span>{' '}
+                  <span className="font-bold">ระบบนี้รายงานตามคำสั่งเต็มเท่านั้น</span>{' '}
                   จึงไม่สามารถใช้อ้างอิงจำนวนวันปฏิบัติงานจริงได้
                 </p>
               </div>
