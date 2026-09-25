@@ -451,7 +451,7 @@ export default function Home() {
                   <span>อบรม: {summary.train} วัน</span><span className="text-amber-400 text-base">🔍</span>
                 </div>
                 <div onClick={() => setModalCategory('visit')} className="bg-rose-50 p-3.5 rounded-xl text-rose-700 border border-rose-100 col-span-2 cursor-pointer hover:bg-rose-100 active:scale-95 transition-all flex justify-between items-center">
-                  <span>ตรวจเยี่ยม Site/Site Survey: {summary.visit} วัน</span><span className="text-rose-400 text-base">🔍</span>
+                  <span>ตรวจเยี่ยม Site: {summary.visit} วัน</span><span className="text-rose-400 text-base">🔍</span>
                 </div>
               </div>
             </details>
@@ -493,7 +493,7 @@ export default function Home() {
             <div className="bg-blue-600 p-4 text-white text-center font-bold flex flex-col items-center justify-center gap-1 shrink-0">
               <div className="flex items-center gap-3">
                 <img src="/trophy.png" alt="trophy" className="w-9 h-9 object-contain drop-shadow-md scale-125" />
-                <span className="text-lg">จำนวนวันปฏิบัติงานแยกตาม Group</span>
+                <span className="text-lg">จัดอันดับวันปฏิบัติงาน Site</span>
               </div>
             </div>
             
@@ -583,6 +583,26 @@ export default function Home() {
       <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
         สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง
       </div>
+
+      {/* Modern Saving Overlay */}
+      {isSubmitting && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/40 backdrop-blur-sm px-5 animate-fade-in">
+          <div className="w-full max-w-[320px] rounded-[28px] bg-white px-7 py-8 text-center shadow-2xl ring-1 ring-black/5">
+            <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-blue-100 animate-ping opacity-60"></div>
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-indigo-50 shadow-inner">
+                <div className="h-9 w-9 animate-spin rounded-full border-[3px] border-blue-100 border-t-blue-600"></div>
+              </div>
+            </div>
+            <h3 className="text-lg font-bold text-slate-800">กำลังบันทึกข้อมูล...</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-500">ระบบกำลังอัปเดตข้อมูลของคุณ<br />กรุณารอสักครู่</p>
+            <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+            </div>
+            <p className="mt-3 text-[11px] text-slate-400">กรุณาอย่าปิดหน้าต่างหรือกดส่งซ้ำ</p>
+          </div>
+        </div>
+      )}
 
       {modalCategory && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
