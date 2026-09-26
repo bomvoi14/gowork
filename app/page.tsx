@@ -57,7 +57,6 @@ export default function Home() {
   };
   const enterApp = () => {
     setShowNotice(false);
-    if (!tourCompleted) setTourStep(0);
   };
   useEffect(() => {
     if (tourStep === null) return;
@@ -99,6 +98,14 @@ export default function Home() {
       el.style.boxShadow = previousBoxShadow;
       el.style.borderRadius = previousBorderRadius;
       el.style.transition = previousTransition;
+    };
+  }, [tourStep]);
+  useEffect(() => {
+    if (tourStep === null) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
     };
   }, [tourStep]);
   useEffect(() => {
@@ -601,8 +608,7 @@ export default function Home() {
         )}
       </div>
       <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
-        <div>สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง</div>
-        <div className="mt-1 text-[10px] font-medium tracking-wide text-gray-300">GTD-GoWork · Beta v0.9.0</div>
+        <div>Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.9.0</div>
       </div>
       {/* Welcome Notice */}
       {showNotice && (
@@ -644,11 +650,8 @@ export default function Home() {
                   ไม่สามารถใช้อ้างอิงจำนวนวันปฏิบัติงานจริงได้
                 </p>
               </div>
-              <div className="mt-4 flex gap-2.5">
-                <button type="button" onClick={startTour} className="flex-1 rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-2.5 text-sm font-bold text-indigo-700 shadow-sm transition-all duration-200 hover:border-indigo-400 hover:bg-indigo-100 hover:shadow-md active:scale-[0.98]">
-                  ❓ วิธีใช้งาน
-                </button>
-                <button type="button" onClick={enterApp} className="flex-1 rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700 active:scale-[0.98]">
+              <div className="mt-4">
+                <button type="button" onClick={enterApp} className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700 active:scale-[0.98]">
                   เข้าใช้งาน
                 </button>
               </div>
@@ -656,7 +659,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      {/* Guided Tour - แสดงอัตโนมัติครั้งแรก และเปิดดูใหม่ได้จากปุ่มวิธีใช้งาน */}
+      {/* Guided Tour - เปิดเมื่อผู้ใช้กดปุ่มวิธีใช้งานเท่านั้น */}
       {tourStep !== null && (() => {
         const steps = [
           { icon: "👋", title: "ยินดีต้อนรับ 👋", text: "เรียนรู้วิธีใช้งานระบบ GTD-GoWork ใน 5 ขั้นตอน" },
@@ -669,6 +672,7 @@ export default function Home() {
         return (
           <>
             <div className="pointer-events-none fixed inset-0 z-[10001] bg-slate-950/30 backdrop-blur-[5px] transition-all duration-300" />
+            <div className="fixed inset-0 z-[10002] cursor-default" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} onWheel={(e) => e.preventDefault()} onTouchMove={(e) => e.preventDefault()} />
             <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 3 ? "items-start pt-[190px] sm:pt-[210px]" : tourStep === 4 ? "items-start pt-[185px] sm:pt-[200px]" : "items-end pb-5 sm:items-end sm:pb-8")} >
             <div className="pointer-events-auto w-full max-w-[360px] rounded-[24px] bg-white p-5 shadow-2xl ring-1 ring-black/5">
               <div className="mb-3 flex items-start justify-between gap-3">
