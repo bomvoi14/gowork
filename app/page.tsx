@@ -80,8 +80,8 @@ export default function Home() {
     const previousTransition = el.style.transition;
     el.style.transition = "box-shadow 320ms ease, border-radius 320ms ease";
     if (tourStep === 4) {
-      // Step 5: กลับขึ้นบนสุดของหน้า เพื่อให้ LINE Login อยู่ด้านบนและกล่องคำอธิบายตามขึ้นไปใกล้กรอบ
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Step 5: เลื่อนขึ้นบนสุดของหน้าจริง ๆ และไม่ให้ scrollIntoView ดึงหน้ากลับลงมา
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
     } else {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
@@ -669,7 +669,7 @@ export default function Home() {
         return (
           <>
             <div className="pointer-events-none fixed inset-0 z-[10001] bg-slate-950/30 backdrop-blur-[5px] transition-all duration-300" />
-            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 3 ? "items-center translate-y-[10vh]" : tourStep === 4 ? "items-start pt-[230px] sm:pt-[250px]" : "items-end pb-5 sm:items-center sm:pb-0")} >
+            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 3 ? "items-start pt-[190px] sm:pt-[210px]" : tourStep === 4 ? "items-start pt-[185px] sm:pt-[200px]" : "items-end pb-5 sm:items-end sm:pb-8")} >
             <div className="pointer-events-auto w-full max-w-[360px] rounded-[24px] bg-white p-5 shadow-2xl ring-1 ring-black/5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
