@@ -348,7 +348,16 @@ export default function Home() {
           <p className="text-xs text-gray-400 mt-1">🔄 ข้อมูลอัปเดตล่าสุด: {lastUpdated}</p>
         </div>
         <div id="tour-search" className="relative mb-6 z-10">
-          <label className="block text-gray-800 text-base font-bold mb-2">ค้นหารายชื่อผู้ปฏิบัติงาน</label>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <label className="block text-gray-800 text-base font-bold">ค้นหารายชื่อผู้ปฏิบัติงาน</label>
+            <button
+              type="button"
+              onClick={startTour}
+              className="shrink-0 rounded-full border border-blue-300 bg-blue-50/80 px-3 py-1.5 text-xs font-bold text-blue-700 shadow-sm transition-all duration-200 hover:border-blue-400 hover:bg-blue-100 hover:shadow-md active:scale-95"
+            >
+              ❓ วิธีใช้งาน
+            </button>
+          </div>
           <input
             type="text"
             placeholder="🔍 พิมพ์ชื่อ หรือนามสกุล..."
@@ -579,7 +588,6 @@ export default function Home() {
         )}
       </div>
       <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
-        <button type="button" onClick={startTour} className="mb-2 font-bold text-blue-600 hover:text-blue-700">❓ วิธีใช้งาน</button>
         <div>สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง</div>
       </div>
       {/* Welcome Notice */}
@@ -623,7 +631,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="mt-4 flex gap-2.5">
-                <button type="button" onClick={startTour} className="flex-1 rounded-xl bg-indigo-50 px-3 py-2.5 text-sm font-bold text-indigo-700 shadow-sm transition-all hover:bg-indigo-100 active:scale-[0.98]">
+                <button type="button" onClick={startTour} className="flex-1 rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-2.5 text-sm font-bold text-indigo-700 shadow-sm transition-all duration-200 hover:border-indigo-400 hover:bg-indigo-100 hover:shadow-md active:scale-[0.98]">
                   📖 วิธีใช้งาน
                 </button>
                 <button type="button" onClick={enterApp} className="flex-1 rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700 active:scale-[0.98]">
@@ -647,7 +655,7 @@ export default function Home() {
         return (
           <>
             <div className="pointer-events-none fixed inset-0 z-[10001] bg-slate-950/30 backdrop-blur-[5px] transition-all duration-300" />
-            <div className="fixed inset-0 z-[10003] pointer-events-none flex items-end justify-center px-4 pb-5 sm:items-center sm:pb-0">
+            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 4 ? "items-center translate-y-[18vh]" : "items-end pb-5 sm:items-center sm:pb-0")} >
             <div className="pointer-events-auto w-full max-w-[360px] rounded-[24px] bg-white p-5 shadow-2xl ring-1 ring-black/5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
