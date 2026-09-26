@@ -63,6 +63,13 @@ export default function Home() {
     if (tourStep === null) return;
     const targets = [null, "tour-search", "tour-group", null, "tour-line"];
     const targetId = targets[tourStep];
+
+    // Step 4: เลื่อนหน้ากลับขึ้นด้านบนอย่างนุ่มนวล
+    if (tourStep === 3) {
+      window.scrollBy({ top: -260, behavior: "smooth" });
+      return;
+    }
+
     if (!targetId) return;
     const el = document.getElementById(targetId);
     if (!el) return;
@@ -71,14 +78,25 @@ export default function Home() {
     const previousBoxShadow = el.style.boxShadow;
     const previousBorderRadius = el.style.borderRadius;
     const previousTransition = el.style.transition;
-    el.style.transition = "box-shadow 280ms ease, border-radius 280ms ease";
+    el.style.transition = "box-shadow 320ms ease, border-radius 320ms ease";
     el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    // Step 5: ดันส่วน LINE ขึ้นสูงกว่ากึ่งกลางเล็กน้อย เพื่อให้กล่องคำอธิบายอยู่ใกล้กรอบ
+    if (tourStep === 4) {
+      window.setTimeout(() => {
+        window.scrollBy({ top: 130, behavior: "smooth" });
+      }, 260);
+    }
+
     const timer = window.setTimeout(() => {
       el.style.position = "relative";
       el.style.zIndex = "10002";
-      el.style.boxShadow = "0 0 0 4px rgba(59,130,246,.9), 0 0 0 9999px rgba(15,23,42,.66)";
-      el.style.borderRadius = "16px";
-    }, 500);
+      // Step 2 เพิ่มช่องว่างรอบกรอบค้นหา ไม่ให้กรอบชิดข้อความและช่องค้นหามากเกินไป
+      el.style.boxShadow = tourStep === 1
+        ? "0 0 0 8px rgba(255,255,255,.18), 0 0 0 11px rgba(59,130,246,.9), 0 0 0 9999px rgba(15,23,42,.66)"
+        : "0 0 0 4px rgba(59,130,246,.9), 0 0 0 9999px rgba(15,23,42,.66)";
+      el.style.borderRadius = tourStep === 1 ? "20px" : "16px";
+    }, tourStep === 4 ? 700 : 520);
     return () => {
       window.clearTimeout(timer);
       el.style.position = previousPosition;
@@ -589,6 +607,7 @@ export default function Home() {
       </div>
       <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
         <div>สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง</div>
+        <div className="mt-1 text-[10px] font-medium tracking-wide text-gray-300">GTD-GoWork · Beta v0.9.0</div>
       </div>
       {/* Welcome Notice */}
       {showNotice && (
@@ -655,7 +674,7 @@ export default function Home() {
         return (
           <>
             <div className="pointer-events-none fixed inset-0 z-[10001] bg-slate-950/30 backdrop-blur-[5px] transition-all duration-300" />
-            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep >= 3 ? "items-center translate-y-[18vh]" : "items-end pb-5 sm:items-center sm:pb-0")} >
+            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 3 ? "items-center translate-y-[10vh]" : tourStep === 4 ? "items-center translate-y-[4vh]" : "items-end pb-5 sm:items-center sm:pb-0")} >
             <div className="pointer-events-auto w-full max-w-[360px] rounded-[24px] bg-white p-5 shadow-2xl ring-1 ring-black/5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
