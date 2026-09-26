@@ -623,10 +623,10 @@ export default function Home() {
                 </p>
               </div>
               <div className="mt-4 flex gap-2.5">
-                <button type="button" onClick={startTour} className="flex-1 rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
+                <button type="button" onClick={startTour} className="flex-1 rounded-xl bg-indigo-50 px-3 py-2.5 text-sm font-bold text-indigo-700 shadow-sm transition-all hover:bg-indigo-100 active:scale-[0.98]">
                   📖 วิธีใช้งาน
                 </button>
-                <button type="button" onClick={enterApp} className="flex-1 rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700">
+                <button type="button" onClick={enterApp} className="flex-1 rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700 active:scale-[0.98]">
                   เข้าใช้งาน
                 </button>
               </div>
@@ -645,7 +645,9 @@ export default function Home() {
         ];
         const step = steps[tourStep];
         return (
-          <div className="fixed inset-0 z-[10003] pointer-events-none flex items-end justify-center px-4 pb-5 sm:items-center sm:pb-0">
+          <>
+            <div className="pointer-events-none fixed inset-0 z-[10001] bg-slate-950/30 backdrop-blur-[5px] transition-all duration-300" />
+            <div className="fixed inset-0 z-[10003] pointer-events-none flex items-end justify-center px-4 pb-5 sm:items-center sm:pb-0">
             <div className="pointer-events-auto w-full max-w-[360px] rounded-[24px] bg-white p-5 shadow-2xl ring-1 ring-black/5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -675,6 +677,7 @@ export default function Home() {
               </div>
             </div>
           </div>
+          </>
         );
       })()}
       {/* Modern Saving Overlay */}
