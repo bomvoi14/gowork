@@ -79,22 +79,17 @@ export default function Home() {
     const previousBorderRadius = el.style.borderRadius;
     const previousTransition = el.style.transition;
     el.style.transition = "box-shadow 320ms ease, border-radius 320ms ease";
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-
-    // Step 5: ดันส่วน LINE ขึ้นสูงกว่ากึ่งกลางเล็กน้อย เพื่อให้กล่องคำอธิบายอยู่ใกล้กรอบ
     if (tourStep === 4) {
-      window.setTimeout(() => {
-        window.scrollBy({ top: 130, behavior: "smooth" });
-      }, 260);
+      // Step 5: กลับขึ้นบนสุดของหน้า เพื่อให้ LINE Login อยู่ด้านบนและกล่องคำอธิบายตามขึ้นไปใกล้กรอบ
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
     const timer = window.setTimeout(() => {
       el.style.position = "relative";
       el.style.zIndex = "10002";
-      // Step 2 เพิ่มช่องว่างรอบกรอบค้นหา ไม่ให้กรอบชิดข้อความและช่องค้นหามากเกินไป
-      el.style.boxShadow = tourStep === 1
-        ? "0 0 0 8px rgba(255,255,255,.18), 0 0 0 11px rgba(59,130,246,.9), 0 0 0 9999px rgba(15,23,42,.66)"
-        : "0 0 0 4px rgba(59,130,246,.9), 0 0 0 9999px rgba(15,23,42,.66)";
+      el.style.boxShadow = "0 0 0 4px rgba(59,130,246,.9), 0 0 0 9999px rgba(15,23,42,.66)";
       el.style.borderRadius = tourStep === 1 ? "20px" : "16px";
     }, tourStep === 4 ? 700 : 520);
     return () => {
@@ -365,7 +360,7 @@ export default function Home() {
           <p className="text-sm text-gray-500 mt-1">จำนวนวันและรายละเอียดตามคำสั่งทั้งหมด</p>
           <p className="text-xs text-gray-400 mt-1">🔄 ข้อมูลอัปเดตล่าสุด: {lastUpdated}</p>
         </div>
-        <div id="tour-search" className="relative mb-6 z-10">
+        <div id="tour-search" className="relative -mx-3 -mt-3 mb-3 rounded-[20px] px-3 pt-3 pb-3 z-10">
           <div className="mb-2 flex items-center justify-between gap-3">
             <label className="block text-gray-800 text-base font-bold">ค้นหารายชื่อผู้ปฏิบัติงาน</label>
             <button
@@ -674,7 +669,7 @@ export default function Home() {
         return (
           <>
             <div className="pointer-events-none fixed inset-0 z-[10001] bg-slate-950/30 backdrop-blur-[5px] transition-all duration-300" />
-            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 3 ? "items-center translate-y-[10vh]" : tourStep === 4 ? "items-center translate-y-[4vh]" : "items-end pb-5 sm:items-center sm:pb-0")} >
+            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 3 ? "items-center translate-y-[10vh]" : tourStep === 4 ? "items-start pt-[230px] sm:pt-[250px]" : "items-end pb-5 sm:items-center sm:pb-0")} >
             <div className="pointer-events-auto w-full max-w-[360px] rounded-[24px] bg-white p-5 shadow-2xl ring-1 ring-black/5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
