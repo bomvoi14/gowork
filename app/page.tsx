@@ -41,6 +41,50 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLineLoggingIn, setIsLineLoggingIn] = useState(false);
   const [showNotice, setShowNotice] = useState(false);
+  const [tourStep, setTourStep] = useState(-1);
+  const [tourTarget, setTourTarget] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const tourSteps = [
+    { title: "ยินดีต้อนรับ 👋", body: "เรียนรู้วิธีใช้งานระบบ GTD ใน 5 ขั้นตอน ใช้เวลาไม่ถึง 1 นาที", target: "" },
+    { title: "🔍 ค้นหาผู้ปฏิบัติงาน", body: "พิมพ์ชื่อหรือนามสกุล แล้วเลือกรายชื่อที่ต้องการตรวจสอบ", target: "search" },
+    { title: "📊 ตรวจสอบข้อมูลรายบุคคล", body: "เมื่อเลือกรายชื่อ จะเห็นจำนวนวัน ตจว. ปริมณฑล ประชุม อบรม และตรวจเยี่ยม Site แตะ 🔍 เพื่อดูรายละเอียดคำสั่ง", target: "" },
+    { title: "👥 จำนวนวันตาม Group", body: "เลือก Group เพื่อดูจำนวนวันปฏิบัติงานของสมาชิกในกลุ่มนั้น", target: "group" },
+    { title: "💚 LINE Login", body: "เข้าสู่ระบบ LINE เมื่อต้องการแก้ไข Craft หรือเบอร์โทรศัพท์", target: "line" },
+  ];
+  const startTour = () => {
+    setSelectedEmpId('');
+    setSearch('');
+    setModalCategory(null);
+    setShowNotice(false);
+    setTourStep(0);
+  };
+  const finishTour = () => {
+    localStorage.setItem('gtdTourCompleted', '1');
+    setTourStep(-1);
+    setTourTarget(null);
+  };
+  const closeNotice = () => {
+    setShowNotice(false);
+    if (localStorage.getItem('gtdTourCompleted') !== '1') startTour();
+  };
+  useEffect(() => {
+    if (tourStep < 0) return;
+    const targetName = tourSteps[tourStep].target;
+    if (!targetName) { setTourTarget(null); return; }
+    const target = document.querySelector('[data-tour="' + targetName + '"]');
+    if (!target) { setTourTarget(null); return; }
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const updatePosition = () => {
+      const rect = target.getBoundingClientRect();
+      setTourTarget({ top: rect.top - 6, left: rect.left - 6, width: rect.width + 12, height: rect.height + 12 });
+    };
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [tourStep]);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("skipWelcome") === "1") {
@@ -246,7 +290,7 @@ export default function Home() {
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-4 relative flex flex-col justify-between">
       <div>
         {/* แถบ LINE Login */}
-        <div className="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100">
+        <div data-tour="line" className="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100">
           {session ? (
             <div className="flex items-center gap-3 w-full justify-between">
               <div className="flex items-center gap-3">
@@ -300,7 +344,7 @@ export default function Home() {
           <p className="text-sm text-gray-500 mt-1">จำนวนวันและรายละเอียดตามคำสั่งทั้งหมด</p>
           <p className="text-xs text-gray-400 mt-1">🔄 ข้อมูลอัปเดตล่าสุด: {lastUpdated}</p>
         </div>
-        <div className="relative mb-6 z-10">
+        <div data-tour="search" className="relative mb-6 z-10">
           <label className="block text-gray-800 text-base font-bold mb-2">ค้นหารายชื่อผู้ปฏิบัติงาน</label>
           <input
             type="text"
@@ -452,7 +496,7 @@ export default function Home() {
                 <span className="text-lg">จำนวนวันปฏิบัติงานตาม Group</span>
               </div>
             </div>
-            <div className="bg-gray-50 border-b border-gray-200 p-3 shrink-0 flex items-center gap-2">
+            <div data-tour="group" className="bg-gray-50 border-b border-gray-200 p-3 shrink-0 flex items-center gap-2">
               <label className="text-sm font-bold text-gray-600 whitespace-nowrap">Group:</label>
               <select
                 value={selectedCraft}
@@ -533,12 +577,13 @@ export default function Home() {
       </div>
       <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
         สรุปข้อมูลการออกปฏิบัติงานภาคสนามตามรายการออกคำสั่ง
+        <button type="button" onClick={startTour} className="block mx-auto mt-3 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100">❓ วิธีใช้งาน</button>
       </div>
       {/* Welcome Notice */}
       {showNotice && (
         <div
           className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/45 backdrop-blur-[3px] px-5 animate-fade-in"
-          onClick={() => setShowNotice(false)}
+          onClick={closeNotice}
         >
           <div
             className="relative w-full max-w-[350px] overflow-hidden rounded-[28px] bg-white shadow-2xl ring-1 ring-black/5"
@@ -546,7 +591,7 @@ export default function Home() {
           >
             <button
               type="button"
-              onClick={() => setShowNotice(false)}
+              onClick={closeNotice}
               aria-label="ปิด"
               className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xl leading-none text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-700 active:scale-90"
             >
@@ -574,6 +619,31 @@ export default function Home() {
                   จึงไม่สามารถใช้อ้างอิงจำนวนวันปฏิบัติงานจริงได้
                 </p>
               </div>
+              <div className="flex gap-2 px-6 pb-6">
+                <button type="button" onClick={startTour} className="flex-1 rounded-xl bg-blue-600 px-3 py-3 text-sm font-bold text-white hover:bg-blue-700">📖 วิธีใช้งาน</button>
+                <button type="button" onClick={closeNotice} className="flex-1 rounded-xl bg-slate-100 px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200">เข้าใช้งาน</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {tourStep >= 0 && (
+        <div className="fixed inset-0 z-[11000]" role="dialog" aria-modal="true" aria-label="วิธีใช้งาน">
+          {!tourTarget && <div className="absolute inset-0 bg-slate-950/65" />}
+          {tourTarget && (
+            <div className="pointer-events-none fixed rounded-2xl border-2 border-blue-400 shadow-[0_0_0_9999px_rgba(2,6,23,0.70)] transition-all duration-200" style={{ top: tourTarget.top, left: tourTarget.left, width: tourTarget.width, height: tourTarget.height }} />
+          )}
+          <div className="absolute inset-x-4 bottom-5 mx-auto w-auto max-w-sm rounded-[26px] bg-white p-5 shadow-2xl sm:bottom-8">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">วิธีใช้งาน {tourStep + 1} / {tourSteps.length}</span>
+              <button type="button" onClick={finishTour} className="text-xs font-semibold text-slate-500 hover:text-slate-800">ข้าม ✕</button>
+            </div>
+            {tourStep === 0 && <img src="/GTD.png" alt="GTD" className="mx-auto mb-3 h-14 w-14 object-contain" />}
+            <h3 className="text-lg font-bold text-slate-800">{tourSteps[tourStep].title}</h3>
+            <p className="mt-2 min-h-[64px] text-sm leading-6 text-slate-600">{tourSteps[tourStep].body}</p>
+            <div className="mt-4 flex items-center gap-2">
+              {tourStep > 0 && <button type="button" onClick={() => setTourStep(tourStep - 1)} className="rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700">ย้อนกลับ</button>}
+              <button type="button" onClick={() => tourStep === tourSteps.length - 1 ? finishTour() : setTourStep(tourStep + 1)} className="flex-1 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-700">{tourStep === tourSteps.length - 1 ? '✓ เข้าใจแล้ว' : tourStep === 0 ? 'เริ่มแนะนำ' : 'ถัดไป →'}</button>
             </div>
           </div>
         </div>
