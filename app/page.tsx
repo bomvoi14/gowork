@@ -43,9 +43,70 @@ export default function Home() {
   const [showNotice, setShowNotice] = useState(false);
   const [tourStep, setTourStep] = useState<number | null>(null);
   const [tourCompleted, setTourCompleted] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
   useEffect(() => {
     setTourCompleted(localStorage.getItem("gtdTourCompleted") === "1");
   }, []);
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch((error) => {
+        console.error("Service Worker registration failed:", error);
+      });
+    }
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true;
+    setIsStandalone(standalone);
+
+    const onBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as any);
+    };
+    const onAppInstalled = () => {
+      setInstallPrompt(null);
+      setIsStandalone(true);
+    };
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    window.addEventListener("appinstalled", onAppInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", onAppInstalled);
+    };
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      await installPrompt.userChoice;
+      setInstallPrompt(null);
+      return;
+    }
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (isIOS) {
+      alert("บน iPhone/iPad: แตะปุ่ม Share แล้วเลือก “Add to Home Screen” หรือ “เพิ่มไปยังหน้าจอโฮม”");
+      return;
+    }
+    alert("หากไม่เห็นหน้าต่างติดตั้ง ให้เปิดเมนูของเบราว์เซอร์ แล้วเลือก “ติดตั้งแอป” หรือ “Add to Home screen”");
+  };
+
+  useEffect(() => {
+    if (!selectedEmpId) return;
+    const currentUrl = window.location.pathname + window.location.search;
+    window.history.pushState({ gtdView: "detail" }, "", currentUrl);
+    const handleBack = () => {
+      setShowNotice(false);
+      setSelectedEmpId("");
+      setSearch("");
+      setModalCategory(null);
+      setProfileModalStep("hidden");
+      setTourStep(null);
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    };
+    window.addEventListener("popstate", handleBack, { once: true });
+    return () => window.removeEventListener("popstate", handleBack);
+  }, [selectedEmpId]);
+
   const startTour = () => {
     setShowNotice(false);
     setTourStep(0);
@@ -60,7 +121,7 @@ export default function Home() {
   };
   useEffect(() => {
     if (tourStep === null) return;
-    const targets = [null, "tour-search", "tour-group", null, "tour-line"];
+    const targets = [null, "tour-search", null, "tour-group", "tour-line"];
     const targetId = targets[tourStep];
 
     // Step 4: เลื่อนหน้ากลับขึ้นด้านบนอย่างนุ่มนวล
@@ -383,6 +444,11 @@ export default function Home() {
             placeholder="🔍 พิมพ์ชื่อ หรือนามสกุล..."
             className="w-full p-4 border-2 border-blue-200 rounded-xl bg-white text-gray-900 text-base shadow-md focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder-gray-400"
             value={search}
+            onFocus={(e) => {
+              if (e.currentTarget.value && e.relatedTarget !== e.currentTarget) {
+                requestAnimationFrame(() => e.currentTarget.select());
+              }
+            }}
             onChange={(e) => { setSearch(e.target.value); setSelectedEmpId(''); setModalCategory(null); }}
           />
           {filteredUsers.length > 0 && selectedEmpId === '' && (
@@ -607,8 +673,20 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className="text-center py-4 text-xs text-gray-400 border-t border-gray-200 mt-8">
-        <div>Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.9.0</div>
+      <div className="mt-8 border-t border-gray-200 pt-5 text-center">
+        {!isStandalone && (
+          <button
+            type="button"
+            onClick={handleInstallApp}
+            className="mb-3 inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-100 active:scale-[0.98]"
+          >
+            <img src="/GTD.png" alt="" className="h-5 w-5 rounded-md object-contain" />
+            ติดตั้ง GTD-GoWork
+          </button>
+        )}
+        <div className="pb-4 text-xs text-gray-400">
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.10.0
+        </div>
       </div>
       {/* Welcome Notice */}
       {showNotice && (
@@ -664,8 +742,8 @@ export default function Home() {
         const steps = [
           { icon: "👋", title: "ยินดีต้อนรับ 👋", text: "เรียนรู้วิธีใช้งานระบบ GTD-GoWork ใน 5 ขั้นตอน" },
           { icon: "🔍", title: "ค้นหารายชื่อ", text: "พิมพ์ชื่อหรือนามสกุล แล้วเลือกรายชื่อผู้ปฏิบัติงานที่ต้องการตรวจสอบ" },
-          { icon: "👥", title: "ดูข้อมูลตาม Group", text: "เลือก Group เพื่อดูจำนวนวันปฏิบัติงานของสมาชิกในแต่ละกลุ่ม" },
           { icon: "📊", title: "ดูรายละเอียดการปฏิบัติงาน", text: "เมื่อเลือกรายชื่อแล้ว คุณสามารถดูจำนวนวัน ตจว. ปริมณฑล ประชุม อบรม ตรวจเยี่ยม และแตะ 🔍 เพื่อดูรายละเอียดคำสั่ง" },
+          { icon: "👥", title: "ดูข้อมูลตาม Group", text: "เลือก Group เพื่อดูจำนวนวันปฏิบัติงานของสมาชิกในแต่ละกลุ่ม" },
           { icon: "💬", title: "เข้าสู่ระบบ Line เพื่อแก้ไขข้อมูล", text: "หาก Craft หรือเบอร์โทรศัพท์ไม่ถูกต้อง ให้เข้าสู่ระบบ LINE Login แล้วกดปุ่ม แก้ไข" }
         ];
         const step = steps[tourStep];
