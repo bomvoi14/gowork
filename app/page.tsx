@@ -109,7 +109,7 @@ export default function Home() {
 
   const startTour = () => {
     setShowNotice(false);
-    setTourStep(0);
+    setTourStep(1);
   };
   const finishTour = () => {
     localStorage.setItem("gtdTourCompleted", "1");
@@ -121,17 +121,8 @@ export default function Home() {
   };
   useEffect(() => {
     if (tourStep === null) return;
-    const targets = [null, "tour-search", null, "tour-group", "tour-line", "tour-install"];
+    const targets = [null, null, "tour-search", null, "tour-group", "tour-line", "tour-install"];
     const targetId = targets[tourStep];
-
-    // Step 4: เลื่อน Group ขึ้นมาในตำแหน่งที่อ่านง่าย แล้วสร้างกรอบต่อ
-    if (tourStep === 3) {
-      const groupEl = document.getElementById("tour-group");
-      if (groupEl) {
-        const y = groupEl.getBoundingClientRect().top + window.scrollY - 250;
-        window.scrollTo({ top: Math.max(0, y), left: 0, behavior: "smooth" });
-      }
-    }
 
     if (!targetId) return;
     const el = document.getElementById(targetId);
@@ -142,12 +133,13 @@ export default function Home() {
     const previousBorderRadius = el.style.borderRadius;
     const previousTransition = el.style.transition;
     el.style.transition = "box-shadow 320ms ease, border-radius 320ms ease";
-    if (tourStep === 4) {
-      // Step 5: ใช้ตำแหน่งหน้าเว็บเดียวกับ Step 4 จึงไม่สั่ง scroll เพิ่ม
-    } else if (tourStep === 5) {
-      // Step 6: พาปุ่มติดตั้งขึ้นมาเหนือกล่องคำแนะนำ
+    if (tourStep === 4 || tourStep === 5) {
+      // หน้า 4 และ 5 ใช้ตำแหน่งหน้าเว็บเดียวกับหน้า 5 ของ v0.10.3
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    } else if (tourStep === 6) {
+      // หน้า 6: พาปุ่มติดตั้งขึ้นมาเหนือกล่องคำแนะนำ
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-    } else if (tourStep !== 3) {
+    } else {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
@@ -155,8 +147,8 @@ export default function Home() {
       el.style.position = "relative";
       el.style.zIndex = "10002";
       el.style.boxShadow = "0 0 0 4px rgba(59,130,246,.9), 0 0 0 9999px rgba(15,23,42,.66)";
-      el.style.borderRadius = tourStep === 1 ? "20px" : "16px";
-    }, tourStep === 4 ? 700 : tourStep === 5 ? 750 : tourStep === 3 ? 650 : 520);
+      el.style.borderRadius = tourStep === 2 ? "20px" : "16px";
+    }, tourStep === 5 ? 700 : tourStep === 6 ? 750 : tourStep === 4 ? 650 : 520);
     return () => {
       window.clearTimeout(timer);
       el.style.position = previousPosition;
@@ -697,7 +689,7 @@ export default function Home() {
           )}
         </div>
         <div className="pb-4 text-xs text-gray-400">
-          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.10.4
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.0
         </div>
       </div>
       {/* Welcome Notice */}
@@ -759,18 +751,18 @@ export default function Home() {
           { icon: "💬", title: "เข้าสู่ระบบ Line เพื่อแก้ไขข้อมูล", text: "หาก Craft หรือเบอร์โทรศัพท์ไม่ถูกต้อง ให้เข้าสู่ระบบ LINE Login แล้วกดปุ่ม แก้ไข" },
           { icon: "📲", title: "ติดตั้ง GTD-GoWork App บนเครื่อง", text: "ติดตั้ง GTD-GoWork App เพื่อเปิดใช้งานได้สะดวกยิ่งขึ้น" }
         ];
-        const step = steps[tourStep];
+        const step = steps[tourStep - 1];
         return (
           <>
             <div className="pointer-events-none fixed inset-0 z-[10001] bg-slate-950/30 backdrop-blur-[5px] transition-all duration-300" />
             <div className="fixed inset-0 z-[10002] cursor-default" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} onWheel={(e) => e.preventDefault()} onTouchMove={(e) => e.preventDefault()} />
-            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + ((tourStep === 3 || tourStep === 4) ? "items-start pt-[215px] sm:pt-[230px]" : tourStep === 5 ? "items-start pt-[90px] sm:pt-[105px]" : "items-end pb-5 sm:items-end sm:pb-8")} >
+            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + ((tourStep === 4 || tourStep === 5) ? "items-start pt-[185px] sm:pt-[200px]" : tourStep === 6 ? "items-start pt-[90px] sm:pt-[105px]" : "items-end pb-5 sm:items-end sm:pb-8")} >
             <div className="pointer-events-auto w-full max-w-[360px] rounded-[24px] bg-white p-5 shadow-2xl ring-1 ring-black/5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-2xl">{tourStep === 0 ? "GTD" : step.icon}</div>
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-2xl">{tourStep === 1 ? "GTD" : step.icon}</div>
                   <div>
-                    <p className="text-[11px] font-bold text-blue-600">วิธีใช้งาน · {tourStep + 1} / {steps.length}</p>
+                    <p className="text-[11px] font-bold text-blue-600">วิธีใช้งาน · {tourStep} / {steps.length}</p>
                     <h3 className="text-[17px] font-bold text-slate-800">{step.title}</h3>
                   </div>
                 </div>
@@ -779,13 +771,13 @@ export default function Home() {
               <p className="text-[14px] leading-6 text-slate-600">{step.text}</p>
               <div className="mt-4 flex items-center justify-between">
                 <div className="flex gap-1.5">
-                  {steps.map((_, i) => <span key={i} className={"h-1.5 rounded-full transition-all " + (i === tourStep ? "w-6 bg-blue-600" : "w-1.5 bg-slate-200")}></span>)}
+                  {steps.map((_, i) => <span key={i} className={"h-1.5 rounded-full transition-all " + (i === tourStep - 1 ? "w-6 bg-blue-600" : "w-1.5 bg-slate-200")}></span>)}
                 </div>
                 <div className="flex gap-2">
-                  {tourStep > 0 && (
+                  {tourStep > 1 && (
                     <button type="button" onClick={() => setTourStep(tourStep - 1)} className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-200">ย้อนกลับ</button>
                   )}
-                  {tourStep < steps.length - 1 ? (
+                  {tourStep < steps.length ? (
                     <button type="button" onClick={() => setTourStep(tourStep + 1)} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">ถัดไป</button>
                   ) : (
                     <button type="button" onClick={finishTour} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">✓ เข้าใจแล้ว</button>
