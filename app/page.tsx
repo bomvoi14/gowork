@@ -128,7 +128,7 @@ export default function Home() {
     if (tourStep === 3) {
       const groupEl = document.getElementById("tour-group");
       if (groupEl) {
-        const y = groupEl.getBoundingClientRect().top + window.scrollY - 150;
+        const y = groupEl.getBoundingClientRect().top + window.scrollY - 250;
         window.scrollTo({ top: Math.max(0, y), left: 0, behavior: "smooth" });
       }
     }
