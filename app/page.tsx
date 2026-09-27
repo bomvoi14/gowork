@@ -689,7 +689,7 @@ export default function Home() {
           )}
         </div>
         <div className="pb-4 text-xs text-gray-400">
-          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.0
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.1
         </div>
       </div>
       {/* Welcome Notice */}
@@ -756,13 +756,7 @@ export default function Home() {
           <>
             <div className="pointer-events-none fixed inset-0 z-[10001] bg-slate-950/30 backdrop-blur-[5px] transition-all duration-300" />
             <div className="fixed inset-0 z-[10002] cursor-default" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} onWheel={(e) => e.preventDefault()} onTouchMove={(e) => e.preventDefault()} />
-            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 1
-  ? "items-center justify-center"
-  : (tourStep === 4 || tourStep === 5)
-  ? "items-start pt-[185px] sm:pt-[200px]"
-  : tourStep === 6
-  ? "items-start pt-[90px] sm:pt-[105px]"
-  : "items-end pb-5 sm:items-end sm:pb-8")} >
+            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + ((tourStep === 4 || tourStep === 5) ? "items-start pt-[185px] sm:pt-[200px]" : tourStep === 6 ? "items-start pt-[90px] sm:pt-[105px]" : "items-end pb-5 sm:items-end sm:pb-8")} >
             <div className="pointer-events-auto w-full max-w-[360px] rounded-[24px] bg-white p-5 shadow-2xl ring-1 ring-black/5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -775,6 +769,16 @@ export default function Home() {
                 <button type="button" onClick={finishTour} className="text-xs font-semibold text-slate-400 hover:text-slate-600">ข้าม</button>
               </div>
               <p className="text-[14px] leading-6 text-slate-600">{step.text}</p>
+
+              {tourStep === 3 && (
+                <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm">
+                  <img
+                    src="/tour-step3.jpg"
+                    alt="ตัวอย่างรายละเอียดการปฏิบัติงาน"
+                    className="h-[250px] w-full object-cover object-top sm:h-[280px]"
+                  />
+                </div>
+              )}
               <div className="mt-4 flex items-center justify-between">
                 <div className="flex gap-1.5">
                   {steps.map((_, i) => <span key={i} className={"h-1.5 rounded-full transition-all " + (i === tourStep - 1 ? "w-6 bg-blue-600" : "w-1.5 bg-slate-200")}></span>)}
