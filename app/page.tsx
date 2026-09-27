@@ -698,7 +698,7 @@ export default function Home() {
           )}
         </div>
         <div className="pb-4 text-xs text-gray-400">
-          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.10.2
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.10.3
         </div>
       </div>
       {/* Welcome Notice */}
@@ -765,7 +765,7 @@ export default function Home() {
           <>
             <div className="pointer-events-none fixed inset-0 z-[10001] bg-slate-950/30 backdrop-blur-[5px] transition-all duration-300" />
             <div className="fixed inset-0 z-[10002] cursor-default" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} onWheel={(e) => e.preventDefault()} onTouchMove={(e) => e.preventDefault()} />
-            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 3 ? "items-start pt-[190px] sm:pt-[210px]" : tourStep === 4 ? "items-start pt-[185px] sm:pt-[200px]" : tourStep === 5 ? "items-start pt-5 sm:pt-8" : "items-end pb-5 sm:items-end sm:pb-8")} >
+            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 3 ? "items-start pt-[105px] sm:pt-[125px]" : tourStep === 4 ? "items-start pt-[185px] sm:pt-[200px]" : tourStep === 5 ? "items-start pt-[90px] sm:pt-[105px]" : "items-end pb-5 sm:items-end sm:pb-8")} >
             <div className="pointer-events-auto w-full max-w-[360px] rounded-[24px] bg-white p-5 shadow-2xl ring-1 ring-black/5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
