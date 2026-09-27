@@ -689,7 +689,7 @@ export default function Home() {
           )}
         </div>
         <div className="pb-4 text-xs text-gray-400">
-          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.2
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.3
         </div>
       </div>
       {/* Welcome Notice */}
@@ -757,12 +757,12 @@ export default function Home() {
             <div className="pointer-events-none fixed inset-0 z-[10001] bg-slate-950/30 backdrop-blur-[5px] transition-all duration-300" />
             <div className="fixed inset-0 z-[10002] cursor-default" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} onWheel={(e) => e.preventDefault()} onTouchMove={(e) => e.preventDefault()} />
             {tourStep === 3 && (
-              <div className="fixed left-1/2 top-4 z-[10003] w-[calc(100%-2rem)] max-w-[360px] -translate-x-1/2 pointer-events-none sm:top-6 sm:max-w-[400px]">
-                <div className="overflow-hidden rounded-2xl border border-white/80 bg-white p-2 shadow-2xl">
+              <div className="fixed left-1/2 top-3 z-[10003] w-[calc(100%-2rem)] max-w-[380px] -translate-x-1/2 pointer-events-none sm:top-5 sm:max-w-[430px]">
+                <div className="h-[390px] overflow-hidden rounded-2xl border border-white/80 bg-white p-2 shadow-2xl sm:h-[430px]">
                   <img
                     src="/tour-step3.jpg"
                     alt="ตัวอย่างรายละเอียดการปฏิบัติงาน"
-                    className="h-[230px] w-full rounded-xl object-cover object-top sm:h-[260px]"
+                    className="h-full w-full rounded-xl object-contain object-top"
                   />
                 </div>
               </div>
