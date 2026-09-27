@@ -6,7 +6,7 @@ import { Providers } from "./providers"; // 👈 1. เพิ่มบรรท�
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ระบบรายงาน",
+  title: "GTD-GoWork App",
   description: "สรุปวันปฏิบัติงาน",
 };
 
