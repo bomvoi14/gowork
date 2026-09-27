@@ -1,5 +1,5 @@
 "use client"
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Papa from 'papaparse';
 import { useSession, signIn, signOut } from 'next-auth/react';
 interface Job {
@@ -28,6 +28,7 @@ export default function Home() {
   const [data, setData] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const searchJustFocusedRef = useRef(false);
   const [selectedEmpId, setSelectedEmpId] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modalCategory, setModalCategory] = useState<string | null>(null);
@@ -442,8 +443,20 @@ export default function Home() {
             className="w-full p-4 border-2 border-blue-200 rounded-xl bg-white text-gray-900 text-base shadow-md focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder-gray-400"
             value={search}
             onFocus={(e) => {
-              if (e.currentTarget.value && e.relatedTarget !== e.currentTarget) {
+              searchJustFocusedRef.current = true;
+              if (e.currentTarget.value) {
                 requestAnimationFrame(() => e.currentTarget.select());
+              }
+            }}
+            onPointerDown={(e) => {
+              if (document.activeElement === e.currentTarget) {
+                searchJustFocusedRef.current = false;
+              }
+            }}
+            onClick={(e) => {
+              if (searchJustFocusedRef.current) {
+                searchJustFocusedRef.current = false;
+                if (e.currentTarget.value) e.currentTarget.select();
               }
             }}
             onChange={(e) => { setSearch(e.target.value); setSelectedEmpId(''); setModalCategory(null); }}
@@ -689,7 +702,7 @@ export default function Home() {
           )}
         </div>
         <div className="pb-4 text-xs text-gray-400">
-          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.4
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.5
         </div>
       </div>
       {/* Welcome Notice */}
