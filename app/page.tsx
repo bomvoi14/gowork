@@ -121,7 +121,7 @@ export default function Home() {
   };
   useEffect(() => {
     if (tourStep === null) return;
-    const targets = [null, "tour-search", null, "tour-group", "tour-line"];
+    const targets = [null, "tour-search", null, "tour-group", "tour-line", "tour-install"];
     const targetId = targets[tourStep];
 
     // Step 4: เลื่อนหน้ากลับขึ้นด้านบนอย่างนุ่มนวล
@@ -675,6 +675,7 @@ export default function Home() {
       </div>
       <div className="mt-8 border-t border-gray-200 pt-5 text-center">
         {!isStandalone && (
+          <div id="tour-install" className="inline-block">
           <button
             type="button"
             onClick={handleInstallApp}
@@ -683,9 +684,10 @@ export default function Home() {
             <img src="/GTD.png" alt="" className="h-5 w-5 rounded-md object-contain" />
             ติดตั้ง GTD-GoWork
           </button>
+          </div>
         )}
         <div className="pb-4 text-xs text-gray-400">
-          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.10.0
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.10.1
         </div>
       </div>
       {/* Welcome Notice */}
@@ -740,11 +742,12 @@ export default function Home() {
       {/* Guided Tour - เปิดเมื่อผู้ใช้กดปุ่มวิธีใช้งานเท่านั้น */}
       {tourStep !== null && (() => {
         const steps = [
-          { icon: "👋", title: "ยินดีต้อนรับ 👋", text: "เรียนรู้วิธีใช้งานระบบ GTD-GoWork ใน 5 ขั้นตอน" },
+          { icon: "👋", title: "ยินดีต้อนรับ 👋", text: "เรียนรู้วิธีใช้งานระบบ GTD-GoWork ใน 6 ขั้นตอน" },
           { icon: "🔍", title: "ค้นหารายชื่อ", text: "พิมพ์ชื่อหรือนามสกุล แล้วเลือกรายชื่อผู้ปฏิบัติงานที่ต้องการตรวจสอบ" },
           { icon: "📊", title: "ดูรายละเอียดการปฏิบัติงาน", text: "เมื่อเลือกรายชื่อแล้ว คุณสามารถดูจำนวนวัน ตจว. ปริมณฑล ประชุม อบรม ตรวจเยี่ยม และแตะ 🔍 เพื่อดูรายละเอียดคำสั่ง" },
           { icon: "👥", title: "ดูข้อมูลตาม Group", text: "เลือก Group เพื่อดูจำนวนวันปฏิบัติงานของสมาชิกในแต่ละกลุ่ม" },
-          { icon: "💬", title: "เข้าสู่ระบบ Line เพื่อแก้ไขข้อมูล", text: "หาก Craft หรือเบอร์โทรศัพท์ไม่ถูกต้อง ให้เข้าสู่ระบบ LINE Login แล้วกดปุ่ม แก้ไข" }
+          { icon: "💬", title: "เข้าสู่ระบบ Line เพื่อแก้ไขข้อมูล", text: "หาก Craft หรือเบอร์โทรศัพท์ไม่ถูกต้อง ให้เข้าสู่ระบบ LINE Login แล้วกดปุ่ม แก้ไข" },
+          { icon: "📲", title: "ติดตั้ง GTD-GoWork App บนเครื่อง", text: "ติดตั้ง GTD-GoWork App เพื่อเปิดใช้งานได้สะดวกยิ่งขึ้น" }
         ];
         const step = steps[tourStep];
         return (
