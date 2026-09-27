@@ -124,10 +124,13 @@ export default function Home() {
     const targets = [null, "tour-search", null, "tour-group", "tour-line", "tour-install"];
     const targetId = targets[tourStep];
 
-    // Step 4: เลื่อนหน้ากลับขึ้นด้านบนอย่างนุ่มนวล
+    // Step 4: เลื่อน Group ขึ้นมาในตำแหน่งที่อ่านง่าย แล้วสร้างกรอบต่อ
     if (tourStep === 3) {
-      window.scrollBy({ top: -260, behavior: "smooth" });
-      return;
+      const groupEl = document.getElementById("tour-group");
+      if (groupEl) {
+        const y = groupEl.getBoundingClientRect().top + window.scrollY - 150;
+        window.scrollTo({ top: Math.max(0, y), left: 0, behavior: "smooth" });
+      }
     }
 
     if (!targetId) return;
@@ -140,9 +143,12 @@ export default function Home() {
     const previousTransition = el.style.transition;
     el.style.transition = "box-shadow 320ms ease, border-radius 320ms ease";
     if (tourStep === 4) {
-      // Step 5: เลื่อนขึ้นบนสุดของหน้าจริง ๆ และไม่ให้ scrollIntoView ดึงหน้ากลับลงมา
+      // Step 5: LINE Login อยู่ด้านบน
       window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-    } else {
+    } else if (tourStep === 5) {
+      // Step 6: พาปุ่มติดตั้งขึ้นมาเหนือกล่องคำแนะนำ
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (tourStep !== 3) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
@@ -151,7 +157,7 @@ export default function Home() {
       el.style.zIndex = "10002";
       el.style.boxShadow = "0 0 0 4px rgba(59,130,246,.9), 0 0 0 9999px rgba(15,23,42,.66)";
       el.style.borderRadius = tourStep === 1 ? "20px" : "16px";
-    }, tourStep === 4 ? 700 : 520);
+    }, tourStep === 4 ? 700 : tourStep === 5 ? 750 : tourStep === 3 ? 650 : 520);
     return () => {
       window.clearTimeout(timer);
       el.style.position = previousPosition;
@@ -674,20 +680,25 @@ export default function Home() {
         )}
       </div>
       <div className="mt-8 border-t border-gray-200 pt-5 text-center">
-        {!isStandalone && (
-          <div id="tour-install" className="inline-block">
-          <button
-            type="button"
-            onClick={handleInstallApp}
-            className="mb-3 inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-100 active:scale-[0.98]"
-          >
-            <img src="/GTD.png" alt="" className="h-5 w-5 rounded-md object-contain" />
-            ติดตั้ง GTD-GoWork
-          </button>
-          </div>
-        )}
+        <div id="tour-install" className="inline-block rounded-2xl px-2 pt-2">
+          {!isStandalone ? (
+            <button
+              type="button"
+              onClick={handleInstallApp}
+              className="mb-3 inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-100 active:scale-[0.98]"
+            >
+              <img src="/GTD.png" alt="" className="h-5 w-5 rounded-md object-contain" />
+              ติดตั้ง GTD-GoWork
+            </button>
+          ) : (
+            <div className="mb-3 inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
+              <img src="/GTD.png" alt="" className="h-5 w-5 rounded-md object-contain" />
+              ติดตั้ง GTD-GoWork แล้ว
+            </div>
+          )}
+        </div>
         <div className="pb-4 text-xs text-gray-400">
-          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.10.1
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.10.2
         </div>
       </div>
       {/* Welcome Notice */}
@@ -754,7 +765,7 @@ export default function Home() {
           <>
             <div className="pointer-events-none fixed inset-0 z-[10001] bg-slate-950/30 backdrop-blur-[5px] transition-all duration-300" />
             <div className="fixed inset-0 z-[10002] cursor-default" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} onWheel={(e) => e.preventDefault()} onTouchMove={(e) => e.preventDefault()} />
-            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 3 ? "items-start pt-[190px] sm:pt-[210px]" : tourStep === 4 ? "items-start pt-[185px] sm:pt-[200px]" : "items-end pb-5 sm:items-end sm:pb-8")} >
+            <div className={"fixed inset-0 z-[10003] pointer-events-none flex justify-center px-4 transition-all duration-500 " + (tourStep === 3 ? "items-start pt-[190px] sm:pt-[210px]" : tourStep === 4 ? "items-start pt-[185px] sm:pt-[200px]" : tourStep === 5 ? "items-start pt-5 sm:pt-8" : "items-end pb-5 sm:items-end sm:pb-8")} >
             <div className="pointer-events-auto w-full max-w-[360px] rounded-[24px] bg-white p-5 shadow-2xl ring-1 ring-black/5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">

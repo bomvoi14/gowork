@@ -1,4 +1,4 @@
-const CACHE_NAME = "gtd-gowork-v0.10.1";
+const CACHE_NAME = "gtd-gowork-v0.10.2";
 const APP_SHELL = ["/", "/GTD.png", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
