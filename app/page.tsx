@@ -433,7 +433,7 @@ export default function Home() {
               onClick={startTour}
               className="shrink-0 rounded-full border border-blue-300 bg-blue-50/80 px-3 py-1.5 text-xs font-bold text-blue-700 shadow-sm transition-all duration-200 hover:border-blue-400 hover:bg-blue-100 hover:shadow-md active:scale-95"
             >
-              ❓ วิธีใช้งาน
+              📘 วิธีใช้งาน
             </button>
           </div>
           <input
