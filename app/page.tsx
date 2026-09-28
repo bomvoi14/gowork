@@ -42,6 +42,7 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLineLoggingIn, setIsLineLoggingIn] = useState(false);
   const [showNotice, setShowNotice] = useState(false);
+  const [showIOSInstall, setShowIOSInstall] = useState(false);
   const [tourStep, setTourStep] = useState<number | null>(null);
   const [tourCompleted, setTourCompleted] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -85,7 +86,21 @@ export default function Home() {
     }
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
     if (isIOS) {
-      alert("บน iPhone/iPad: แตะปุ่ม Share แล้วเลือก “Add to Home Screen” หรือ “เพิ่มไปยังหน้าจอโฮม”");
+      const appUrl = "https://gtd-gowork.vercel.app";
+      try {
+        await navigator.clipboard.writeText(appUrl);
+      } catch {
+        const textarea = document.createElement("textarea");
+        textarea.value = appUrl;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      setShowIOSInstall(true);
       return;
     }
     alert("หากไม่เห็นหน้าต่างติดตั้ง ให้เปิดเมนูของเบราว์เซอร์ แล้วเลือก “ติดตั้งแอป” หรือ “Add to Home screen”");
@@ -702,10 +717,36 @@ export default function Home() {
           )}
         </div>
         <div className="pb-4 text-xs text-gray-400">
-          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.5
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.6
         </div>
       </div>
       {/* Welcome Notice */}
+      {showIOSInstall && (
+        <div className="fixed inset-0 z-[10020] flex items-center justify-center bg-black/55 px-5 backdrop-blur-sm">
+          <div className="w-full max-w-[360px] rounded-3xl bg-white p-6 text-center shadow-2xl">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-3xl">📲</div>
+            <h2 className="text-[19px] font-bold text-slate-800">ติดตั้ง GTD-GoWork App</h2>
+            <div className="mt-3 rounded-2xl bg-green-50 px-4 py-3 text-[14px] font-semibold text-green-700">
+              ✅ คัดลอกลิงก์ GTD-GoWork แล้ว
+            </div>
+            <div className="mt-4 text-left text-[14px] leading-7 text-slate-600">
+              <p><span className="font-bold text-slate-800">1.</span> เปิด <span className="font-bold text-blue-600">Safari</span></p>
+              <p><span className="font-bold text-slate-800">2.</span> วางลิงก์ในช่อง Address แล้วกดไป</p>
+              <p><span className="font-bold text-slate-800">3.</span> แตะปุ่ม Share <span className="text-lg">⬆️</span></p>
+              <p><span className="font-bold text-slate-800">4.</span> เลือก <span className="font-bold">Add to Home Screen</span></p>
+              <p><span className="font-bold text-slate-800">5.</span> แตะ <span className="font-bold">Add / เพิ่ม</span></p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowIOSInstall(false)}
+              className="mt-5 w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700 active:scale-[0.98]"
+            >
+              เข้าใจแล้ว
+            </button>
+          </div>
+        </div>
+      )}
+
       {showNotice && (
         <div
           className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/45 backdrop-blur-[3px] px-5 animate-fade-in"
@@ -738,8 +779,8 @@ export default function Home() {
                 <span className="font-bold text-[#06C755]">LINE Login</span>{' '}
                 เพื่อแก้ไข Craft-เบอร์โทรได้
               </p>
-              <div className="mt-5 rounded-2xl bg-amber-50 px-4 py-3.5 text-center">
-                <p className="text-[13px] leading-6 text-amber-900">
+              <div className="mt-5 rounded-2xl bg-red-50 px-4 py-3.5 text-center">
+                <p className="text-[15px] font-semibold leading-6 text-red-600">
                   <span className="font-bold">⚠️ ระบบรายงานจำนวนวันตามคำสั่ง ⚠️</span>
                   <br />
                   ไม่สามารถใช้อ้างอิงจำนวนวันปฏิบัติงานจริงได้
