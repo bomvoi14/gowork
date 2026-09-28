@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "GTD-GoWork",
+    name: "GTD-GoWork App",
     short_name: "GTD-GoWork",
     description: "ระบบรายงานจำนวนวันปฏิบัติงาน GTD-GoWork",
     start_url: "/?skipWelcome=1",
