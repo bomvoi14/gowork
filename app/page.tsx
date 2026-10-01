@@ -42,7 +42,7 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLineLoggingIn, setIsLineLoggingIn] = useState(false);
   const [showNotice, setShowNotice] = useState(false);
-  const [showIOSInstall, setShowIOSInstall] = useState(false);
+  const [showInstallHelp, setShowInstallHelp] = useState<"ios" | "android" | "other" | null>(null);
   const [tourStep, setTourStep] = useState<number | null>(null);
   const [tourCompleted, setTourCompleted] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -78,32 +78,42 @@ export default function Home() {
   }, []);
 
   const handleInstallApp = async () => {
-    if (installPrompt) {
+    const appUrl = "https://gtd-gowork.vercel.app";
+    const ua = navigator.userAgent;
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isAndroid = /android/i.test(ua);
+
+    // ถ้า browser มี PWA install prompt พร้อม ให้ติดตั้งได้ทันที
+    if (!isIOS && installPrompt) {
       installPrompt.prompt();
       await installPrompt.userChoice;
       setInstallPrompt(null);
       return;
     }
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    if (isIOS) {
-      const appUrl = "https://gtd-gowork.vercel.app";
-      try {
-        await navigator.clipboard.writeText(appUrl);
-      } catch {
-        const textarea = document.createElement("textarea");
-        textarea.value = appUrl;
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-      }
-      setShowIOSInstall(true);
-      return;
+
+    // กรณีเปิดจาก LINE / in-app browser หรือ iOS:
+    // คัดลอก URL ก่อน แล้วแนะนำ browser ที่เหมาะสม
+    try {
+      await navigator.clipboard.writeText(appUrl);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = appUrl;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
     }
-    alert("หากไม่เห็นหน้าต่างติดตั้ง ให้เปิดเมนูของเบราว์เซอร์ แล้วเลือก “ติดตั้งแอป” หรือ “Add to Home screen”");
+
+    if (isIOS) {
+      setShowInstallHelp("ios");
+    } else if (isAndroid) {
+      setShowInstallHelp("android");
+    } else {
+      setShowInstallHelp("other");
+    }
   };
 
   useEffect(() => {
@@ -717,32 +727,64 @@ export default function Home() {
           )}
         </div>
         <div className="pb-4 text-xs text-gray-400">
-          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.6
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.7
         </div>
       </div>
       {/* Welcome Notice */}
-      {showIOSInstall && (
+      {showInstallHelp && (
         <div className="fixed inset-0 z-[10020] flex items-center justify-center bg-black/55 px-5 backdrop-blur-sm">
-          <div className="w-full max-w-[360px] rounded-3xl bg-white p-6 text-center shadow-2xl">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-3xl">📲</div>
-            <h2 className="text-[19px] font-bold text-slate-800">ติดตั้ง GTD-GoWork App</h2>
-            <div className="mt-3 rounded-2xl bg-green-50 px-4 py-3 text-[14px] font-semibold text-green-700">
-              ✅ คัดลอกลิงก์ GTD-GoWork แล้ว
+          <div className="w-full max-w-[360px] rounded-3xl bg-white p-5 text-center shadow-2xl">
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-2xl">📲</div>
+            <h2 className="text-[18px] font-bold text-slate-800">ติดตั้ง GTD-GoWork</h2>
+
+            <div className="mt-3 rounded-xl bg-green-50 px-3 py-2 text-[13px] font-semibold text-green-700">
+              ✓ คัดลอกลิงก์แล้ว
             </div>
-            <div className="mt-4 text-left text-[14px] leading-7 text-slate-600">
-              <p><span className="font-bold text-slate-800">1.</span> เปิด <span className="font-bold text-blue-600">Safari</span></p>
-              <p><span className="font-bold text-slate-800">2.</span> วางลิงก์ในช่อง Address แล้วกดไป</p>
-              <p><span className="font-bold text-slate-800">3.</span> แตะปุ่ม Share <span className="text-lg">⬆️</span></p>
-              <p><span className="font-bold text-slate-800">4.</span> เลือก <span className="font-bold">Add to Home Screen</span></p>
-              <p><span className="font-bold text-slate-800">5.</span> แตะ <span className="font-bold">Add / เพิ่ม</span></p>
+
+            {showInstallHelp === "ios" ? (
+              <div className="mt-4 text-left text-[14px] leading-7 text-slate-600">
+                <p className="mb-1 font-bold text-slate-800">iPhone / iPad · ใช้ Safari</p>
+                <p><b>1.</b> เปิด <b>Safari</b> แล้ววางลิงก์</p>
+                <p><b>2.</b> แตะ <b>Share ⬆️</b></p>
+                <p><b>3.</b> เลือก <b>Add to Home Screen</b></p>
+                <p><b>4.</b> แตะ <b>Add / เพิ่ม</b></p>
+              </div>
+            ) : showInstallHelp === "android" ? (
+              <div className="mt-4 text-left text-[14px] leading-7 text-slate-600">
+                <p className="mb-1 font-bold text-slate-800">Android · ใช้ Google Chrome</p>
+                <p><b>1.</b> เปิด <b>Chrome</b> แล้ววางลิงก์</p>
+                <p><b>2.</b> แตะเมนู <b>⋮</b></p>
+                <p><b>3.</b> เลือก <b>Install app</b> หรือ <b>Add to Home screen</b></p>
+                <p><b>4.</b> ยืนยันการติดตั้ง</p>
+              </div>
+            ) : (
+              <div className="mt-4 text-left text-[14px] leading-7 text-slate-600">
+                <p className="mb-1 font-bold text-slate-800">คอมพิวเตอร์ · ใช้ Chrome / Edge</p>
+                <p><b>1.</b> เปิด Chrome หรือ Edge แล้ววางลิงก์</p>
+                <p><b>2.</b> เลือก <b>Install GTD-GoWork</b> จากเมนู Browser</p>
+              </div>
+            )}
+
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText("https://gtd-gowork.vercel.app");
+                  } catch {}
+                }}
+                className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] font-bold text-slate-700 active:scale-[0.98]"
+              >
+                📋 คัดลอกอีกครั้ง
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowInstallHelp(null)}
+                className="flex-1 rounded-xl bg-blue-600 px-3 py-2.5 text-[13px] font-bold text-white shadow-md shadow-blue-600/20 active:scale-[0.98]"
+              >
+                เข้าใจแล้ว
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowIOSInstall(false)}
-              className="mt-5 w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700 active:scale-[0.98]"
-            >
-              เข้าใจแล้ว
-            </button>
           </div>
         </div>
       )}
