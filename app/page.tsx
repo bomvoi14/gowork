@@ -754,7 +754,7 @@ export default function Home() {
                 <p className="mb-1 font-bold text-slate-800">Android · ใช้ Google Chrome</p>
                 <p><b>1.</b> เปิด <b>Chrome</b> แล้ววางลิงก์</p>
                 <p><b>2.</b> แตะเมนู <b>⋮</b></p>
-                <p><b>3.</b> เลือก <b>Install app</b> หรือ <b>Add to Home screen</b></p>
+                <p><b>3.</b> เลือก <b>ติดตั้ง GTD-GoWork</b></p>
                 <p><b>4.</b> ยืนยันการติดตั้ง</p>
               </div>
             ) : (
