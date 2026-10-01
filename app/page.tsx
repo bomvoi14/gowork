@@ -760,8 +760,8 @@ export default function Home() {
             ) : (
               <div className="mt-4 text-left text-[14px] leading-7 text-slate-600">
                 <p className="mb-1 font-bold text-slate-800">คอมพิวเตอร์ · ใช้ Chrome / Edge</p>
-                <p><b>1.</b> เปิด <b>Chrome / Edge</b> แล้ววางลิงก์</p>
-                <p><b>2.</b> เปิดเมนูของ Browser</p>
+                <p><b>1.</b> เปิด <b>Chrome / Edge</b> แล้ววางลิงก์ กด Enter</p>
+                <p><b>2.</b> เลื่อนมาล่างสุดของแอพ</p>
                 <p><b>3.</b> เลือก <b>ติดตั้ง GTD-GoWork</b></p>
                 <p><b>4.</b> ยืนยันการติดตั้ง</p>
               </div>
