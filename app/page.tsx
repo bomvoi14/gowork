@@ -727,7 +727,7 @@ export default function Home() {
           )}
         </div>
         <div className="pb-4 text-xs text-gray-400">
-          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.7
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.8
         </div>
       </div>
       {/* Welcome Notice */}
@@ -753,15 +753,17 @@ export default function Home() {
               <div className="mt-4 text-left text-[14px] leading-7 text-slate-600">
                 <p className="mb-1 font-bold text-slate-800">Android · ใช้ Google Chrome</p>
                 <p><b>1.</b> เปิด <b>Chrome</b> แล้ววางลิงก์</p>
-                <p><b>2.</b> แตะเมนู <b>⋮</b></p>
+                <p><b>2.</b> แตะเมนู <b>เลื่อนมาล่างสุดของแอพ</b></p>
                 <p><b>3.</b> เลือก <b>ติดตั้ง GTD-GoWork</b></p>
                 <p><b>4.</b> ยืนยันการติดตั้ง</p>
               </div>
             ) : (
               <div className="mt-4 text-left text-[14px] leading-7 text-slate-600">
                 <p className="mb-1 font-bold text-slate-800">คอมพิวเตอร์ · ใช้ Chrome / Edge</p>
-                <p><b>1.</b> เปิด Chrome หรือ Edge แล้ววางลิงก์</p>
-                <p><b>2.</b> เลือก <b>Install GTD-GoWork</b> จากเมนู Browser</p>
+                <p><b>1.</b> เปิด <b>Chrome / Edge</b> แล้ววางลิงก์</p>
+                <p><b>2.</b> เปิดเมนูของ Browser</p>
+                <p><b>3.</b> เลือก <b>ติดตั้ง GTD-GoWork</b></p>
+                <p><b>4.</b> ยืนยันการติดตั้ง</p>
               </div>
             )}
 
