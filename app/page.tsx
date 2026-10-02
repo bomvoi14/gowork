@@ -51,7 +51,6 @@ export default function Home() {
   const selectedEmpIdRef = useRef("");
   const selectedCraftRef = useRef("All");
   const lastBackAtRef = useRef(0);
-  const exitPendingRef = useRef(false);
   const backToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     setTourCompleted(localStorage.getItem("gtdTourCompleted") === "1");
@@ -126,14 +125,11 @@ export default function Home() {
   useEffect(() => { selectedCraftRef.current = selectedCraft; }, [selectedCraft]);
   useEffect(() => {
     const currentUrl = () => window.location.pathname + window.location.search;
-    if (!window.history.state?.gtdMainGuard) {
-      window.history.pushState({ gtdMainGuard: true }, "", currentUrl());
-    }
+    // Keep one disposable history entry above the current page, including LINE's in-app browser.
+    const armBack = () => window.history.pushState({ gtdBackGuard: true }, "", currentUrl());
+    armBack();
+
     const handleBack = () => {
-      if (exitPendingRef.current) {
-        exitPendingRef.current = false;
-        return;
-      }
       if (selectedEmpIdRef.current) {
         selectedEmpIdRef.current = "";
         setShowNotice(false);
@@ -142,6 +138,9 @@ export default function Home() {
         setModalCategory(null);
         setProfileModalStep("hidden");
         setTourStep(null);
+        lastBackAtRef.current = 0;
+        setShowBackExitToast(false);
+        armBack();
         window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
         return;
       }
@@ -149,21 +148,23 @@ export default function Home() {
         selectedCraftRef.current = "All";
         setSelectedCraft("All");
         setCurrentPage(1);
-        window.history.pushState({ gtdMainGuard: true }, "", currentUrl());
+        lastBackAtRef.current = 0;
+        setShowBackExitToast(false);
+        armBack();
         window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
         return;
       }
       const now = Date.now();
       if (now - lastBackAtRef.current <= 2000) {
+        lastBackAtRef.current = 0;
         if (backToastTimerRef.current) clearTimeout(backToastTimerRef.current);
         setShowBackExitToast(false);
-        exitPendingRef.current = true;
-        window.history.back();
+        // Do not re-arm: allow the browser or LINE to return to the previous page.
         return;
       }
       lastBackAtRef.current = now;
       setShowBackExitToast(true);
-      window.history.pushState({ gtdMainGuard: true }, "", currentUrl());
+      armBack();
       if (backToastTimerRef.current) clearTimeout(backToastTimerRef.current);
       backToastTimerRef.current = setTimeout(() => {
         setShowBackExitToast(false);
@@ -176,10 +177,6 @@ export default function Home() {
       if (backToastTimerRef.current) clearTimeout(backToastTimerRef.current);
     };
   }, []);
-  useEffect(() => {
-    if (!selectedEmpId) return;
-    window.history.pushState({ gtdView: "detail" }, "", window.location.pathname + window.location.search);
-  }, [selectedEmpId]);
 
   const startTour = () => {
     setShowNotice(false);
@@ -681,7 +678,7 @@ export default function Home() {
               <label className="text-sm font-bold text-gray-600 whitespace-nowrap">Group:</label>
               <select
                 value={selectedCraft}
-                onChange={(e) => { setSelectedCraft(e.target.value); setCurrentPage(1); }}
+                onChange={(e) => { selectedCraftRef.current = e.target.value; setSelectedCraft(e.target.value); setCurrentPage(1); lastBackAtRef.current = 0; setShowBackExitToast(false); }}
                 className="w-full bg-white border border-gray-300 text-gray-700 rounded-lg px-3 py-2 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
                 {craftsList.map(c => (
