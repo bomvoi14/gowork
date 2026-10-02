@@ -1,4 +1,4 @@
-const CACHE_NAME = "gtd-gowork-v0.11.9";
+const CACHE_NAME = "gtd-gowork-v0.11.10";
 const APP_SHELL = ["/", "/GTD.png", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -23,7 +23,18 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
-  event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
-  );
+  // Fetch current app assets first; cached JS must not keep an old Back handler alive.
+  if (new URL(event.request.url).origin === self.location.origin) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+  event.respondWith(fetch(event.request));
 });
