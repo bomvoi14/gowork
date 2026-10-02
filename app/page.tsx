@@ -51,6 +51,7 @@ export default function Home() {
   const selectedEmpIdRef = useRef("");
   const selectedCraftRef = useRef("All");
   const lastBackAtRef = useRef(0);
+  const exitPendingRef = useRef(false);
   const backToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     setTourCompleted(localStorage.getItem("gtdTourCompleted") === "1");
@@ -130,6 +131,7 @@ export default function Home() {
     armBack();
 
     const handleBack = () => {
+      if (exitPendingRef.current) return;
       if (selectedEmpIdRef.current) {
         selectedEmpIdRef.current = "";
         setShowNotice(false);
@@ -159,7 +161,9 @@ export default function Home() {
         lastBackAtRef.current = 0;
         if (backToastTimerRef.current) clearTimeout(backToastTimerRef.current);
         setShowBackExitToast(false);
-        // Do not re-arm: allow the browser or LINE to return to the previous page.
+        // We are now at the underlying page; the next Back leaves this app.
+        exitPendingRef.current = true;
+        window.history.back();
         return;
       }
       lastBackAtRef.current = now;
