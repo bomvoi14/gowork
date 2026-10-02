@@ -128,7 +128,18 @@ export default function Home() {
     const currentUrl = () => window.location.pathname + window.location.search;
     // Keep one disposable history entry above the current page, including LINE's in-app browser.
     const armBack = () => window.history.pushState({ gtdBackGuard: true }, "", currentUrl());
-    armBack();
+    if (!window.history.state?.gtdBackGuard) armBack();
+
+    // Chrome can restore this page from the back-forward cache without remounting React.
+    // Reset the exit flag and restore the guard every time the page becomes active again.
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      exitPendingRef.current = false;
+      lastBackAtRef.current = 0;
+      setShowBackExitToast(false);
+      if (backToastTimerRef.current) clearTimeout(backToastTimerRef.current);
+      if (!window.history.state?.gtdBackGuard) armBack();
+    };
 
     const handleBack = () => {
       if (exitPendingRef.current) return;
@@ -175,8 +186,10 @@ export default function Home() {
         lastBackAtRef.current = 0;
       }, 2000);
     };
+    window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("popstate", handleBack);
     return () => {
+      window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("popstate", handleBack);
       if (backToastTimerRef.current) clearTimeout(backToastTimerRef.current);
     };
@@ -776,7 +789,7 @@ export default function Home() {
           )}
         </div>
         <div className="pb-4 text-center text-xs font-medium tracking-wide text-slate-500">
-          Created by <span className="font-semibold">BOM_GTD</span> <span className="mx-1 opacity-60">·</span> Beta v0.11.10
+          Created by <span className="font-semibold">BOM_GTD</span> <span className="mx-1 opacity-60">·</span> Beta v0.11.11
         </div>
       </div>
       {/* Welcome Notice */}
