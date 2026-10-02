@@ -47,6 +47,12 @@ export default function Home() {
   const [tourCompleted, setTourCompleted] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [showBackExitToast, setShowBackExitToast] = useState(false);
+  const selectedEmpIdRef = useRef("");
+  const selectedCraftRef = useRef("All");
+  const lastBackAtRef = useRef(0);
+  const exitPendingRef = useRef(false);
+  const backToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     setTourCompleted(localStorage.getItem("gtdTourCompleted") === "1");
   }, []);
@@ -116,21 +122,63 @@ export default function Home() {
     }
   };
 
+  useEffect(() => { selectedEmpIdRef.current = selectedEmpId; }, [selectedEmpId]);
+  useEffect(() => { selectedCraftRef.current = selectedCraft; }, [selectedCraft]);
+  useEffect(() => {
+    const currentUrl = () => window.location.pathname + window.location.search;
+    if (!window.history.state?.gtdMainGuard) {
+      window.history.pushState({ gtdMainGuard: true }, "", currentUrl());
+    }
+    const handleBack = () => {
+      if (exitPendingRef.current) {
+        exitPendingRef.current = false;
+        return;
+      }
+      if (selectedEmpIdRef.current) {
+        selectedEmpIdRef.current = "";
+        setShowNotice(false);
+        setSelectedEmpId("");
+        setSearch("");
+        setModalCategory(null);
+        setProfileModalStep("hidden");
+        setTourStep(null);
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+        return;
+      }
+      if (selectedCraftRef.current !== "All") {
+        selectedCraftRef.current = "All";
+        setSelectedCraft("All");
+        setCurrentPage(1);
+        window.history.pushState({ gtdMainGuard: true }, "", currentUrl());
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+        return;
+      }
+      const now = Date.now();
+      if (now - lastBackAtRef.current <= 2000) {
+        if (backToastTimerRef.current) clearTimeout(backToastTimerRef.current);
+        setShowBackExitToast(false);
+        exitPendingRef.current = true;
+        window.history.back();
+        return;
+      }
+      lastBackAtRef.current = now;
+      setShowBackExitToast(true);
+      window.history.pushState({ gtdMainGuard: true }, "", currentUrl());
+      if (backToastTimerRef.current) clearTimeout(backToastTimerRef.current);
+      backToastTimerRef.current = setTimeout(() => {
+        setShowBackExitToast(false);
+        lastBackAtRef.current = 0;
+      }, 2000);
+    };
+    window.addEventListener("popstate", handleBack);
+    return () => {
+      window.removeEventListener("popstate", handleBack);
+      if (backToastTimerRef.current) clearTimeout(backToastTimerRef.current);
+    };
+  }, []);
   useEffect(() => {
     if (!selectedEmpId) return;
-    const currentUrl = window.location.pathname + window.location.search;
-    window.history.pushState({ gtdView: "detail" }, "", currentUrl);
-    const handleBack = () => {
-      setShowNotice(false);
-      setSelectedEmpId("");
-      setSearch("");
-      setModalCategory(null);
-      setProfileModalStep("hidden");
-      setTourStep(null);
-      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-    };
-    window.addEventListener("popstate", handleBack, { once: true });
-    return () => window.removeEventListener("popstate", handleBack);
+    window.history.pushState({ gtdView: "detail" }, "", window.location.pathname + window.location.search);
   }, [selectedEmpId]);
 
   const startTour = () => {
@@ -727,7 +775,7 @@ export default function Home() {
           )}
         </div>
         <div className="pb-4 text-xs text-gray-400">
-          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.8
+          Created by <span className="font-semibold text-gray-500">BOM_GTD</span> · Beta v0.11.9
         </div>
       </div>
       {/* Welcome Notice */}
@@ -836,6 +884,13 @@ export default function Home() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {showBackExitToast && (
+        <div className="fixed bottom-6 left-1/2 z-[10030] -translate-x-1/2 px-4 pointer-events-none">
+          <div className="whitespace-nowrap rounded-full bg-slate-900/95 px-5 py-3 text-[13px] font-semibold text-white shadow-2xl">
+            กด Back อีกครั้งเพื่อออกจาก GTD-GoWork
           </div>
         </div>
       )}
