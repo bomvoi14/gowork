@@ -36,7 +36,7 @@ export default function Home() {
   const [selectedCraft, setSelectedCraft] = useState<string>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [profileModalStep, setProfileModalStep] = useState<'hidden' | 'edit' | 'confirm' | 'no-change' | 'success'>('hidden');
+  const [profileModalStep, setProfileModalStep] = useState<'hidden' | 'edit' | 'invalid-phone' | 'confirm' | 'no-change' | 'success' | 'error'>('hidden');
   const [editPhone, setEditPhone] = useState('');
   const [editCraft, setEditCraft] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -376,7 +376,7 @@ export default function Home() {
   };
   const handleInitialSubmit = () => {
     if (editPhone.length > 0 && editPhone.length < 10) {
-      alert("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก");
+      setProfileModalStep('invalid-phone');
       return;
     }
     if (editCraft === origCraft && editPhone === origPhone) {
@@ -402,7 +402,7 @@ export default function Home() {
       if (!response.ok || !result.ok) throw new Error(result?.error || "update failed");
       setProfileModalStep('success');
     } catch (e) {
-      alert("ส่งไม่สำเร็จ กรุณาลองใหม่");
+      setProfileModalStep('error');
     }
     setIsSubmitting(false);
   };
@@ -1130,6 +1130,40 @@ export default function Home() {
                   </button>
                 </div>
               </>
+            )}
+            {profileModalStep === 'invalid-phone' && (
+              <div className="text-center py-4">
+                <div className="text-5xl mb-3">⚠️</div>
+                <h3 className="font-bold text-xl text-gray-800 mb-2">เบอร์โทรศัพท์ไม่ครบ</h3>
+                <p className="text-sm text-gray-500 mb-6">กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก</p>
+                <button
+                  className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors"
+                  onClick={() => setProfileModalStep('edit')}
+                >
+                  กลับไปแก้ไข
+                </button>
+              </div>
+            )}
+            {profileModalStep === 'error' && (
+              <div className="text-center py-4">
+                <div className="text-5xl mb-3">❌</div>
+                <h3 className="font-bold text-xl text-gray-800 mb-2">ส่งข้อมูลไม่สำเร็จ</h3>
+                <p className="text-sm text-gray-500 mb-6">ระบบไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง</p>
+                <div className="flex gap-2">
+                  <button
+                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl border border-gray-200"
+                    onClick={() => setProfileModalStep('edit')}
+                  >
+                    กลับไปแก้ไข
+                  </button>
+                  <button
+                    className="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl"
+                    onClick={() => setProfileModalStep('confirm')}
+                  >
+                    ลองอีกครั้ง
+                  </button>
+                </div>
+              </div>
             )}
             {profileModalStep === 'no-change' && (
               <div className="text-center py-4">
