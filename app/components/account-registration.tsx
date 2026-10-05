@@ -8,6 +8,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
   const [suffix, setSuffix] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -36,7 +37,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
       <div className="w-full rounded-3xl bg-white p-6 shadow-lg border border-gray-100">
         <div className="text-center mb-6">
           <h1 className="text-xl font-bold text-gray-800">ลงทะเบียนเข้าใช้งานครั้งแรก</h1>
-          <p className="mt-2 text-sm text-gray-500">ผูกบัญชี LINE กับข้อมูลพนักงานของคุณ</p>
+          <p className="mt-2 text-sm text-gray-500">ยืนยันตัวตนด้วยข้อมูลของคุณ</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <label className="block text-sm font-bold text-gray-700">เลขประจำตัว
@@ -48,7 +49,17 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
           {error && <div className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div>}
           <button type="submit" disabled={busy} className="w-full rounded-xl bg-green-600 px-4 py-3 font-bold text-white disabled:opacity-50">{busy ? "กำลังตรวจสอบ..." : "ยืนยันและลงทะเบียน"}</button>
         </form>
-        <button type="button" onClick={() => signOut({ callbackUrl: "/" })} className="mt-4 w-full text-sm font-semibold text-gray-400">ออกจากระบบ LINE</button>
+        <button
+          type="button"
+          disabled={cancelling}
+          onClick={() => {
+            setCancelling(true);
+            signOut({ callbackUrl: "/" });
+          }}
+          className="mt-4 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-600 transition-all hover:bg-gray-100 active:scale-95 disabled:opacity-60"
+        >
+          {cancelling ? "กำลังยกเลิก..." : "ยกเลิกการลงทะเบียน"}
+        </button>
       </div>
     </div>
   );
