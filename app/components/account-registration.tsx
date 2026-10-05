@@ -13,7 +13,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError("");
-    if (empId !== confirmEmpId) return setError("กรุณาตรวจสอบ EmpID ให้ตรงกัน");
+    if (empId !== confirmEmpId) return setError("กรุณาตรวจสอบ เลขประจำตัว ให้ตรงกัน");
     if (!/^[A-Za-z]{4}$/.test(suffix)) return setError("กรุณากรอก 4 ตัวท้ายของนามสกุลภาษาอังกฤษ");
     setBusy(true);
     try {
@@ -40,10 +40,10 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
           <p className="mt-2 text-sm text-gray-500">ผูกบัญชี LINE กับข้อมูลพนักงานของคุณ</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
-          <label className="block text-sm font-bold text-gray-700">EmpID
+          <label className="block text-sm font-bold text-gray-700">เลขประจำตัว
             <input value={empId} onChange={(e) => setEmpId(e.target.value.trim())} autoComplete="off" className="mt-1.5 w-full rounded-xl border-2 border-gray-200 p-3 text-sm" />
           </label>
-          <label className="block text-sm font-bold text-gray-700">ยืนยัน EmpID อีกครั้ง
+          <label className="block text-sm font-bold text-gray-700">ยืนยัน เลขประจำตัว อีกครั้ง
             <input value={confirmEmpId} onChange={(e) => setConfirmEmpId(e.target.value.trim())} autoComplete="off" className="mt-1.5 w-full rounded-xl border-2 border-gray-200 p-3 text-sm" />
           </label>
           <label className="block text-sm font-bold text-gray-700">4 ตัวท้ายของนามสกุลภาษาอังกฤษ
