@@ -147,15 +147,14 @@ export async function updateEmployeeProfile(input: {
   const matchingRows = rows
     .map((row, index) => ({ row, sheetRow: index + 1 }))
     .filter(({ row }) => {
-      const candidates = [row[0], row[1], row[8]].map((value) => String(value || "").trim());
-      return candidates.includes(input.empId);
+      return String(row[0] || "").trim() === input.empId;
     });
 
   if (!matchingRows.length) throw new Error("EMPLOYEE_NOT_FOUND");
 
   const data = matchingRows.flatMap(({ sheetRow }) => [
-    { range: `'รายละเอียด'!L${sheetRow}`, values: [[input.editCraft]] },
-    { range: `'รายละเอียด'!K${sheetRow}`, values: [[input.editPhone]] },
+    { range: `'รายละเอียด'!I${sheetRow}`, values: [[input.editCraft]] },
+    { range: `'รายละเอียด'!J${sheetRow}`, values: [[input.editPhone]] },
   ]);
   data.push({
     range: "'รายละเอียด'!Z1",
