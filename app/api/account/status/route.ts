@@ -1,23 +1,38 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
+import { findLineEmployee } from "@/lib/google-sheets";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const user = session?.user as
-    | ((NonNullable<typeof session>["user"]) & { lineUserId?: string })
-    | undefined;
-  const lineUserId = user?.lineUserId || "";
+  try {
+    const session = await getServerSession(authOptions);
+    const user = session?.user as
+      | ((NonNullable<typeof session>["user"]) & { lineUserId?: string })
+      | undefined;
+    const lineUserId = user?.lineUserId || "";
 
-  if (!user || !lineUserId) {
-    return NextResponse.json({ ok: false, status: "unauthenticated" }, { status: 401 });
+    if (!user || !lineUserId) {
+      return NextResponse.json({ ok: false, status: "unauthenticated" }, { status: 401 });
+    }
+
+    const mapping = await findLineEmployee(lineUserId);
+    if (!mapping) {
+      return NextResponse.json({ ok: true, status: "unbound" });
+    }
+
+    const status = ["active", "inactive", "disabled"].includes(mapping.status)
+      ? mapping.status
+      : "inactive";
+
+    return NextResponse.json({
+      ok: true,
+      status,
+      ...(status === "active" ? { employee: { empId: mapping.empId, name: mapping.name } } : {}),
+    });
+  } catch (error) {
+    console.error("Account status failed:", error);
+    return NextResponse.json({ ok: false, status: "error" }, { status: 500 });
   }
-
-  return NextResponse.json({
-    ok: true,
-    status: "mapping_backend_pending",
-    authenticated: true,
-  });
 }
