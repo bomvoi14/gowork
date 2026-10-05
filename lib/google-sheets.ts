@@ -37,7 +37,7 @@ export async function findLineEmployee(lineUserId: string) {
   const sheets = getSheetsClient();
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: ACCOUNT_SPREADSHEET_ID,
-    range: "'LINE_พนักงาน'!A2:H",
+    range: "'LINE_พนักงาน'!A2:I",
   });
   const rows = response.data.values ?? [];
   const matches = rows.filter((row) => String(row[3] || "").trim() === lineUserId);
@@ -48,6 +48,7 @@ export async function findLineEmployee(lineUserId: string) {
     empId: String(row[1] || "").trim(),
     name: String(row[2] || "").trim(),
     status: String(row[5] || "").trim().toLowerCase(),
+    role: String(row[8] || "user").trim().toLowerCase() === "admin" ? "admin" : "user",
   };
 }
 
