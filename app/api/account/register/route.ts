@@ -23,6 +23,8 @@ export async function POST(request: Request) {
       | ((NonNullable<typeof session>["user"]) & { lineUserId?: string })
       | undefined;
     const lineUserId = user?.lineUserId || "";
+    const lineName = user?.name || "";
+
     if (!user || !lineUserId) {
       return NextResponse.json({ ok: false, error: "unauthenticated" }, { status: 401 });
     }
@@ -52,7 +54,7 @@ export async function POST(request: Request) {
       empId: employee.empId,
       name: employee.name,
       lineUserId,
-      lineName: session.user?.name || "",
+      lineName,
     });
 
     return NextResponse.json({
