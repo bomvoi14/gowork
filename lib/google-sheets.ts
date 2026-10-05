@@ -146,7 +146,10 @@ export async function updateEmployeeProfile(input: {
   const rows = detail.data.values ?? [];
   const matchingRows = rows
     .map((row, index) => ({ row, sheetRow: index + 1 }))
-    .filter(({ row }) => String(row[8] || "").trim() === input.empId);
+    .filter(({ row }) => {
+      const candidates = [row[0], row[1], row[8]].map((value) => String(value || "").trim());
+      return candidates.includes(input.empId);
+    });
 
   if (!matchingRows.length) throw new Error("EMPLOYEE_NOT_FOUND");
 
