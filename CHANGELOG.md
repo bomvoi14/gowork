@@ -2,6 +2,16 @@
 
 ประวัติการเปลี่ยนแปลงของ GTD-GoWork แยกสถานะระหว่างโค้ดใน GitHub กับการยืนยัน Production จริง ไม่ถือว่า commit สำเร็จเท่ากับ deploy สำเร็จ
 
+## Maintenance — 2026-10-05 — GitHub verified
+### Changed
+- ปิดหน้า Beta Production ชั่วคราวและแสดงหน้า Maintenance เพื่อพัฒนา Security V1
+- หน้า Maintenance ไม่มีการโหลด employee CSV, ไม่มี LINE Login และไม่มีการส่งคำขอแก้ไขข้อมูลจากหน้าแอป
+- เก็บ Beta v0.11.11 ไว้ในประวัติ Git สำหรับ rollback
+
+### Deployment status
+- ยืนยันเฉพาะการเปลี่ยนแปลงใน GitHub `main`; ต้องตรวจ Vercel Production แยกต่างหาก
+- การปิดหน้าเว็บไม่เท่ากับการปิดสิทธิ์ Google Sheet; ต้องเปลี่ยน Sheet เป็น Restricted แยกต่างหากหลังตรวจ dependency แล้ว
+
 ## Unreleased — Security V1 / target v1.0.0
 
 ### Planned
@@ -20,8 +30,8 @@
 
 ### Development policy
 - พัฒนาใน branch `security-v1`
-- `main` ยังคงเป็น Beta/Production ระหว่างการพัฒนา
-- ห้ามปิด public access ของ Google Sheet ปัจจุบันก่อน Private server-side path ผ่านการทดสอบ
+- `main` แสดง Maintenance ระหว่างการพัฒนา; Beta v0.11.11 เก็บไว้เป็น rollback history
+- หลังหยุด Beta ให้ตรวจว่าไม่มีระบบอื่นพึ่ง public CSV แล้วจึงเปลี่ยน Google Sheet เป็น Restricted; Security V1 จะใช้ Private server-side path
 
 ## Beta v0.11.11 — 2026-10-05 — GitHub verified
 ### Fixed
