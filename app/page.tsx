@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import Papa from 'papaparse';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import { AccountRegistration } from './components/account-registration';
 interface Job {
   id: string;
   name: string;
@@ -48,6 +49,7 @@ export default function Home() {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
   const [showBackExitToast, setShowBackExitToast] = useState(false);
+  const [accountStatus, setAccountStatus] = useState<"checking" | "unbound" | "active" | "inactive" | "disabled" | "error">("checking");
   const selectedEmpIdRef = useRef("");
   const selectedCraftRef = useRef("All");
   const lastBackAtRef = useRef(0);
@@ -300,7 +302,17 @@ export default function Home() {
   }, [session]);
   useEffect(() => {
     // Security V1 preview: do not load employee data before LINE authentication.
-    if (sessionStatus !== "authenticated") {
+    if (sessionStatus === "authenticated" && accountStatus === "checking") {
+    return <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center font-bold text-gray-600">กำลังตรวจสอบบัญชี...</div>;
+  }
+  if (sessionStatus === "authenticated" && accountStatus === "unbound") {
+    return <AccountRegistration onRegistered={() => window.location.reload()} />;
+  }
+  if (sessionStatus === "authenticated" && accountStatus !== "active") {
+    return <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center p-6"><div className="bg-white rounded-3xl p-7 shadow-lg text-center"><h1 className="font-bold text-gray-800">ไม่สามารถเข้าใช้งานได้</h1><p className="mt-2 text-sm text-gray-500">กรุณาติดต่อผู้ดูแลระบบ</p></div></div>;
+  }
+
+  if (sessionStatus !== "authenticated") {
       if (sessionStatus !== "loading") setLoading(false);
       return;
     }
@@ -364,6 +376,17 @@ export default function Home() {
       }
     });
   }, [sessionStatus]);
+  useEffect(() => {
+    if (sessionStatus !== "authenticated") return;
+    fetch("/api/account/status", { cache: "no-store" })
+      .then(async (response) => {
+        const result = await response.json();
+        if (!response.ok) throw new Error();
+        setAccountStatus(result.status);
+      })
+      .catch(() => setAccountStatus("error"));
+  }, [sessionStatus]);
+
   const userJobs = data.filter(d => d.empId === selectedEmpId && selectedEmpId !== '');
   const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
   const origCraft = selectedUserInfo?.craft && selectedUserInfo.craft !== '-' ? selectedUserInfo.craft : '';
