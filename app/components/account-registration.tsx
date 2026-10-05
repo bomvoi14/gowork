@@ -5,7 +5,6 @@ import { signOut } from "next-auth/react";
 
 export function AccountRegistration({ onRegistered }: { onRegistered: () => void }) {
   const [empId, setEmpId] = useState("");
-  const [confirmEmpId, setConfirmEmpId] = useState("");
   const [suffix, setSuffix] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -13,14 +12,14 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError("");
-    if (empId !== confirmEmpId) return setError("กรุณาตรวจสอบ เลขประจำตัว ให้ตรงกัน");
+    if (!/^\d+$/.test(empId)) return setError("กรุณากรอกเลขประจำตัวเป็นตัวเลขเท่านั้น");
     if (!/^[A-Za-z]{4}$/.test(suffix)) return setError("กรุณากรอก 4 ตัวท้ายของนามสกุลภาษาอังกฤษ");
     setBusy(true);
     try {
       const response = await fetch("/api/account/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ empId, confirmEmpId, surnameSuffix: suffix }),
+        body: JSON.stringify({ empId, surnameSuffix: suffix }),
       });
       const result = await response.json();
       if (!response.ok) return setError(result?.error || "ไม่สามารถลงทะเบียนได้");
@@ -41,10 +40,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
         </div>
         <form onSubmit={submit} className="space-y-4">
           <label className="block text-sm font-bold text-gray-700">เลขประจำตัว
-            <input value={empId} onChange={(e) => setEmpId(e.target.value.trim())} autoComplete="off" className="mt-1.5 w-full rounded-xl border-2 border-gray-200 p-3 text-sm" />
-          </label>
-          <label className="block text-sm font-bold text-gray-700">ยืนยัน เลขประจำตัว อีกครั้ง
-            <input value={confirmEmpId} onChange={(e) => setConfirmEmpId(e.target.value.trim())} autoComplete="off" className="mt-1.5 w-full rounded-xl border-2 border-gray-200 p-3 text-sm" />
+            <input value={empId} onChange={(e) => setEmpId(e.target.value.replace(/\D/g, ""))} inputMode="numeric" pattern="[0-9]*" autoComplete="off" className="mt-1.5 w-full rounded-xl border-2 border-gray-200 p-3 text-sm" />
           </label>
           <label className="block text-sm font-bold text-gray-700">4 ตัวท้ายของนามสกุลภาษาอังกฤษ
             <input value={suffix} onChange={(e) => setSuffix(e.target.value.replace(/[^A-Za-z]/g, "").slice(0, 4).toUpperCase())} maxLength={4} autoComplete="off" className="mt-1.5 w-full rounded-xl border-2 border-gray-200 p-3 text-center text-lg font-bold uppercase tracking-[0.35em]" />
