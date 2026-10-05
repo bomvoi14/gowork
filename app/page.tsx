@@ -17,13 +17,8 @@ export default function MaintenancePage() {
             เพื่อปรับปรุงระบบความปลอดภัยและการคุ้มครองข้อมูล
           </p>
 
-          <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm leading-6 text-blue-800">
-            ข้อมูลและประวัติเดิมยังคงเก็บรักษาไว้
-            กรุณารอประกาศเปิดใช้งานระบบเวอร์ชันใหม่
-          </div>
-
-          <p className="mt-7 text-xs leading-5 text-slate-400">
-            ขออภัยในความไม่สะดวก
+          <p className="mt-6 text-sm leading-6 text-slate-500">
+            แล้วพบกันเร็ว ๆ นี้ครับ
           </p>
         </div>
 
