@@ -166,4 +166,29 @@ export async function updateEmployeeProfile(input: {
     spreadsheetId: SPREADSHEET_ID,
     requestBody: { valueInputOption: "RAW", data },
   });
+
+  if (ACCOUNT_SPREADSHEET_ID) {
+    try {
+      const timestamp = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: ACCOUNT_SPREADSHEET_ID,
+        range: "'แจ้งแก้ไข'!A:G",
+        valueInputOption: "USER_ENTERED",
+        insertDataOption: "INSERT_ROWS",
+        requestBody: {
+          values: [[
+            timestamp,
+            input.empId,
+            input.editedBy,
+            input.editCraft,
+            input.editPhone,
+            input.editedBy,
+            "SUCCESS " + matchingRows.length,
+          ]],
+        },
+      });
+    } catch (auditError) {
+      console.error("Edit audit log failed:", auditError);
+    }
+  }
 }
