@@ -1,0 +1,30 @@
+import type { NextAuthOptions } from "next-auth";
+import LineProvider from "next-auth/providers/line";
+
+export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
+  providers: [
+    LineProvider({
+      clientId: process.env.LINE_CLIENT_ID as string,
+      clientSecret: process.env.LINE_CLIENT_SECRET as string,
+    }),
+  ],
+  callbacks: {
+    async jwt({ token, account, profile }) {
+      if (account?.provider === "line") {
+        token.lineUserId =
+          account.providerAccountId ||
+          (profile as { sub?: string } | undefined)?.sub ||
+          "";
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as typeof session.user & { lineUserId?: string }).lineUserId =
+          typeof token.lineUserId === "string" ? token.lineUserId : "";
+      }
+      return session;
+    },
+  },
+};
