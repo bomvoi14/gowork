@@ -2,6 +2,7 @@ import "server-only";
 import { google } from "googleapis";
 
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || "";
+const ACCOUNT_SPREADSHEET_ID = process.env.GOOGLE_ACCOUNT_SPREADSHEET_ID || "";
 
 function required(name: string) {
   const value = process.env[name];
@@ -29,4 +30,23 @@ export async function readEmployeeMasterSample() {
     range: "'ข้อมูล_อบค.'!B2:D6",
   });
   return response.data.values ?? [];
+}
+
+export async function findLineEmployee(lineUserId: string) {
+  if (!ACCOUNT_SPREADSHEET_ID) throw new Error("Missing server configuration");
+  const sheets = getSheetsClient();
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: ACCOUNT_SPREADSHEET_ID,
+    range: "'LINE_พนักงาน'!A2:H",
+  });
+  const rows = response.data.values ?? [];
+  const matches = rows.filter((row) => String(row[3] || "").trim() === lineUserId);
+  if (!matches.length) return null;
+
+  const row = matches[matches.length - 1];
+  return {
+    empId: String(row[1] || "").trim(),
+    name: String(row[2] || "").trim(),
+    status: String(row[5] || "").trim().toLowerCase(),
+  };
 }
