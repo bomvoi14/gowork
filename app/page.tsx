@@ -49,6 +49,7 @@ export default function Home() {
   const [isStandalone, setIsStandalone] = useState(false);
   const [showBackExitToast, setShowBackExitToast] = useState(false);
   const [accountStatus, setAccountStatus] = useState<"checking" | "unbound" | "active" | "inactive" | "disabled" | "error">("checking");
+  const [accountEmpId, setAccountEmpId] = useState("");
   const selectedEmpIdRef = useRef("");
   const selectedCraftRef = useRef("All");
   const lastBackAtRef = useRef(0);
@@ -358,6 +359,7 @@ export default function Home() {
         const result = await response.json();
         if (!response.ok) throw new Error();
         setAccountStatus(result.status);
+        setAccountEmpId(result.status === "active" ? String(result.employee?.empId || "") : "");
       })
       .catch(() => setAccountStatus("error"));
   }, [sessionStatus]);
@@ -665,8 +667,8 @@ export default function Home() {
                 <button onClick={() => { setSelectedEmpId(''); setSearch(''); }} className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition-colors w-full text-center shadow-sm">
                   ✕ ปิด
                 </button>
-                {/* ซ่อนปุ่มแก้ไขถ้าไม่ล็อกอิน */}
-                {session && (
+                {/* แก้ไขได้เฉพาะข้อมูลของเลขประจำตัวที่ผูกกับ LINE นี้ */}
+                {session && accountEmpId !== "" && selectedUserInfo.empId === accountEmpId && (
                   <button
                     onClick={() => {
                       setEditCraft(origCraft);
