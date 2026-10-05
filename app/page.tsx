@@ -50,6 +50,7 @@ export default function Home() {
   const [showBackExitToast, setShowBackExitToast] = useState(false);
   const [accountStatus, setAccountStatus] = useState<"checking" | "unbound" | "active" | "inactive" | "disabled" | "error">("checking");
   const [accountEmpId, setAccountEmpId] = useState("");
+  const [accountRole, setAccountRole] = useState<"user" | "admin">("user");
   const selectedEmpIdRef = useRef("");
   const selectedCraftRef = useRef("All");
   const lastBackAtRef = useRef(0);
@@ -360,6 +361,7 @@ export default function Home() {
         if (!response.ok) throw new Error();
         setAccountStatus(result.status);
         setAccountEmpId(result.status === "active" ? String(result.employee?.empId || "") : "");
+        setAccountRole(result.status === "active" && result.role === "admin" ? "admin" : "user");
       })
       .catch(() => setAccountStatus("error"));
   }, [sessionStatus]);
@@ -668,7 +670,7 @@ export default function Home() {
                   ✕ ปิด
                 </button>
                 {/* แก้ไขได้เฉพาะข้อมูลของเลขประจำตัวที่ผูกกับ LINE นี้ */}
-                {session && accountEmpId !== "" && selectedUserInfo.empId === accountEmpId && (
+                {session && accountEmpId !== "" && (selectedUserInfo.empId === accountEmpId || accountRole === "admin") && (
                   <button
                     onClick={() => {
                       setEditCraft(origCraft);
