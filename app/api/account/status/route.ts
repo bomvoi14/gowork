@@ -29,7 +29,7 @@ export async function GET() {
     return NextResponse.json({
       ok: true,
       status,
-      ...(status === "active" ? { employee: { empId: mapping.empId, name: mapping.name } } : {}),
+      ...(status === "active" ? { employee: { empId: mapping.empId, name: mapping.name }, role: mapping.role } : {}),
     });
   } catch (error) {
     console.error("Account status failed:", error);
