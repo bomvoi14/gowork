@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Prompt } from "next/font/google";
 import "./globals.css";
-import { Providers } from "./providers"; // 👈 1. เพิ่มบรรทัดนี้
+import { Providers } from "./providers";
 
-const inter = Inter({ subsets: ["latin"] });
+const prompt = Prompt({
+  subsets: ["thai", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "GTD-GoWork App",
@@ -16,10 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Providers> 
-          {children} 
+    <html lang="th">
+      <body className={prompt.className}>
+        <Providers>
+          {children}
         </Providers>
       </body>
     </html>
