@@ -1,6 +1,5 @@
 "use client"
 import { useState, useMemo, useEffect, useRef } from 'react';
-import Papa from 'papaparse';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { AccountRegistration } from './components/account-registration';
 interface Job {
@@ -307,64 +306,50 @@ export default function Home() {
       return;
     }
     setLoading(true);
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
-    Papa.parse(sheetUrl, {
-      download: true,
-      header: false,
-      complete: (results) => {
-        const rows = results.data as string[][];
-        if (rows.length > 0 && rows[0][25]) {
-          setLastUpdated(rows[0][25]);
-        } else {
-          setLastUpdated('ไม่พบข้อมูลเวลา (Z1)');
-        }
+    fetch("/api/work-data", { cache: "no-store" })
+      .then(async (response) => {
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result?.error || "load failed");
+        return result.rows as string[][];
+      })
+      .then((rows) => {
+        if (rows.length > 0 && rows[0][25]) setLastUpdated(rows[0][25]);
+        else setLastUpdated("ไม่พบข้อมูลเวลา (Z1)");
+
         const formatted = rows.map((row) => {
-          if (!row[1] || !row[2] || row[1] === 'เลขทะเบียน') return null;
+          if (!row[1] || !row[2] || row[1] === "เลขทะเบียน") return null;
           return {
             id: String(row[1]).trim(),
             name: String(row[2]).trim(),
             date: row[3],
             days: parseInt(row[4]) || 0,
-            location: row[5] || '',
-            detail: row[6] || '',
-            approver: row[7] || '',
-            empId: row[8] ? String(row[8]).trim() : '',
-            department: row[9] || '-',
-            phone: row[10] || '-',
-            craft: row[11] ? String(row[11]).trim() : '-'
+            location: row[5] || "",
+            detail: row[6] || "",
+            approver: row[7] || "",
+            empId: row[8] ? String(row[8]).trim() : "",
+            department: row[9] || "-",
+            phone: row[10] || "-",
+            craft: row[11] ? String(row[11]).trim() : "-"
           } as Job;
         }).filter((item): item is Job => item !== null);
+
         const craftMap = new Map<string, string>();
         const nameMap = new Map<string, string>();
-        formatted.forEach(r => {
-          if (r.empId) {
-             if (r.craft && r.craft !== '-' && r.craft !== '') {
-                 craftMap.set(r.empId, r.craft);
-             }
-             const currentName = nameMap.get(r.empId) || '';
-             if (r.name.length > currentName.length) {
-                nameMap.set(r.empId, r.name);
-             }
-          }
+        formatted.forEach((r) => {
+          if (!r.empId) return;
+          if (r.craft && r.craft !== "-" && r.craft !== "") craftMap.set(r.empId, r.craft);
+          const currentName = nameMap.get(r.empId) || "";
+          if (r.name.length > currentName.length) nameMap.set(r.empId, r.name);
         });
-        formatted.forEach(r => {
-          if (r.empId) {
-             if (craftMap.has(r.empId)) {
-                 r.craft = craftMap.get(r.empId)!;
-             }
-             if (nameMap.has(r.empId)) {
-                 r.name = nameMap.get(r.empId)!;
-             }
-          }
+        formatted.forEach((r) => {
+          if (!r.empId) return;
+          if (craftMap.has(r.empId)) r.craft = craftMap.get(r.empId)!;
+          if (nameMap.has(r.empId)) r.name = nameMap.get(r.empId)!;
         });
         setData(formatted);
-        setLoading(false);
-      },
-      error: (err) => {
-        console.error("ดึงข้อมูลพลาด:", err);
-        setLoading(false);
-      }
-    });
+      })
+      .catch((error) => console.error("ดึงข้อมูลพลาด:", error))
+      .finally(() => setLoading(false));
   }, [sessionStatus]);
   useEffect(() => {
     if (sessionStatus !== "authenticated") return;
