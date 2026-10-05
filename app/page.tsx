@@ -302,16 +302,6 @@ export default function Home() {
   }, [session]);
   useEffect(() => {
     // Security V1 preview: do not load employee data before LINE authentication.
-    if (sessionStatus === "authenticated" && accountStatus === "checking") {
-    return <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center font-bold text-gray-600">กำลังตรวจสอบบัญชี...</div>;
-  }
-  if (sessionStatus === "authenticated" && accountStatus === "unbound") {
-    return <AccountRegistration onRegistered={() => window.location.reload()} />;
-  }
-  if (sessionStatus === "authenticated" && accountStatus !== "active") {
-    return <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center p-6"><div className="bg-white rounded-3xl p-7 shadow-lg text-center"><h1 className="font-bold text-gray-800">ไม่สามารถเข้าใช้งานได้</h1><p className="mt-2 text-sm text-gray-500">กรุณาติดต่อผู้ดูแลระบบ</p></div></div>;
-  }
-
   if (sessionStatus !== "authenticated") {
       if (sessionStatus !== "loading") setLoading(false);
       return;
@@ -484,6 +474,16 @@ export default function Home() {
   const getJobsByCategory = (category: string) => {
     return userJobs.filter(job => getJobCategory(job) === category);
   };
+  if (sessionStatus === "authenticated" && accountStatus === "checking") {
+    return <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center font-bold text-gray-600">กำลังตรวจสอบบัญชี...</div>;
+  }
+  if (sessionStatus === "authenticated" && accountStatus === "unbound") {
+    return <AccountRegistration onRegistered={() => window.location.reload()} />;
+  }
+  if (sessionStatus === "authenticated" && accountStatus !== "active") {
+    return <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center p-6"><div className="bg-white rounded-3xl p-7 shadow-lg text-center"><h1 className="font-bold text-gray-800">ไม่สามารถเข้าใช้งานได้</h1><p className="mt-2 text-sm text-gray-500">กรุณาติดต่อผู้ดูแลระบบ</p></div></div>;
+  }
+
   if (sessionStatus === "loading") {
     return (
       <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-6 flex items-center justify-center">
