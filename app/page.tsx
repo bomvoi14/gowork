@@ -499,7 +499,7 @@ export default function Home() {
             disabled={isLineLoggingIn}
             className="mt-6 w-full rounded-xl bg-[#06C755] px-4 py-3 font-bold text-white shadow-sm disabled:opacity-60"
           >
-            {isLineLoggingIn ? "กำลังไป LINE..." : "เข้าสู่ระบบด้วย LINE"}
+            {isLineLoggingIn ? "กำลังไปที่ LINE" : "เข้าสู่ระบบด้วย LINE"}
           </button>
           <p className="mt-5 text-[11px] font-medium tracking-wide text-gray-400">
             GTD-GoWork · Secure Access
@@ -550,7 +550,7 @@ export default function Home() {
                 {isLineLoggingIn ? (
                   <span className="flex items-center gap-2">
                     <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    กำลังเข้าสู่ LINE...
+                    กำลังไปที่ LINE
                   </span>
                 ) : (
                   'LINE Login'
