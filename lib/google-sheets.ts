@@ -123,7 +123,7 @@ export async function readPrivateWorkData() {
   const sheets = getSheetsClient();
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: "'รายละเอียด'!A:Z",
+    range: "'ชีต1'!A:Z",
   });
   return response.data.values ?? [];
 }
