@@ -116,3 +116,14 @@ export async function createLineEmployeeMapping(input: {
     },
   });
 }
+
+
+export async function readPrivateWorkData() {
+  if (!SPREADSHEET_ID) throw new Error("Missing server configuration");
+  const sheets = getSheetsClient();
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "'รายละเอียด'!A:Z",
+  });
+  return response.data.values ?? [];
+}
