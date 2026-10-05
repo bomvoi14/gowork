@@ -269,32 +269,18 @@ export default function Home() {
     }
     setShowNotice(true);
   }, []);
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7nMBc3RqicY55NNNS0MyeDrVZky1e-v9arDpWH_FoFLVDlZGHbu6S_HIcU6_OV-Wd/exec";
-  // บันทึกประวัติ LINE Login อัตโนมัติ 1 ครั้งต่อการ Login
+  // บันทึกประวัติ LINE Login ผ่าน Server API 1 ครั้งต่อ session ของหน้าเว็บ
   useEffect(() => {
     if (!session?.user) return;
     const lineUserId = (session.user as any).lineUserId || "";
     const loginKey = "line_login_logged_" + (lineUserId || session.user.name || "unknown");
-    // ป้องกันการบันทึกซ้ำเมื่อ Refresh หรือ React เรียก effect ซ้ำ
     if (sessionStorage.getItem(loginKey)) return;
-    // ตั้งค่าก่อนส่ง เพื่อกันการยิงซ้ำพร้อมกัน
     sessionStorage.setItem(loginKey, "1");
     const saveLogin = async () => {
       try {
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            action: "login",
-            lineUserId: lineUserId,
-            lineName: session.user?.name || "",
-            lineImage: session.user?.image || "",
-          }),
-        });
-        console.log("LINE Login logged");
+        const response = await fetch("/api/account/login-audit", { method: "POST" });
+        if (!response.ok) throw new Error("login audit failed");
       } catch (error) {
-        // ถ้าส่งไม่สำเร็จ ให้ลองบันทึกใหม่ได้ในครั้งถัดไป
         sessionStorage.removeItem(loginKey);
         console.error("บันทึกประวัติ LINE Login ไม่สำเร็จ:", error);
       }
