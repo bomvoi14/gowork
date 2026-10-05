@@ -500,7 +500,7 @@ export default function Home() {
     return (
       <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="w-full rounded-3xl bg-white p-7 text-center shadow-lg border border-gray-100">
-          <img src="/gtd-logo.svg" alt="GTD-GoWork" className="mx-auto mb-4 h-28 w-28 object-contain" />
+          <img src="/gtd-logo.png" alt="GTD-GoWork" className="mx-auto mb-4 h-28 w-28 object-contain" />
           <h1 className="text-xl font-bold text-gray-800">GTD-GoWork</h1>
           <button
             type="button"
