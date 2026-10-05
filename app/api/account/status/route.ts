@@ -6,10 +6,12 @@ export const runtime = "nodejs";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const lineUserId =
-    (session?.user as (typeof session.user & { lineUserId?: string }) | undefined)?.lineUserId || "";
+  const user = session?.user as
+    | ((NonNullable<typeof session>["user"]) & { lineUserId?: string })
+    | undefined;
+  const lineUserId = user?.lineUserId || "";
 
-  if (!session?.user || !lineUserId) {
+  if (!user || !lineUserId) {
     return NextResponse.json({ ok: false, status: "unauthenticated" }, { status: 401 });
   }
 
