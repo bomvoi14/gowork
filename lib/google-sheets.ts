@@ -136,7 +136,7 @@ export async function updateEmployeeProfile(input: {
   editPhone: string;
   editedBy: string;
 }) {
-  if (!SPREADSHEET_ID || !ACCOUNT_SPREADSHEET_ID) throw new Error("Missing server configuration");
+  if (!SPREADSHEET_ID) throw new Error("Missing server configuration");
   const sheets = getSheetsClient();
 
   const detail = await sheets.spreadsheets.values.get({
@@ -144,42 +144,23 @@ export async function updateEmployeeProfile(input: {
     range: "'รายละเอียด'!A:Z",
   });
   const rows = detail.data.values ?? [];
-  const rowIndex = rows.findIndex((row) => String(row[8] || "").trim() === input.empId);
-  if (rowIndex < 0) throw new Error("EMPLOYEE_NOT_FOUND");
+  const matchingRows = rows
+    .map((row, index) => ({ row, sheetRow: index + 1 }))
+    .filter(({ row }) => String(row[8] || "").trim() === input.empId);
 
-  const sheetRow = rowIndex + 1;
-  const oldCraft = String(rows[rowIndex]?.[11] || "").trim();
-  const oldPhone = String(rows[rowIndex]?.[10] || "").replace(/^'/, "").trim();
-  const newPhone = input.editPhone ? "'" + input.editPhone : "";
+  if (!matchingRows.length) throw new Error("EMPLOYEE_NOT_FOUND");
+
+  const data = matchingRows.flatMap(({ sheetRow }) => [
+    { range: `'รายละเอียด'!L${sheetRow}`, values: [[input.editCraft]] },
+    { range: `'รายละเอียด'!K${sheetRow}`, values: [[input.editPhone]] },
+  ]);
+  data.push({
+    range: "'รายละเอียด'!Z1",
+    values: [[new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })]],
+  });
 
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SPREADSHEET_ID,
-    requestBody: {
-      valueInputOption: "USER_ENTERED",
-      data: [
-        { range: `'รายละเอียด'!L${sheetRow}`, values: [[input.editCraft]] },
-        { range: `'รายละเอียด'!K${sheetRow}`, values: [[newPhone]] },
-        { range: "'รายละเอียด'!Z1", values: [[new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })]] },
-      ],
-    },
-  });
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: ACCOUNT_SPREADSHEET_ID,
-    range: "'แจ้งแก้ไข'!A:H",
-    valueInputOption: "USER_ENTERED",
-    insertDataOption: "INSERT_ROWS",
-    requestBody: {
-      values: [[
-        new Date().toISOString(),
-        input.empId,
-        oldCraft,
-        input.editCraft,
-        oldPhone,
-        input.editPhone,
-        input.editedBy,
-        "แก้ไขผ่าน GTD-GoWork Server API",
-      ]],
-    },
+    requestBody: { valueInputOption: "RAW", data },
   });
 }
