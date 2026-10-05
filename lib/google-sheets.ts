@@ -50,3 +50,69 @@ export async function findLineEmployee(lineUserId: string) {
     status: String(row[5] || "").trim().toLowerCase(),
   };
 }
+
+
+export async function findEmployeeForRegistration(empId: string) {
+  if (!SPREADSHEET_ID) throw new Error("Missing server configuration");
+  const sheets = getSheetsClient();
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "'ข้อมูล_อบค.'!B2:D",
+  });
+  const rows = response.data.values ?? [];
+  const row = rows.find((item) => String(item[0] || "").trim() === empId);
+  if (!row) return null;
+  return {
+    empId: String(row[0] || "").trim(),
+    name: String(row[1] || "").trim(),
+    englishName: String(row[2] || "").trim(),
+  };
+}
+
+export async function findActiveMappingByEmpId(empId: string) {
+  if (!ACCOUNT_SPREADSHEET_ID) throw new Error("Missing server configuration");
+  const sheets = getSheetsClient();
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: ACCOUNT_SPREADSHEET_ID,
+    range: "'LINE_พนักงาน'!A2:H",
+  });
+  const rows = response.data.values ?? [];
+  return rows.some(
+    (row) =>
+      String(row[1] || "").trim() === empId &&
+      String(row[5] || "").trim().toLowerCase() === "active"
+  );
+}
+
+export async function createLineEmployeeMapping(input: {
+  empId: string;
+  name: string;
+  lineUserId: string;
+  lineName: string;
+}) {
+  if (!ACCOUNT_SPREADSHEET_ID) throw new Error("Missing server configuration");
+  const sheets = getSheetsClient();
+
+  const existingLine = await findLineEmployee(input.lineUserId);
+  if (existingLine) throw new Error("LINE_ALREADY_BOUND");
+  if (await findActiveMappingByEmpId(input.empId)) throw new Error("EMPLOYEE_ALREADY_BOUND");
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: ACCOUNT_SPREADSHEET_ID,
+    range: "'LINE_พนักงาน'!A:H",
+    valueInputOption: "USER_ENTERED",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: {
+      values: [[
+        new Date().toISOString(),
+        input.empId,
+        input.name,
+        input.lineUserId,
+        input.lineName,
+        "Active",
+        new Date().toISOString(),
+        "ลงทะเบียนผ่าน GTD-GoWork Security V1",
+      ]],
+    },
+  });
+}
