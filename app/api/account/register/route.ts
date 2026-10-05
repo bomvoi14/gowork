@@ -31,10 +31,9 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const empId = String(body.empId || "").trim();
-    const confirmEmpId = String(body.confirmEmpId || "").trim();
     const suffix = String(body.surnameSuffix || "").trim().toUpperCase();
 
-    if (!empId || empId !== confirmEmpId || !/^[A-Z]{4}$/.test(suffix)) {
+    if (!/^\d+$/.test(empId) || !/^[A-Z]{4}$/.test(suffix)) {
       return NextResponse.json({ ok: false, error: "ข้อมูลยืนยันไม่ถูกต้อง" }, { status: 400 });
     }
 
