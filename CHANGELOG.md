@@ -1,38 +1,81 @@
 # GTD-GoWork — Changelog
-Source: prior development discussion and current GitHub files. Historical entries summarize earlier work, not independently verified tags/releases.
 
-## Beta v0.11.9 — 2026-10-02 GitHub verified
-- Updated app/page.tsx with Back navigation: leave employee details, reset selected Group, show double-Back exit prompt.
-- Updated public/sw.js cache name to gtd-gowork-v0.11.9.
-- Both changes committed to main. Actual installed PWA Back behavior still needs testing.
+ประวัติการเปลี่ยนแปลงของ GTD-GoWork แยกสถานะระหว่างโค้ดใน GitHub กับการยืนยัน Production จริง ไม่ถือว่า commit สำเร็จเท่ากับ deploy สำเร็จ
+
+## Unreleased — Security V1 / target v1.0.0
+
+### Planned
+- บังคับ LINE Login ก่อนเข้าใช้งาน
+- ลงทะเบียน LINE ↔ EmpID ครั้งแรก
+- ยืนยันด้วย EmpID 2 ครั้ง + 4 ตัวท้ายของนามสกุลภาษาอังกฤษ
+- ตรวจข้อมูลจาก `ข้อมูล_อบค.` (EmpID = B, English name = D)
+- 1 LINE ID = 1 EmpID; 1 EmpID = 1 Active LINE
+- สถานะ Active / Inactive / Disabled
+- รองรับกระบวนการเปลี่ยน LINE โดยรักษาประวัติเดิม
+- จำกัดการแก้ไขเฉพาะข้อมูลของตนเองจาก LINE Session ฝั่ง Server
+- ย้ายการอ่านข้อมูลพนักงานจาก public CSV ไป Server-side access
+- เปลี่ยน Google Sheet ต้นทางเป็น Restricted หลัง Cutover
+- เก็บ Login/Edit audit ต่อจากระบบเดิม
+- จำกัดจำนวนครั้งของการยืนยันข้อมูลที่ผิด และไม่เปิดเผยว่า field ใดผิด
+
+### Development policy
+- พัฒนาใน branch `security-v1`
+- `main` ยังคงเป็น Beta/Production ระหว่างการพัฒนา
+- ห้ามปิด public access ของ Google Sheet ปัจจุบันก่อน Private server-side path ผ่านการทดสอบ
+
+## Beta v0.11.11 — 2026-10-05 — GitHub verified
+### Fixed
+- เพิ่มการจัดการ `pageshow`/BFCache เพื่อ reset สถานะ Back guard เมื่อกลับเข้าแอป
+- ปรับ Back guard สำหรับการเปิดแอปซ้ำใน Chrome
+- ปรับ service-worker cache เป็น `gtd-gowork-v0.11.11`
+
+### Notes
+- การทำงาน Back บน Chrome/LINE/PWA ยังต้องถือผลทดสอบอุปกรณ์จริงเป็นหลัก
+- Production deployment ต้องตรวจแยกจาก GitHub commit
+
+## Beta v0.11.10 — 2026-10-05 — GitHub verified
+### Changed
+- เปลี่ยน service worker สำหรับ same-origin assets เป็น network-first เพื่อลดปัญหา UI/version เก่าค้างจาก cache
+- bump cache/version จาก v0.11.9
+
+## Beta v0.11.9 — 2026-10-02 — GitHub verified
+### Changed
+- ปรับ Back navigation: ออกจากรายละเอียดพนักงาน, reset Group, และ double-Back exit prompt
+- ปรับ footer credit เป็นรูปแบบเดียวกัน
+- service-worker cache `gtd-gowork-v0.11.9`
 
 ## Beta v0.11.8
-- Cross-platform install guidance, including user-adjusted Android/computer wording.
-- Previous GitHub main version before v0.11.9.
+- ปรับคำแนะนำการติดตั้งข้ามแพลตฟอร์ม
 
 ## Beta v0.11.7
-- Broadened PWA installation instructions and fallback copy-link flow.
+- เพิ่ม PWA installation instructions และ fallback copy-link flow
 
 ## Beta v0.11.6
-- iOS install helper and larger red Welcome warning.
+- เพิ่ม iOS install helper และปรับ Welcome warning
 
 ## Beta v0.11.5
-- Search focus/select-all and cursor handling improvements.
+- ปรับ search focus/select-all และ cursor handling
 
 ## Beta v0.11.4
-- Centered first Guided Tour step.
+- จัดตำแหน่ง Guided Tour step แรก
 
 ## Beta v0.11.3
-- Increased floating Step 3 preview height and object-contain display.
+- ปรับ Guided Tour Step 3 preview image
 
 ## Beta v0.11.2
-- Guided Tour Step 3 preview image.
+- เพิ่มภาพ `/tour-step3.jpg`
 
 ## Beta v0.11.0–v0.11.1
-- Six-step Tour with 1-based numbering and placement refinements.
+- Guided Tour 6 ขั้นตอนและปรับ placement
 
 ## Earlier v0.10.x
-- PWA/install and Tour placement refinements.
+- PWA/install และ Tour refinements
 
-## Maintenance
-For each future release record: date, files changed, intended behavior, tests actually run, commit SHA, and deployment verification status. Never equate commit with verified production deployment.
+## Release recording rule
+ทุก release ควรบันทึก:
+- วันที่
+- Version
+- Added / Changed / Fixed / Security
+- การทดสอบที่ทำจริง
+- Commit SHA / Git tag เมื่อเหมาะสม
+- Production deployment verification status
