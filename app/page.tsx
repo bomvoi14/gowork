@@ -389,18 +389,17 @@ export default function Home() {
     if (!selectedUserInfo) return;
     setIsSubmitting(true);
     try {
-      await fetch(SCRIPT_URL, {
+      const response = await fetch("/api/account/profile", {
         method: "POST",
-        mode: 'no-cors',
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           empId: selectedUserInfo.empId,
-          name: selectedUserInfo.name,
-          editCraft: editCraft,
-          editPhone: editPhone ? "'" + editPhone : "",
-          editedBy: session?.user?.name || "Unknown" // แอบส่งชื่อคนแก้จาก LINE ไปเก็บเป็นหลักฐาน
-        })
+          editCraft,
+          editPhone,
+        }),
       });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result?.error || "update failed");
       setProfileModalStep('success');
     } catch (e) {
       alert("ส่งไม่สำเร็จ กรุณาลองใหม่");
