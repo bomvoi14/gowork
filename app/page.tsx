@@ -24,7 +24,7 @@ interface UserStat {
   craft: string;
 }
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const [data, setData] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -299,6 +299,12 @@ export default function Home() {
     saveLogin();
   }, [session]);
   useEffect(() => {
+    // Security V1 preview: do not load employee data before LINE authentication.
+    if (sessionStatus !== "authenticated") {
+      if (sessionStatus !== "loading") setLoading(false);
+      return;
+    }
+    setLoading(true);
     const sheetUrl = "https://docs.google.com/spreadsheets/d/1ZgOXg_qzS7C1myOlpr8iZSXDaQ8kmAar5kPx8HnprqE/export?format=csv";
     Papa.parse(sheetUrl, {
       download: true,
@@ -357,7 +363,7 @@ export default function Home() {
         setLoading(false);
       }
     });
-  }, []);
+  }, [sessionStatus]);
   const userJobs = data.filter(d => d.empId === selectedEmpId && selectedEmpId !== '');
   const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
   const origCraft = selectedUserInfo?.craft && selectedUserInfo.craft !== '-' ? selectedUserInfo.craft : '';
@@ -455,6 +461,46 @@ export default function Home() {
   const getJobsByCategory = (category: string) => {
     return userJobs.filter(job => getJobCategory(job) === category);
   };
+  if (sessionStatus === "loading") {
+    return (
+      <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="w-full rounded-3xl bg-white p-7 text-center shadow-lg border border-gray-100">
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-green-500"></div>
+          <h1 className="text-lg font-bold text-gray-800">GTD-GoWork</h1>
+          <p className="mt-2 text-sm text-gray-500">กำลังตรวจสอบการเข้าสู่ระบบ...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (sessionStatus !== "authenticated") {
+    return (
+      <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="w-full rounded-3xl bg-white p-7 text-center shadow-lg border border-gray-100">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-50 text-3xl">GTD</div>
+          <h1 className="text-xl font-bold text-gray-800">GTD-GoWork</h1>
+          <p className="mt-2 text-sm leading-6 text-gray-500">
+            เพื่อความปลอดภัยของข้อมูล กรุณาเข้าสู่ระบบด้วย LINE ก่อนใช้งาน
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setIsLineLoggingIn(true);
+              signIn("line", { callbackUrl: "/?skipWelcome=1" });
+            }}
+            disabled={isLineLoggingIn}
+            className="mt-6 w-full rounded-xl bg-[#06C755] px-4 py-3 font-bold text-white shadow-sm disabled:opacity-60"
+          >
+            {isLineLoggingIn ? "กำลังไป LINE..." : "เข้าสู่ระบบด้วย LINE"}
+          </button>
+          <p className="mt-5 text-[11px] leading-5 text-gray-400">
+            Security V1 Preview · ระบบทดสอบ ไม่กระทบ Beta Production
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-4 relative flex flex-col justify-between">
       <div>
