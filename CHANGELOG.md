@@ -4,6 +4,11 @@
 
 ## Unreleased — Security V1 / target v1.0.0
 
+### Implemented on security-v1
+- เพิ่ม LINE Login gate: ผู้ใช้ที่ยังไม่ authenticated จะไม่เข้าหน้าหลักและ browser จะยังไม่เริ่มโหลด employee CSV ผ่าน app flow
+- เพิ่มหน้า Security V1 Preview ระหว่างตรวจ session/ก่อน LINE Login
+- การเปลี่ยนแปลงนี้อยู่เฉพาะ branch `security-v1`; `main`/Beta Production ยังไม่เปลี่ยน
+
 ### Planned
 - บังคับ LINE Login ก่อนเข้าใช้งาน
 - ลงทะเบียน LINE ↔ EmpID ครั้งแรก
