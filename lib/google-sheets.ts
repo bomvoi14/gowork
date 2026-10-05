@@ -168,6 +168,7 @@ export async function updateEmployeeProfile(input: {
 
   if (ACCOUNT_SPREADSHEET_ID) {
     try {
+      const employeeName = String(matchingRows[0]?.row?.[1] || "").trim();
       const timestamp = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
       await sheets.spreadsheets.values.append({
         spreadsheetId: ACCOUNT_SPREADSHEET_ID,
@@ -178,11 +179,11 @@ export async function updateEmployeeProfile(input: {
           values: [[
             timestamp,
             input.empId,
-            input.editedBy,
+            employeeName,
             input.editCraft,
             input.editPhone,
             input.editedBy,
-            "SUCCESS " + matchingRows.length,
+            "อัปเดตสำเร็จ " + matchingRows.length + " แถว",
           ]],
         },
       });
@@ -190,4 +191,24 @@ export async function updateEmployeeProfile(input: {
       console.error("Edit audit log failed:", auditError);
     }
   }
+}
+
+
+export async function appendLoginAudit(input: {
+  lineUserId: string;
+  lineName: string;
+  lineImage: string;
+}) {
+  if (!ACCOUNT_SPREADSHEET_ID) throw new Error("Missing server configuration");
+  const sheets = getSheetsClient();
+  const timestamp = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: ACCOUNT_SPREADSHEET_ID,
+    range: "'ประวัติ Login'!A:E",
+    valueInputOption: "USER_ENTERED",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: {
+      values: [[timestamp, input.lineUserId, input.lineName, input.lineImage, "Login"]],
+    },
+  });
 }
