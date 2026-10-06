@@ -829,7 +829,7 @@ export default function Home() {
           )}
         </div>
         <div className="pb-4 text-center text-xs font-medium tracking-wide text-slate-500">
-          Created by <span className="font-semibold">BOM_GTD</span> <span className="mx-1 opacity-60">·</span> Beta v0.11.11
+          GTD-GoWork v1.0.0 <span className="mx-1 opacity-60">·</span> Created by <span className="font-semibold">BOM_GTD</span>
         </div>
       </div>
       {/* Welcome Notice */}
