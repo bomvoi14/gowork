@@ -1,89 +1,82 @@
 # GTD-GoWork — Project Reference
-Last reviewed: 2026-10-05 | GitHub: bomvoi14/gowork | production branch: main | UI version: Beta v0.11.11
+Last reviewed: 2026-10-07 | Repository: bomvoi14/gowork | Production: v1.0.0
 
 ## Purpose
-ระบบรายงานจำนวนวันปฏิบัติงานตามคำสั่ง (Site) สำหรับค้นหาบุคลากร ดูรายละเอียดตามหมวดหมู่ และสรุปตาม Group/Craft ไม่ใช่หลักฐานยืนยันวันปฏิบัติงานจริง
+ระบบรายงานจำนวนวันปฏิบัติงานตามคำสั่ง (Site) สำหรับค้นหาบุคลากร ดูรายละเอียด และสรุปตาม Group/Craft ไม่ใช่หลักฐานยืนยันวันปฏิบัติงานจริง
 
-## Source of truth
-- อ่าน current GitHub source ก่อนแก้ทุกครั้ง เอกสารนี้เป็น reference ไม่ใช่ตัวแทน source code
-- Repository: https://github.com/bomvoi14/gowork
-- Production URL: https://gtd-gowork.vercel.app
-- Production branch: `main`
-- Security V1 development branch: `security-v1`
-- UI: `app/page.tsx`
-- Auth: `app/api/auth/[...nextauth]/route.ts` และ `app/providers.tsx`
-- PWA: `app/manifest.ts`, `public/sw.js`, icons
-- Guided Tour: `public/tour-step3.jpg`
+## Branches and release baseline
+- `main` = Production stable
+- `staging` = permanent integration/test branch
+- Production URL = https://gtd-gowork.vercel.app
+- v1.0.0 baseline = `a98b9188550a6050634d1d4a980f30ebc84cf291`
 
-## Current Beta architecture
-- Main display data โหลด Google Sheets CSV export ใน browser ผ่าน Papa Parse
-- Editable Craft/phone ส่ง POST ไป external Google Apps Script
-- LINE authentication ใช้ NextAuth LINE provider
-- Apps Script ปัจจุบันบันทึก:
-  - `ประวัติ Login`: timestamp, LINE User ID, LINE name, image, action
-  - `แจ้งแก้ไข`: timestamp, EmpID, name, Craft, phone, LINE name, status
-- Apps Script อัปเดตสมุดงาน 2026 ชีท `รายละเอียด`: Craft คอลัมน์ I, phone คอลัมน์ J, Z1 เป็นเวลาอัปเดตล่าสุด
-- สมุดงาน “แจ้งแก้ไข” มีชีทใหม่ `LINE_พนักงาน` เตรียมสำหรับ Security V1
-
-## Confirmed privacy finding — 2026-10-05
-- สมุดงาน 2026 ไม่ได้ Publish to web
-- General access ปัจจุบันเป็น “Anyone with the link / Viewer”
-- ทดสอบ Incognito แล้วสามารถเปิดสมุดงานได้โดยไม่ Login Google
-- Beta ยังพึ่ง CSV จากสมุดงานนี้ จึงห้ามเปลี่ยนเป็น Restricted จนกว่า server-side private data path จะพร้อม
-
-## Security V1 decisions
-Target release: v1.0.0
-
-### Login and registration
-- ต้อง LINE Login ก่อนเข้า GTD-GoWork
-- ผู้ใช้ประมาณ 150 คน ไม่ใช้ manual whitelist รายบุคคล
-- ลงทะเบียนครั้งแรกด้วย:
-  1. EmpID
-  2. ยืนยัน EmpID อีกครั้ง
-  3. 4 ตัวท้ายของนามสกุลภาษาอังกฤษ (case-insensitive)
-  4. แสดงข้อมูลที่เหมาะสมให้ผู้ใช้ยืนยันก่อนผูกบัญชี
-- Source สำหรับ verification: สมุดงาน 2026 ชีท `ข้อมูล_อบค.`
-  - EmpID = column B
-  - English full name = column D
-- 4 ตัวท้ายใช้ตรวจสอบเท่านั้น ไม่เก็บซ้ำเป็น credential
-
-### LINE ↔ EmpID
-- 1 LINE User ID ผูกได้กับ 1 EmpID
-- 1 EmpID มี LINE account ที่ Active ได้ 1 บัญชี
-- สถานะ: Active / Inactive / Disabled
-- เปลี่ยน LINE ต้องไม่ overwrite/delete ประวัติเก่า
-- กรณีเปลี่ยนโทรศัพท์แต่ยังใช้ LINE account เดิม ไม่ต้อง re-register
-
-### Edit authorization
-- ผู้ใช้แก้ไขได้เฉพาะ EmpID ของตนเอง
-- Server ต้อง derive EmpID จาก verified LINE session/mapping
-- ห้ามเชื่อ `empId` หรือ `editedBy` ที่ browser ส่งมาเพื่อกำหนดสิทธิ์
-- Login/Edit/registration/account-change audit ต้องเก็บต่อเนื่อง
-
-### Private data target
+## Production V1 architecture
 ```text
-User -> LINE Login -> Next.js Server/API -> Private Google Sheet
+LINE Login
+  -> NextAuth server session
+  -> LINE User ID
+  -> LINE_พนักงาน mapping
+  -> EmpID / role
+  -> private work-data/profile APIs
+  -> Restricted Google Sheets
+  -> Login/Edit audit
 ```
-- Browser ไม่ควรดาวน์โหลดฐานข้อมูลพนักงานโดยตรงจาก public CSV
-- Server ส่งเฉพาะข้อมูลที่จำเป็น
-- Google Sheet เปลี่ยนเป็น Restricted หลัง cutover เท่านั้น
-- Secrets/credentials ต้องอยู่ server environment เท่านั้น
 
-## Development and cutover
-1. Freeze `main` สำหรับ Beta/Production ยกเว้น bugfix ที่จำเป็น
-2. พัฒนา Security V1 ใน `security-v1`
-3. ใช้ Vercel Preview และข้อมูลทดสอบ
-4. ทดสอบ LINE registration, login, authorization, edit, audit, account-change และ error cases
-5. ทดสอบ server-side private Sheet access
-6. Deploy code ที่พร้อม production
-7. เปลี่ยน Google Sheet เป็น Restricted
-8. ทดสอบ Incognito ว่า Sheet/CSV เปิดไม่ได้
-9. ทดสอบ GTD-GoWork end-to-end อีกครั้ง
-10. ยืนยัน Production แล้วจึงประกาศ v1.0.0 และสร้าง Git tag/release
-11. เก็บ rollback point ก่อน cutover
+### Identity and roles
+- LINE User ID is the stable external identity in v1.0.0.
+- `LINE_พนักงาน` stores mapping/status/role.
+- Role `Admin` grants admin edit ability; other active mappings are normal users.
+- Users can view authorized work data and edit only their own employee profile.
+- Authorization is enforced server-side; browser-provided identity is not trusted.
+
+### Registration
+First registration requires authenticated LINE session, numeric EmpID and 4 final characters of the English surname. Verification source is workbook 2026 sheet `ข้อมูล_อบค.` (EmpID B, English full name D). The surname suffix is used for verification and is not stored as a credential.
+
+### Private data
+Main work data is read server-side from the Restricted Google workbook. Service-account credentials and provider secrets remain only in environment variables.
+
+### Profile edit
+Profile API derives the current identity from the server session/mapping. Craft and phone writes are server-side and edit activity is audited.
+
+### Audit
+- `ประวัติ Login`: login event information
+- `แจ้งแก้ไข`: profile-edit event information
+Audit history must not be erased when login methods change.
+
+## v1.1.0 identity direction
+LINE remains mandatory as the Primary Identity so every employee has a LINE User ID on record.
+
+After the employee has a valid LINE/EmpID identity, optional sign-in providers may be attached:
+```text
+EmpID
+  -> LINE (Primary, required)
+  -> Google (optional additional sign-in)
+  -> Facebook (optional additional sign-in)
+```
+
+Rules:
+1. Google/Facebook must not independently create a new EmpID identity.
+2. Optional provider must be linked to an already verified employee identity.
+3. Optional provider may be unlinked/replaced by the employee after secure re-authentication.
+4. Removing an optional provider removes the login relationship, not historical audit.
+5. Primary LINE is not self-deletable in the normal account screen; recovery/change requires a controlled process.
+6. Account link/unlink/replacement must be audited.
+7. Provider-specific IDs must be unique and server-side authorization remains mandatory.
+
+## v1.1.0 support/contact direction
+Add `แจ้งปัญหา / ติดต่อผู้ดูแล`:
+- authenticated form pre-fills safe identity/context such as EmpID, employee name, date/time and app version
+- categories: login, employee data, profile edit, Google/Facebook account, other
+- ticket stored in a dedicated sheet
+- status: received / in progress / resolved
+- notify admin on new ticket; preferred channel is LINE Official Account via Messaging API
+- optionally notify employee when resolved
+- login page must also expose a support route because some users cannot enter the app
+- future attachment/screenshot support can be added after the basic ticket flow is stable
 
 ## Deployment rules
-- Commit ≠ verified Vercel deployment
-- หลีกเลี่ยง `npm run deploy` ปัจจุบันที่ใช้ `git add .`
-- ไม่ commit credentials, LINE secrets, employee private data หรือ private file URLs
-- การเปลี่ยนที่กระทบ Production ต้องผ่านการทดสอบและยืนยัน scope ก่อน merge เข้า `main`
+- Do not develop new features directly on `main`.
+- Develop on feature/staging, deploy once per meaningful batch, test, then promote.
+- Environment changes require a new deployment to take effect.
+- Never commit credentials, private keys, provider secrets or private employee data.
+- Production changes require a smoke test and documentation update.
