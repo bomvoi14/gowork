@@ -1,86 +1,42 @@
 # GTD-GoWork — Changelog
 
-ประวัติการเปลี่ยนแปลงของ GTD-GoWork แยกสถานะระหว่างโค้ดใน GitHub กับการยืนยัน Production จริง ไม่ถือว่า commit สำเร็จเท่ากับ deploy สำเร็จ
+## v1.0.0 — Production verified — 2026-10-06
+### Security
+- LINE Login required before application access
+- stable LINE User ID stored in server session and mapped to EmpID
+- Google Sheets changed to Restricted and accessed server-side
+- server-side authorization: User edits self only; Admin can edit others
+- registration verifies employee data before binding
+- login and profile-edit audit are written server-side
 
-## Unreleased — Security V1 / target v1.0.0
-
-### Implemented on security-v1
-- เพิ่ม LINE Login gate: ผู้ใช้ที่ยังไม่ authenticated จะไม่เข้าหน้าหลักและ browser จะยังไม่เริ่มโหลด employee CSV ผ่าน app flow
-- เพิ่มหน้า Security V1 Preview ระหว่างตรวจ session/ก่อน LINE Login
-- การเปลี่ยนแปลงนี้อยู่เฉพาะ branch `security-v1`; `main`/Beta Production ยังไม่เปลี่ยน
-
-### Planned
-- บังคับ LINE Login ก่อนเข้าใช้งาน
-- ลงทะเบียน LINE ↔ EmpID ครั้งแรก
-- ยืนยันด้วย EmpID 2 ครั้ง + 4 ตัวท้ายของนามสกุลภาษาอังกฤษ
-- ตรวจข้อมูลจาก `ข้อมูล_อบค.` (EmpID = B, English name = D)
-- 1 LINE ID = 1 EmpID; 1 EmpID = 1 Active LINE
-- สถานะ Active / Inactive / Disabled
-- รองรับกระบวนการเปลี่ยน LINE โดยรักษาประวัติเดิม
-- จำกัดการแก้ไขเฉพาะข้อมูลของตนเองจาก LINE Session ฝั่ง Server
-- ย้ายการอ่านข้อมูลพนักงานจาก public CSV ไป Server-side access
-- เปลี่ยน Google Sheet ต้นทางเป็น Restricted หลัง Cutover
-- เก็บ Login/Edit audit ต่อจากระบบเดิม
-- จำกัดจำนวนครั้งของการยืนยันข้อมูลที่ผิด และไม่เปิดเผยว่า field ใดผิด
-
-### Development policy
-- พัฒนาใน branch `security-v1`
-- `main` ยังคงเป็น Beta/Production ระหว่างการพัฒนา
-- ห้ามปิด public access ของ Google Sheet ปัจจุบันก่อน Private server-side path ผ่านการทดสอบ
-
-## Beta v0.11.11 — 2026-10-05 — GitHub verified
-### Fixed
-- เพิ่มการจัดการ `pageshow`/BFCache เพื่อ reset สถานะ Back guard เมื่อกลับเข้าแอป
-- ปรับ Back guard สำหรับการเปิดแอปซ้ำใน Chrome
-- ปรับ service-worker cache เป็น `gtd-gowork-v0.11.11`
+### Production verification
+- LINE Login: PASSED
+- application access: PASSED
+- Craft/phone edit: PASSED
+- `แจ้งแก้ไข` audit: PASSED
+- `ประวัติ Login` audit: PASSED
+- footer/version: `GTD-GoWork v1.0.0 · Created by BOM_GTD`
+- v1.0.0 baseline commit: `a98b9188550a6050634d1d4a980f30ebc84cf291`
 
 ### Notes
-- การทำงาน Back บน Chrome/LINE/PWA ยังต้องถือผลทดสอบอุปกรณ์จริงเป็นหลัก
-- Production deployment ต้องตรวจแยกจาก GitHub commit
+- Production LINE callback: `https://gtd-gowork.vercel.app/api/auth/callback/line`
+- secrets and private keys are stored in environment variables, not source control
 
-## Beta v0.11.10 — 2026-10-05 — GitHub verified
-### Changed
-- เปลี่ยน service worker สำหรับ same-origin assets เป็น network-first เพื่อลดปัญหา UI/version เก่าค้างจาก cache
-- bump cache/version จาก v0.11.9
+## Planned v1.1.0
+- permanent `staging` workflow
+- LINE = mandatory Primary Identity
+- optional Google/Facebook additional sign-in methods after primary registration
+- one employee identity may have additional providers, but additional providers cannot independently create an EmpID identity
+- self-service link/unlink/replace optional providers
+- preserve historical audit when an optional provider is removed
+- support/contact ticket system
+- admin notification for new tickets, preferably LINE OA / Messaging API
+- status flow for tickets and optional notification back to the employee
+- audit account linking/unlinking and support actions
+- hardening: failed-attempt cooldown, generic verification errors, stronger duplicate/concurrency controls
 
-## Beta v0.11.9 — 2026-10-02 — GitHub verified
-### Changed
-- ปรับ Back navigation: ออกจากรายละเอียดพนักงาน, reset Group, และ double-Back exit prompt
-- ปรับ footer credit เป็นรูปแบบเดียวกัน
-- service-worker cache `gtd-gowork-v0.11.9`
+## Historical Beta
+Beta v0.11.x covered PWA, guided tour, navigation/cache refinements and the pre-Security-V1 production flow. Security V1 replaced the Beta architecture at v1.0.0.
 
-## Beta v0.11.8
-- ปรับคำแนะนำการติดตั้งข้ามแพลตฟอร์ม
-
-## Beta v0.11.7
-- เพิ่ม PWA installation instructions และ fallback copy-link flow
-
-## Beta v0.11.6
-- เพิ่ม iOS install helper และปรับ Welcome warning
-
-## Beta v0.11.5
-- ปรับ search focus/select-all และ cursor handling
-
-## Beta v0.11.4
-- จัดตำแหน่ง Guided Tour step แรก
-
-## Beta v0.11.3
-- ปรับ Guided Tour Step 3 preview image
-
-## Beta v0.11.2
-- เพิ่มภาพ `/tour-step3.jpg`
-
-## Beta v0.11.0–v0.11.1
-- Guided Tour 6 ขั้นตอนและปรับ placement
-
-## Earlier v0.10.x
-- PWA/install และ Tour refinements
-
-## Release recording rule
-ทุก release ควรบันทึก:
-- วันที่
-- Version
-- Added / Changed / Fixed / Security
-- การทดสอบที่ทำจริง
-- Commit SHA / Git tag เมื่อเหมาะสม
-- Production deployment verification status
+## Release rule
+Every release records version/date, changes, security impact, tests actually performed, commit/tag where applicable, and Production verification status.
