@@ -212,3 +212,79 @@ export async function appendLoginAudit(input: {
     },
   });
 }
+
+
+const LINKED_ACCOUNTS_SHEET = "บัญชีเชื่อมต่อ";
+
+async function ensureLinkedAccountsSheet() {
+  if (!ACCOUNT_SPREADSHEET_ID) throw new Error("Missing server configuration");
+  const sheets = getSheetsClient();
+  const meta = await sheets.spreadsheets.get({
+    spreadsheetId: ACCOUNT_SPREADSHEET_ID,
+    fields: "sheets.properties.title",
+  });
+  const exists = (meta.data.sheets || []).some((sheet) => sheet.properties?.title === LINKED_ACCOUNTS_SHEET);
+  if (!exists) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: ACCOUNT_SPREADSHEET_ID,
+      requestBody: { requests: [{ addSheet: { properties: { title: LINKED_ACCOUNTS_SHEET } } }] },
+    });
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: ACCOUNT_SPREADSHEET_ID,
+      range: "'" + LINKED_ACCOUNTS_SHEET + "'!A1:H1",
+      valueInputOption: "RAW",
+      requestBody: { values: [["วันที่เชื่อม", "EmpID", "Provider", "Provider ID", "Email", "ชื่อบัญชี", "สถานะ", "วันที่เปลี่ยนสถานะ"]] },
+    });
+  }
+}
+
+export async function getLinkedGoogleAccount(empId: string) {
+  await ensureLinkedAccountsSheet();
+  const sheets = getSheetsClient();
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: ACCOUNT_SPREADSHEET_ID,
+    range: "'" + LINKED_ACCOUNTS_SHEET + "'!A2:H",
+  });
+  const rows = response.data.values ?? [];
+  const matches = rows.filter((row) =>
+    String(row[1] || "").trim() === empId &&
+    String(row[2] || "").trim().toLowerCase() === "google" &&
+    String(row[6] || "").trim().toLowerCase() === "active"
+  );
+  if (!matches.length) return null;
+  const row = matches[matches.length - 1];
+  return { providerId: String(row[3] || ""), email: String(row[4] || ""), name: String(row[5] || "") };
+}
+
+export async function linkGoogleAccount(input: { empId: string; providerId: string; email: string; name: string }) {
+  await ensureLinkedAccountsSheet();
+  const sheets = getSheetsClient();
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: ACCOUNT_SPREADSHEET_ID,
+    range: "'" + LINKED_ACCOUNTS_SHEET + "'!A2:H",
+  });
+  const rows = response.data.values ?? [];
+  const providerUsedByOtherEmployee = rows.some((row) =>
+    String(row[2] || "").trim().toLowerCase() === "google" &&
+    String(row[3] || "").trim() === input.providerId &&
+    String(row[6] || "").trim().toLowerCase() === "active" &&
+    String(row[1] || "").trim() !== input.empId
+  );
+  if (providerUsedByOtherEmployee) throw new Error("GOOGLE_ALREADY_BOUND");
+
+  const alreadyLinked = rows.some((row) =>
+    String(row[1] || "").trim() === input.empId &&
+    String(row[2] || "").trim().toLowerCase() === "google" &&
+    String(row[6] || "").trim().toLowerCase() === "active"
+  );
+  if (alreadyLinked) throw new Error("EMPLOYEE_GOOGLE_ALREADY_BOUND");
+
+  const now = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: ACCOUNT_SPREADSHEET_ID,
+    range: "'" + LINKED_ACCOUNTS_SHEET + "'!A:H",
+    valueInputOption: "USER_ENTERED",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: { values: [[now, input.empId, "google", input.providerId, input.email, input.name, "Active", now]] },
+  });
+}

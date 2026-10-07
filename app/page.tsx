@@ -52,6 +52,8 @@ export default function Home() {
   const [accountEmpId, setAccountEmpId] = useState("");
   const [accountRole, setAccountRole] = useState<"user" | "admin">("user");
   const [showAccount, setShowAccount] = useState(false);
+  const [googleLink, setGoogleLink] = useState<{ linked: boolean; email?: string }>({ linked: false });
+  const [googleLinkLoading, setGoogleLinkLoading] = useState(false);
   const selectedEmpIdRef = useRef("");
   const selectedCraftRef = useRef("All");
   const lastBackAtRef = useRef(0);
@@ -352,6 +354,19 @@ export default function Home() {
       })
       .catch(() => setAccountStatus("error"));
   }, [sessionStatus]);
+
+  useEffect(() => {
+    if (!showAccount || accountStatus !== "active") return;
+    setGoogleLinkLoading(true);
+    fetch("/api/account/providers", { cache: "no-store" })
+      .then(async (response) => {
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error();
+        setGoogleLink({ linked: !!result.google?.linked, email: result.google?.email || "" });
+      })
+      .catch(() => setGoogleLink({ linked: false }))
+      .finally(() => setGoogleLinkLoading(false));
+  }, [showAccount, accountStatus]);
 
   const userJobs = data.filter(d => d.empId === selectedEmpId && selectedEmpId !== '');
   const selectedUserInfo = userJobs.length > 0 ? userJobs[0] : null;
@@ -863,9 +878,25 @@ export default function Home() {
                 </div>
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                <div className="flex items-center justify-between">
-                  <div><p className="font-bold text-gray-800">Google</p><p className="mt-0.5 text-xs text-gray-500">ยังไม่ได้เชื่อมบัญชี</p></div>
-                  <span className="rounded-full bg-gray-200 px-2.5 py-1 text-[11px] font-bold text-gray-500">เร็วๆ นี้</span>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-bold text-gray-800">Google</p>
+                    <p className="mt-0.5 truncate text-xs text-gray-500">
+                      {googleLinkLoading ? "กำลังตรวจสอบ..." : googleLink.linked ? (googleLink.email || "เชื่อมบัญชีแล้ว") : "ยังไม่ได้เชื่อมบัญชี"}
+                    </p>
+                  </div>
+                  {googleLink.linked ? (
+                    <span className="shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-[11px] font-bold text-blue-700">เชื่อมแล้ว</span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={googleLinkLoading}
+                      onClick={() => { window.location.href = "/api/account/google/start"; }}
+                      className="shrink-0 rounded-lg bg-white px-3 py-1.5 text-[11px] font-bold text-blue-700 shadow-sm ring-1 ring-gray-200 disabled:opacity-50"
+                    >
+                      เชื่อม Google
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
