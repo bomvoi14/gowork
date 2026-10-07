@@ -51,6 +51,7 @@ export default function Home() {
   const [accountStatus, setAccountStatus] = useState<"checking" | "unbound" | "active" | "inactive" | "disabled" | "error">("checking");
   const [accountEmpId, setAccountEmpId] = useState("");
   const [accountRole, setAccountRole] = useState<"user" | "admin">("user");
+  const [showAccount, setShowAccount] = useState(false);
   const selectedEmpIdRef = useRef("");
   const selectedCraftRef = useRef("All");
   const lastBackAtRef = useRef(0);
@@ -509,17 +510,26 @@ export default function Home() {
                   <p className="text-[10px] text-green-600 flex items-center gap-1">● ออนไลน์</p>
                 </div>
               </div>
-              <button
-                onClick={() => {
-                  const lineUserId = (session?.user as any)?.lineUserId || "";
-                  const loginKey = "line_login_logged_" + (lineUserId || session?.user?.name || "unknown");
-                  sessionStorage.removeItem(loginKey);
-                  signOut({ callbackUrl: "/?skipWelcome=1" });
-                }}
-                className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors"
-              >
-                ออก
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAccount(true)}
+                  className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-100 font-bold transition-colors"
+                >
+                  บัญชีของฉัน
+                </button>
+                <button
+                  onClick={() => {
+                    const lineUserId = (session?.user as any)?.lineUserId || "";
+                    const loginKey = "line_login_logged_" + (lineUserId || session?.user?.name || "unknown");
+                    sessionStorage.removeItem(loginKey);
+                    signOut({ callbackUrl: "/?skipWelcome=1" });
+                  }}
+                  className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-bold transition-colors"
+                >
+                  ออก
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex justify-between items-center w-full">
@@ -832,6 +842,43 @@ export default function Home() {
           GTD-GoWork v1.0.0 <span className="mx-1 opacity-60">·</span> Created by <span className="font-semibold">BOM_GTD</span>
         </div>
       </div>
+      {showAccount && (
+        <div className="fixed inset-0 z-[10030] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">บัญชีของฉัน</h2>
+                <p className="text-xs text-gray-500">เลขประจำตัว {accountEmpId || "-"}</p>
+              </div>
+              <button type="button" onClick={() => setShowAccount(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 font-bold text-gray-500">✕</button>
+            </div>
+            <div className="mt-4 space-y-3">
+              <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-gray-800">LINE</p>
+                    <p className="mt-0.5 text-xs text-gray-500">{session.user?.name || "บัญชี LINE"}</p>
+                  </div>
+                  <span className="rounded-full bg-green-600 px-2.5 py-1 text-[11px] font-bold text-white">บัญชีหลัก</span>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <div className="flex items-center justify-between">
+                  <div><p className="font-bold text-gray-800">Google</p><p className="mt-0.5 text-xs text-gray-500">ยังไม่ได้เชื่อมบัญชี</p></div>
+                  <span className="rounded-full bg-gray-200 px-2.5 py-1 text-[11px] font-bold text-gray-500">เร็วๆ นี้</span>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <div className="flex items-center justify-between">
+                  <div><p className="font-bold text-gray-800">Facebook</p><p className="mt-0.5 text-xs text-gray-500">ยังไม่ได้เชื่อมบัญชี</p></div>
+                  <span className="rounded-full bg-gray-200 px-2.5 py-1 text-[11px] font-bold text-gray-500">เร็วๆ นี้</span>
+                </div>
+              </div>
+            </div>
+            <p className="mt-4 text-center text-[11px] leading-5 text-gray-400">LINE เป็นบัญชีหลักสำหรับยืนยันตัวตนของ GTD-GoWork</p>
+          </div>
+        </div>
+      )}
       {/* Welcome Notice */}
       {showInstallHelp && (
         <div className="fixed inset-0 z-[10020] flex items-center justify-center bg-black/55 px-5 backdrop-blur-sm">
