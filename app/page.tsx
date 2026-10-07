@@ -41,6 +41,7 @@ export default function Home() {
   const [editCraft, setEditCraft] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLineLoggingIn, setIsLineLoggingIn] = useState(false);
+  const [socialLoggingIn, setSocialLoggingIn] = useState<"google" | "facebook" | null>(null);
   const [showNotice, setShowNotice] = useState(false);
   const [showInstallHelp, setShowInstallHelp] = useState<"ios" | "android" | "other" | null>(null);
   const [tourStep, setTourStep] = useState<number | null>(null);
@@ -506,9 +507,9 @@ export default function Home() {
             {isLineLoggingIn ? "กำลังไปที่ LINE" : "เข้าสู่ระบบด้วย LINE"}
           </button>
           <div className="my-4 flex items-center gap-3"><div className="h-px flex-1 bg-gray-200"></div><span className="text-xs text-gray-400">หรือ</span><div className="h-px flex-1 bg-gray-200"></div></div>
-          <button type="button" onClick={() => signIn("google", { callbackUrl: "/?skipWelcome=1" })} className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 font-bold text-gray-700 shadow-sm">เข้าสู่ระบบด้วย Google</button>
-          <button type="button" onClick={() => signIn("facebook", { callbackUrl: "/?skipWelcome=1" }, { scope: "public_profile" })} className="mt-3 w-full rounded-xl bg-[#1877F2] px-4 py-3 font-bold text-white shadow-sm">เข้าสู่ระบบด้วย Facebook</button>
-          <p className="mt-3 text-[11px] leading-5 text-gray-400">ใช้ Google และ Facebook ได้เฉพาะบัญชีที่เคยเข้าสู่ระบบผ่าน LINE แล้วเท่านั้น</p>
+          <button type="button" onClick={() => { setSocialLoggingIn("google"); signIn("google", { callbackUrl: "/?skipWelcome=1" }); }} disabled={socialLoggingIn !== null} className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 font-bold text-gray-700 shadow-sm transition-all active:scale-[0.98] disabled:opacity-70">{socialLoggingIn === "google" ? "กำลังไปที่ Google..." : "เข้าสู่ระบบด้วย Google"}</button>
+          <button type="button" onClick={() => { setSocialLoggingIn("facebook"); signIn("facebook", { callbackUrl: "/?skipWelcome=1" }, { scope: "public_profile" }); }} disabled={socialLoggingIn !== null} className="mt-3 w-full rounded-xl bg-[#1877F2] px-4 py-3 font-bold text-white shadow-sm transition-all active:scale-[0.98] disabled:opacity-70">{socialLoggingIn === "facebook" ? "กำลังไปที่ Facebook..." : "เข้าสู่ระบบด้วย Facebook"}</button>
+          <p className="mt-3 text-[11px] leading-5 text-gray-400">ใช้ Google - Facebook ได้เฉพาะบัญชีที่เคยเข้าระบบผ่าน LINE แล้วเท่านั้น</p>
           <p className="mt-5 text-[11px] font-medium tracking-wide text-gray-400">
             GTD-GoWork · Secure Access
           </p>
