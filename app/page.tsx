@@ -48,6 +48,7 @@ export default function Home() {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
   const [showBackExitToast, setShowBackExitToast] = useState(false);
+  const [isLineInAppBrowser, setIsLineInAppBrowser] = useState(false);
   const [accountStatus, setAccountStatus] = useState<"checking" | "unbound" | "active" | "inactive" | "disabled" | "error">("checking");
   const [accountEmpId, setAccountEmpId] = useState("");
   const [accountRole, setAccountRole] = useState<"user" | "admin">("user");
@@ -58,6 +59,9 @@ export default function Home() {
   const backToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     setTourCompleted(localStorage.getItem("gtdTourCompleted") === "1");
+  }, []);
+  useEffect(() => {
+    setIsLineInAppBrowser(/\bLine\//i.test(navigator.userAgent));
   }, []);
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -448,6 +452,26 @@ export default function Home() {
   const getJobsByCategory = (category: string) => {
     return userJobs.filter(job => getJobCategory(job) === category);
   };
+  if (isLineInAppBrowser) {
+    return (
+      <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="w-full rounded-3xl bg-white p-7 text-center shadow-lg border border-gray-100">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 text-3xl">🌐</div>
+          <h1 className="text-xl font-bold text-gray-800">เปิด GTD-GoWork ด้วยเบราว์เซอร์</h1>
+          <p className="mt-3 text-sm leading-6 text-gray-500">
+            เพื่อให้ระบบทำงานได้อย่างถูกต้อง กรุณาเปิดผ่านเบราว์เซอร์ภายนอก LINE
+          </p>
+          <a
+            href="https://gtd-gowork.vercel.app/?openExternalBrowser=1"
+            className="mt-6 block w-full rounded-xl bg-green-500 px-4 py-3 font-bold text-white shadow-sm active:scale-[0.98]"
+          >
+            เปิด GTD-GoWork
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   if (sessionStatus === "authenticated" && accountStatus === "checking") {
     return <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center font-bold text-gray-600">กำลังตรวจสอบบัญชี...</div>;
   }
