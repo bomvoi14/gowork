@@ -288,3 +288,26 @@ export async function linkGoogleAccount(input: { empId: string; providerId: stri
     requestBody: { values: [[now, input.empId, "google", input.providerId, input.email, input.name, "Active", now]] },
   });
 }
+
+
+export async function getLinkedFacebookAccount(empId: string) {
+  await ensureLinkedAccountsSheet();
+  const sheets = getSheetsClient();
+  const response = await sheets.spreadsheets.values.get({ spreadsheetId: ACCOUNT_SPREADSHEET_ID, range: "'" + LINKED_ACCOUNTS_SHEET + "'!A2:H" });
+  const rows = response.data.values ?? [];
+  const matches = rows.filter((row) => String(row[1] || "").trim() === empId && String(row[2] || "").trim().toLowerCase() === "facebook" && String(row[6] || "").trim().toLowerCase() === "active");
+  if (!matches.length) return null;
+  const row = matches[matches.length - 1];
+  return { providerId: String(row[3] || ""), email: String(row[4] || ""), name: String(row[5] || "") };
+}
+
+export async function linkFacebookAccount(input: { empId: string; providerId: string; email: string; name: string }) {
+  await ensureLinkedAccountsSheet();
+  const sheets = getSheetsClient();
+  const response = await sheets.spreadsheets.values.get({ spreadsheetId: ACCOUNT_SPREADSHEET_ID, range: "'" + LINKED_ACCOUNTS_SHEET + "'!A2:H" });
+  const rows = response.data.values ?? [];
+  if (rows.some((row) => String(row[2] || "").trim().toLowerCase() === "facebook" && String(row[3] || "").trim() === input.providerId && String(row[6] || "").trim().toLowerCase() === "active" && String(row[1] || "").trim() !== input.empId)) throw new Error("FACEBOOK_ALREADY_BOUND");
+  if (rows.some((row) => String(row[1] || "").trim() === input.empId && String(row[2] || "").trim().toLowerCase() === "facebook" && String(row[6] || "").trim().toLowerCase() === "active")) throw new Error("EMPLOYEE_FACEBOOK_ALREADY_BOUND");
+  const now = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+  await sheets.spreadsheets.values.append({ spreadsheetId: ACCOUNT_SPREADSHEET_ID, range: "'" + LINKED_ACCOUNTS_SHEET + "'!A:H", valueInputOption: "USER_ENTERED", insertDataOption: "INSERT_ROWS", requestBody: { values: [[now, input.empId, "facebook", input.providerId, input.email, input.name, "Active", now]] } });
+}
