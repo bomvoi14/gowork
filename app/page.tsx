@@ -508,7 +508,7 @@ export default function Home() {
           <div className="my-4 flex items-center gap-3"><div className="h-px flex-1 bg-gray-200"></div><span className="text-xs text-gray-400">หรือ</span><div className="h-px flex-1 bg-gray-200"></div></div>
           <button type="button" onClick={() => signIn("google", { callbackUrl: "/?skipWelcome=1" })} className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 font-bold text-gray-700 shadow-sm">เข้าสู่ระบบด้วย Google</button>
           <button type="button" onClick={() => signIn("facebook", { callbackUrl: "/?skipWelcome=1" })} className="mt-3 w-full rounded-xl bg-[#1877F2] px-4 py-3 font-bold text-white shadow-sm">เข้าสู่ระบบด้วย Facebook</button>
-          <p className="mt-3 text-[11px] leading-5 text-gray-400">Google และ Facebook ใช้ได้เฉพาะบัญชีที่เชื่อมกับพนักงานไว้แล้ว</p>
+          <p className="mt-3 text-[11px] leading-5 text-gray-400">ใช้ Google และ Facebook ได้เฉพาะบัญชีที่เคยเข้าสู่ระบบผ่าน LINE แล้วเท่านั้น</p>
           <p className="mt-5 text-[11px] font-medium tracking-wide text-gray-400">
             GTD-GoWork · Secure Access
           </p>
