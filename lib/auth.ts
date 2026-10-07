@@ -28,15 +28,14 @@ export const authOptions: NextAuthOptions = {
           account.providerAccountId ||
           (profile as { sub?: string } | undefined)?.sub ||
           "";
+        token.loginProvider = "line";
+        const employee = token.lineUserId ? await findLineEmployee(String(token.lineUserId)) : null;
+        token.employeeId = employee?.status === "active" ? employee.empId : "";
       } else if (account?.provider === "google" || account?.provider === "facebook") {
         const employee = await findEmployeeByProviderAccount(account.provider, account.providerAccountId);
         token.lineUserId = "";
         token.employeeId = employee?.empId || "";
         token.loginProvider = account.provider;
-      } else if (account?.provider === "line") {
-        token.loginProvider = "line";
-        const employee = token.lineUserId ? await findLineEmployee(String(token.lineUserId)) : null;
-        token.employeeId = employee?.status === "active" ? employee.empId : "";
       }
       return token;
     },
