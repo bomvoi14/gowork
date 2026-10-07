@@ -311,3 +311,26 @@ export async function linkFacebookAccount(input: { empId: string; providerId: st
   const now = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
   await sheets.spreadsheets.values.append({ spreadsheetId: ACCOUNT_SPREADSHEET_ID, range: "'" + LINKED_ACCOUNTS_SHEET + "'!A:H", valueInputOption: "USER_ENTERED", insertDataOption: "INSERT_ROWS", requestBody: { values: [[now, input.empId, "facebook", input.providerId, input.email, input.name, "Active", now]] } });
 }
+
+
+export async function findActiveEmployeeByEmpId(empId: string) {
+  if (!ACCOUNT_SPREADSHEET_ID) throw new Error("Missing server configuration");
+  const sheets = getSheetsClient();
+  const response = await sheets.spreadsheets.values.get({ spreadsheetId: ACCOUNT_SPREADSHEET_ID, range: "'LINE_พนักงาน'!A2:I" });
+  const rows = response.data.values ?? [];
+  const matches = rows.filter((row) => String(row[1] || "").trim() === empId && String(row[5] || "").trim().toLowerCase() === "active");
+  if (!matches.length) return null;
+  const row = matches[matches.length - 1];
+  return { empId: String(row[1] || "").trim(), name: String(row[2] || "").trim(), status: "active", role: String(row[8] || "user").trim().toLowerCase() === "admin" ? "admin" : "user" };
+}
+
+export async function findEmployeeByProviderAccount(provider: "google" | "facebook", providerId: string) {
+  await ensureLinkedAccountsSheet();
+  const sheets = getSheetsClient();
+  const response = await sheets.spreadsheets.values.get({ spreadsheetId: ACCOUNT_SPREADSHEET_ID, range: "'" + LINKED_ACCOUNTS_SHEET + "'!A2:H" });
+  const rows = response.data.values ?? [];
+  const matches = rows.filter((row) => String(row[2] || "").trim().toLowerCase() === provider && String(row[3] || "").trim() === providerId && String(row[6] || "").trim().toLowerCase() === "active");
+  if (!matches.length) return null;
+  const empId = String(matches[matches.length - 1][1] || "").trim();
+  return findActiveEmployeeByEmpId(empId);
+}
