@@ -43,7 +43,7 @@ export default function Home() {
   const [isLineLoggingIn, setIsLineLoggingIn] = useState(false);
   const [socialLoggingIn, setSocialLoggingIn] = useState<"google" | "facebook" | null>(null);
   const [showNotice, setShowNotice] = useState(false);
-  const [showInstallHelp, setShowInstallHelp] = useState<"ios" | "android" | "other" | null>(null);
+  const [showInstallHelp, setShowInstallHelp] = useState<"ios" | null>(null);
   const [tourStep, setTourStep] = useState<number | null>(null);
   const [tourCompleted, setTourCompleted] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -92,12 +92,8 @@ export default function Home() {
   }, []);
 
   const handleInstallApp = async () => {
-    const appUrl = "https://gtd-gowork.vercel.app";
-    const ua = navigator.userAgent;
-    const isIOS = /iphone|ipad|ipod/i.test(ua);
-    const isAndroid = /android/i.test(ua);
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
-    // ถ้า browser มี PWA install prompt พร้อม ให้ติดตั้งได้ทันที
     if (!isIOS && installPrompt) {
       installPrompt.prompt();
       await installPrompt.userChoice;
@@ -105,29 +101,13 @@ export default function Home() {
       return;
     }
 
-    // กรณีเปิดจาก LINE / in-app browser หรือ iOS:
-    // คัดลอก URL ก่อน แล้วแนะนำ browser ที่เหมาะสม
-    try {
-      await navigator.clipboard.writeText(appUrl);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = appUrl;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-    }
-
     if (isIOS) {
       setShowInstallHelp("ios");
-    } else if (isAndroid) {
-      setShowInstallHelp("android");
-    } else {
-      setShowInstallHelp("other");
+      return;
     }
+
+    // Chrome / Edge ที่ยังไม่ส่ง install prompt ให้ใช้เมนูของ browser โดยตรง
+    alert("หากยังไม่ขึ้นหน้าติดตั้ง ให้เปิดเมนูของเบราว์เซอร์ แล้วเลือก ติดตั้งแอป / Add to Home screen");
   };
 
   useEffect(() => { selectedEmpIdRef.current = selectedEmpId; }, [selectedEmpId]);
