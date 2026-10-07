@@ -92,18 +92,7 @@ export default function Home() {
   }, []);
 
   const handleInstallApp = async () => {
-    const ua = navigator.userAgent;
-    const isIOS = /iphone|ipad|ipod/i.test(ua);
-    const isSamsungBrowser = /SamsungBrowser/i.test(ua);
-
-    // Samsung Internet บางรุ่นสร้าง WebAPK ที่ target Android API เก่า
-    // จึงให้ติดตั้งผ่าน Chrome เพื่อหลีกเลี่ยงคำเตือนจาก Google Play Protect
-    if (isSamsungBrowser) {
-      const hostAndPath = window.location.href.replace(/^https?:\/\//, "");
-      window.location.href =
-        `intent://${hostAndPath}#Intent;scheme=https;package=com.android.chrome;end`;
-      return;
-    }
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
     if (!isIOS && installPrompt) {
       installPrompt.prompt();
