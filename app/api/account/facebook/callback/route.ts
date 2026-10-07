@@ -30,13 +30,13 @@ export async function GET(request: NextRequest) {
     if (!tokenResponse.ok) return fail("facebook-token-error");
     const tokens = await tokenResponse.json();
     const profileUrl = new URL("https://graph.facebook.com/me");
-    profileUrl.searchParams.set("fields", "id,name,email");
+    profileUrl.searchParams.set("fields", "id,name");
     profileUrl.searchParams.set("access_token", String(tokens.access_token || ""));
     const profileResponse = await fetch(profileUrl, { cache: "no-store" });
     if (!profileResponse.ok) return fail("facebook-profile-error");
     const profile = await profileResponse.json();
     if (!profile.id) return fail("facebook-profile-error");
-    await linkFacebookAccount({ empId: mapping.empId, providerId: String(profile.id), email: String(profile.email || ""), name: String(profile.name || "") });
+    await linkFacebookAccount({ empId: mapping.empId, providerId: String(profile.id), email: "", name: String(profile.name || "") });
     return NextResponse.redirect(new URL("/?skipWelcome=1&account=facebook-linked", base));
   } catch (error) { console.error("Facebook account link failed:", error); return fail("facebook-link-error"); }
 }
