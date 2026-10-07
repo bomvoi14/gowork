@@ -22,6 +22,6 @@ export async function GET() {
   url.searchParams.set("client_id", process.env.FACEBOOK_CLIENT_ID!);
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("state", state);
-  url.searchParams.set("scope", "public_profile,email");
+  url.searchParams.set("scope", "public_profile");
   return NextResponse.redirect(url);
 }
