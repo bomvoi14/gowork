@@ -64,9 +64,9 @@ export async function POST(request: Request) {
         REQUEST_LIMIT: "ขอ OTP เกินจำนวนครั้งที่กำหนด กรุณาลองใหม่ภายหลัง",
         BUSY: "ระบบกำลังประมวลผล กรุณาลองอีกครั้ง",
       };
-      return NextResponse.json({ ok: false, error: messages[otp.error || ""] || "ไม่สามารถยืนยัน OTP ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ", ...(diagnosticEnabled ? { diagnostic: { phase, reason: otp.error || "UNKNOWN" } } : {}) }, { status: 400 });
+      return NextResponse.json({ ok: false, error: messages[otp.error || ""] || "ไม่สามารถยืนยัน OTP ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ", ...(diagnosticEnabled ? { diagnostic: { phase, reason: otp.error || "UNKNOWN", ref: otp.diagnosticRef || "UNAVAILABLE" } } : {}) }, { status: 400 });
     }
-    if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th", expiresAt: otp.expiresAt || Date.now() + 180000, ...(diagnosticEnabled ? { diagnostic: { phase, state: otp.reused ? "EXISTING_CHALLENGE" : "NEW_CHALLENGE" } } : {}) });
+    if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th", expiresAt: otp.expiresAt || Date.now() + 180000, ...(diagnosticEnabled ? { diagnostic: { phase, state: otp.reused ? "EXISTING_CHALLENGE" : "NEW_CHALLENGE", ref: otp.diagnosticRef || "UNAVAILABLE" } } : {}) });
 
     phase = "create_mapping";
     await createLineEmployeeMapping({
