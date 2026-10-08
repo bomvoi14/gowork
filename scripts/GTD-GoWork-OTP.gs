@@ -23,6 +23,7 @@ function equal_(a, b) {
 function json_(value) {
   return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON);
 }
+function nowSafe_() { return Date.now(); }
 function doPost(e) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) return json_({ok:false,error:"BUSY"});
@@ -42,6 +43,11 @@ function doPost(e) {
     const props = PropertiesService.getScriptProperties();
     const nonceKey = "nonce:"+nonce;
     if (props.getProperty(nonceKey)) return json_({ok:false,error:"REPLAY"});
+    // Bounded replay cache: remove stale nonces opportunistically.
+    const nonceEntries = props.getProperties();
+    for (const [k,v] of Object.entries(nonceEntries)) {
+      if (k.startsWith("nonce:") && nowSafe_() - Number(v) > 120000) props.deleteProperty(k);
+    }
     props.setProperty(nonceKey,String(Date.now()));
     const key = "otp:"+mac_(lineUserId+"|"+empId,secret);
     const now = Date.now();
@@ -49,10 +55,11 @@ function doPost(e) {
     if (action === "request") {
       if (existing && now-existing.sentAt < OTP_COOLDOWN_MS) return json_({ok:false,error:"WAIT_BEFORE_RESEND"});
       if (existing && existing.blockedUntil > now) return json_({ok:false,error:"TOO_MANY_ATTEMPTS"});
+      if (existing && existing.requestWindowStart && now-existing.requestWindowStart < 3600000 && existing.requests >= 5) return json_({ok:false,error:"REQUEST_LIMIT"});
       // Apps Script has no cryptographic random API; use UUID entropy to derive OTP instead.
       const secureCode = String(parseInt(mac_(Utilities.getUuid()+Utilities.getUuid(),secret).slice(0,12),16)%1000000).padStart(6,"0");
       const hash = mac_(secureCode+"|"+lineUserId+"|"+empId,secret);
-      props.setProperty(key,JSON.stringify({hash,sentAt:now,expiresAt:now+OTP_TTL_MS,attempts:0,blockedUntil:0}));
+      props.setProperty(key,JSON.stringify({hash,sentAt:now,expiresAt:now+OTP_TTL_MS,attempts:0,blockedUntil:0,requestWindowStart:existing && now-existing.requestWindowStart < 3600000 ? existing.requestWindowStart : now,requests:existing && now-existing.requestWindowStart < 3600000 ? (existing.requests||0)+1 : 1}));
       try {
         GmailApp.sendEmail(empId+"@egat.co.th","GTD-GoWork | รหัสยืนยันตัวตน", "รหัส OTP ของคุณคือ "+secureCode+"\nรหัสมีอายุ 5 นาที และใช้ได้ครั้งเดียว\nหากคุณไม่ได้ร้องขอ โปรดละเว้นข้อความนี้", {name:"GTD-GoWork Security"});
       } catch (err) {
