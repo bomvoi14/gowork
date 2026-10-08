@@ -4,7 +4,7 @@
  * Set Script Property OTP_SCRIPT_SECRET (64+ random characters).
  * IMPORTANT: Apps Script Properties have storage limits; suitable for staging only.
  */
-const OTP_TTL_MS = 5 * 60 * 1000;
+const OTP_TTL_MS = 3 * 60 * 1000;
 const OTP_COOLDOWN_MS = 60 * 1000;
 const OTP_LIMIT = 5;
 
@@ -53,6 +53,7 @@ function doPost(e) {
     const now = Date.now();
     const existing = JSON.parse(props.getProperty(key)||"null");
     if (action === "request") {
+      if (existing && existing.expiresAt > now) return json_({ok:true,expiresAt:existing.expiresAt,reused:true});
       if (existing && now-existing.sentAt < OTP_COOLDOWN_MS) return json_({ok:false,error:"WAIT_BEFORE_RESEND"});
       if (existing && existing.blockedUntil > now) return json_({ok:false,error:"TOO_MANY_ATTEMPTS"});
       if (existing && existing.requestWindowStart && now-existing.requestWindowStart < 3600000 && existing.requests >= 5) return json_({ok:false,error:"REQUEST_LIMIT"});
@@ -61,12 +62,12 @@ function doPost(e) {
       const hash = mac_(secureCode+"|"+lineUserId+"|"+empId,secret);
       props.setProperty(key,JSON.stringify({hash,sentAt:now,expiresAt:now+OTP_TTL_MS,attempts:0,blockedUntil:0,requestWindowStart:existing && now-existing.requestWindowStart < 3600000 ? existing.requestWindowStart : now,requests:existing && now-existing.requestWindowStart < 3600000 ? (existing.requests||0)+1 : 1}));
       try {
-        GmailApp.sendEmail(empId+"@egat.co.th","GTD-GoWork | รหัสยืนยันตัวตน", "รหัส OTP ของคุณคือ "+secureCode+"\nรหัสมีอายุ 5 นาที และใช้ได้ครั้งเดียว\nหากคุณไม่ได้ร้องขอ โปรดละเว้นข้อความนี้", {name:"GTD-GoWork Security"});
+        GmailApp.sendEmail(empId+"@egat.co.th","GTD-GoWork | รหัสยืนยันตัวตน", "รหัส OTP ของคุณคือ "+secureCode+"\nรหัสมีอายุ 3 นาที และใช้ได้ครั้งเดียว\nหากคุณไม่ได้ร้องขอ โปรดละเว้นข้อความนี้", {name:"GTD-GoWork Security"});
       } catch (err) {
         props.deleteProperty(key);
         throw err;
       }
-      return json_({ok:true});
+      return json_({ok:true,expiresAt:now+OTP_TTL_MS});
     }
     if (!/^\d{6}$/.test(String(code||"")) || !existing || now > existing.expiresAt ||
         existing.attempts >= OTP_LIMIT || existing.blockedUntil > now) return json_({ok:false,error:"INVALID_OR_EXPIRED"});
