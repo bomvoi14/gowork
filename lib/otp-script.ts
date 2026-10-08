@@ -38,7 +38,7 @@ export async function otpScript(action: "request" | "verify", lineUserId: string
     throw new Error("OTP_INVALID_RESPONSE");
   }
   if (!result || typeof result !== "object" || !("ok" in result)) throw new Error("OTP_INVALID_RESPONSE");
-  const parsed = result as { ok: boolean; error?: string; expiresAt?: number; reused?: boolean };
+  const parsed = result as { ok: boolean; error?: string; expiresAt?: number; reused?: boolean; diagnosticRef?: string };
   if (!parsed.ok) console.error("OTP gateway rejected request", { reason: parsed.error || "UNKNOWN" });
   return parsed;
 }
