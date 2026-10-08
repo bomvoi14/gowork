@@ -48,7 +48,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
           {sentTo && <>
             <p className="text-sm text-gray-600">ส่งรหัส OTP ไปที่ <strong>{sentTo}</strong> แล้ว (รหัสหมดอายุใน 5 นาที)</p>
             <label className="block text-sm font-bold text-gray-700">รหัส OTP 6 หลัก
-              <input value={code} onChange={(e) => setCode(e.target.value.replace(/\\D/g, "").slice(0, 6))} inputMode="numeric" maxLength={6} autoComplete="one-time-code" className="mt-1.5 w-full rounded-xl border-2 border-gray-200 p-3 text-center text-lg font-bold tracking-[0.35em]" />
+              <input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" maxLength={6} autoComplete="one-time-code" className="mt-1.5 w-full rounded-xl border-2 border-gray-200 p-3 text-center text-lg font-bold tracking-[0.35em]" />
             </label>
             <button type="button" className="text-sm text-green-700 underline" onClick={() => { setSentTo(""); setCode(""); setError(""); }}>เปลี่ยนเลขประจำตัว / ขอรหัสใหม่</button>
           </>}
