@@ -5,7 +5,7 @@ Status: implementation planned; NOT enabled in production.
 ## Agreed flow
 1. First-time user authenticates with LINE OAuth.
 2. Enter EmpID; verify against employee master.
-3. Send one-time code to `<EmpID>@egat.co.th` (confirm this address convention with EGAT before launch).
+3. Send one-time code to `<EmpID>@egat.co.th` (confirmed by project owner for all employees).
 4. Verify OTP; bind LINE User ID to EmpID.
 5. In Account Settings, optionally link Google and Facebook.
 6. Subsequent logins use any linked provider, no OTP required.
@@ -35,7 +35,8 @@ Current code:
 - Google/Facebook linking is already implemented in staging.
 
 ## Rollout checklist
-- [ ] Confirm EGAT email format and deliverability.
+- [x] Confirm EGAT email address format (EmpID@egat.co.th) with project owner.
+- [ ] Verify delivery from external sender to EGAT inboxes.
 - [ ] Select transactional email service and verify sender domain.
 - [ ] Implement durable OTP challenge store and rate limiting.
 - [ ] Add request/verify/consume endpoints with secure atomic consumption.
