@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 
 export function AccountRegistration({ onRegistered }: { onRegistered: () => void }) {
@@ -8,6 +8,15 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
   const [code, setCode] = useState("");
   const [sentTo, setSentTo] = useState("");
   const [deliveryUnconfirmed, setDeliveryUnconfirmed] = useState(false);
+  const [expiresAt, setExpiresAt] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  useEffect(() => {
+    if (!expiresAt) return;
+    const update = () => setSecondsLeft(Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)));
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, [expiresAt]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -16,6 +25,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
     event.preventDefault();
     setError("");
     if (!/^\d+$/.test(empId)) return setError("กรุณากรอกเลขประจำตัวเป็นตัวเลขเท่านั้น");
+    if (sentTo && secondsLeft <= 0) return setError("OTP หมดอายุ กรุณาขอรหัสใหม่");
     if (sentTo && !/^\d{6}$/.test(code)) return setError("กรุณากรอก OTP 6 หลัก");
     setBusy(true);
     const requesting = !sentTo;
@@ -29,15 +39,17 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
       if (!response.ok) {
         if (requesting && response.status >= 500) {
           setSentTo(empId + "@egat.co.th");
+          setExpiresAt(Date.now() + 180000);
           setDeliveryUnconfirmed(true);
           return;
         }
         return setError(result?.error || "ไม่สามารถลงทะเบียนได้");
       }
-      if (requesting) { setSentTo(result.email); setDeliveryUnconfirmed(false); return; }
+      if (requesting) { setSentTo(result.email); setExpiresAt(result.expiresAt || Date.now() + 180000); setDeliveryUnconfirmed(false); return; }
       onRegistered();
     } catch {
       if (requesting) {
+        setExpiresAt(Date.now() + 180000);
         setSentTo(empId + "@egat.co.th");
         setDeliveryUnconfirmed(true);
       } else {
@@ -60,14 +72,15 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
             <input value={empId} disabled={Boolean(sentTo)} onChange={(e) => setEmpId(e.target.value.replace(/\D/g, ""))} inputMode="numeric" pattern="[0-9]*" autoComplete="off" className="mt-1.5 w-full rounded-xl border-2 border-gray-200 p-3 text-sm" />
           </label>
           {sentTo && <>
-            <p className="text-sm text-gray-600">{deliveryUnconfirmed ? "ยังยืนยันผลการส่งไม่ได้ หากได้รับอีเมลแล้ว ให้กรอกรหัสด้านล่าง (ไม่ต้องขอซ้ำ)" : "ส่งรหัส OTP แล้ว (รหัสหมดอายุใน 5 นาที)"} <strong>{sentTo}</strong></p>
+            <p className="text-sm text-gray-600">{deliveryUnconfirmed ? "ยังยืนยันผลการส่งไม่ได้ หากได้รับอีเมลแล้ว ให้กรอกรหัสด้านล่าง (ไม่ต้องขอซ้ำ)" : "ส่งรหัส OTP แล้ว"} <strong>{sentTo}</strong></p>
+            <p className="text-sm font-bold text-center">{secondsLeft > 0 ? `รหัสหมดอายุใน ${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}` : "รหัสหมดอายุแล้ว สามารถขอรหัสใหม่ได้"}</p>
             <label className="block text-sm font-bold text-gray-700">รหัส OTP 6 หลัก
               <input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" maxLength={6} autoComplete="one-time-code" className="mt-1.5 w-full rounded-xl border-2 border-gray-200 p-3 text-center text-lg font-bold tracking-[0.35em]" />
             </label>
-            <button type="button" className="text-sm text-green-700 underline" onClick={() => { setSentTo(""); setCode(""); setError(""); setDeliveryUnconfirmed(false); }}>เปลี่ยนเลขประจำตัว / ขอรหัสใหม่</button>
+            <button type="button" className="text-sm text-green-700 underline disabled:opacity-40" disabled={secondsLeft > 0 || busy} onClick={() => { setSentTo(""); setCode(""); setError(""); setDeliveryUnconfirmed(false); setExpiresAt(0); }}>ขอ OTP ใหม่ / เปลี่ยนเลขประจำตัว</button>
           </>}
           {error && <div className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div>}
-          <button type="submit" disabled={busy} className="w-full rounded-xl bg-green-600 px-4 py-3 font-bold text-white disabled:opacity-50">{busy ? "กำลังตรวจสอบ..." : sentTo ? "ยืนยัน OTP และลงทะเบียน" : "ส่ง OTP ไปยังอีเมลองค์กร"}</button>
+          <button type="submit" disabled={busy || (Boolean(sentTo) && secondsLeft <= 0)} className="w-full rounded-xl bg-green-600 px-4 py-3 font-bold text-white disabled:opacity-50">{busy ? "กำลังตรวจสอบ..." : sentTo ? "ยืนยัน OTP และลงทะเบียน" : "ส่ง OTP ไปยังอีเมลองค์กร"}</button>
         </form>
         <button
           type="button"
