@@ -56,7 +56,7 @@ function doPost(e) {
     const fingerprint = mac_(key,secret).slice(0,12);
     console.log("OTP_STATE",JSON.stringify({action,fingerprint,found:!!existing,expired:!!existing && now > existing.expiresAt}));
     if (action === "request") {
-      if (existing && existing.expiresAt > now) return json_({ok:true,expiresAt:existing.expiresAt,reused:true});
+      if (existing && existing.expiresAt > now) return json_({ok:true,expiresAt:existing.expiresAt,reused:true,diagnosticRef:fingerprint});
       if (existing && now-existing.sentAt < OTP_COOLDOWN_MS) return json_({ok:false,error:"WAIT_BEFORE_RESEND"});
       if (existing && existing.blockedUntil > now) return json_({ok:false,error:"TOO_MANY_ATTEMPTS"});
       if (existing && existing.requestWindowStart && now-existing.requestWindowStart < 3600000 && existing.requests >= 5) return json_({ok:false,error:"REQUEST_LIMIT"});
@@ -79,9 +79,9 @@ function doPost(e) {
         return json_({ok:false,error:"OTP_STORAGE_FAILED"});
       }
       console.log("OTP_PERSIST_OK",fingerprint);
-      return json_({ok:true,expiresAt:now+OTP_TTL_MS});
+      return json_({ok:true,expiresAt:now+OTP_TTL_MS,diagnosticRef:fingerprint});
     }
-    if (!existing) return json_({ok:false,error:"OTP_NOT_FOUND"});
+    if (!existing) return json_({ok:false,error:"OTP_NOT_FOUND",diagnosticRef:fingerprint});
     if (now > existing.expiresAt) return json_({ok:false,error:"OTP_EXPIRED"});
     if (existing.attempts >= OTP_LIMIT || existing.blockedUntil > now) return json_({ok:false,error:"OTP_LOCKED"});
     if (!/^\d{6}$/.test(String(code||""))) return json_({ok:false,error:"OTP_INVALID"});
