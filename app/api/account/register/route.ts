@@ -35,22 +35,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "ข้อมูลยืนยันไม่ถูกต้อง" }, { status: 400 });
     }
 
-    if (await findLineEmployee(lineUserId)) {
+    const lookupStartedAt = Date.now();
+    const [existingLine, existingEmployeeMapping, employee] = await Promise.all([
+      findLineEmployee(lineUserId),
+      findActiveMappingByEmpId(empId),
+      findEmployeeForRegistration(empId),
+    ]);
+    console.info("Registration timing", { phase: "lookups", durationMs: Date.now() - lookupStartedAt, action });
+    if (existingLine) {
       return NextResponse.json({ ok: false, error: "บัญชี LINE นี้ถูกลงทะเบียนแล้ว" }, { status: 409 });
     }
-    if (await findActiveMappingByEmpId(empId)) {
+    if (existingEmployeeMapping) {
       return NextResponse.json({ ok: false, error: "รหัสพนักงานนี้ถูกลงทะเบียนแล้ว" }, { status: 409 });
     }
 
     phase = "employee_lookup";
-    const employee = await findEmployeeForRegistration(empId);
     if (!employee) {
       return NextResponse.json({ ok: false, error: "ข้อมูลยืนยันไม่ถูกต้อง" }, { status: 400 });
     }
 
     phase = "otp_gateway";
     const diagnosticEnabled = process.env.VERCEL_ENV === "preview" && process.env.VERCEL_GIT_COMMIT_REF === "staging";
+    const otpStartedAt = Date.now();
     const otp = await otpScript(action as "request" | "verify", lineUserId, empId, action === "verify" ? code : undefined);
+    console.info("Registration timing", { phase: "otp_gateway", durationMs: Date.now() - otpStartedAt, action });
     if (!otp.ok) {
       const messages: Record<string, string> = {
         OTP_NOT_FOUND: "ระบบไม่พบข้อมูล OTP ที่ส่งไป กรุณารอให้หมดเวลาแล้วขอรหัสใหม่",
@@ -69,12 +77,14 @@ export async function POST(request: Request) {
     if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th", expiresAt: otp.expiresAt || Date.now() + 180000, ...(diagnosticEnabled ? { diagnostic: { phase, state: otp.reused ? "EXISTING_CHALLENGE" : "NEW_CHALLENGE", ref: otp.diagnosticRef || "UNAVAILABLE" } } : {}) });
 
     phase = "create_mapping";
+    const mappingStartedAt = Date.now();
     await createLineEmployeeMapping({
       empId: employee.empId,
       name: employee.name,
       lineUserId,
       lineName,
     });
+    console.info("Registration timing", { phase: "create_mapping", durationMs: Date.now() - mappingStartedAt, action });
 
     return NextResponse.json({
       ok: true,
