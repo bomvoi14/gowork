@@ -18,12 +18,14 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
     return () => window.clearInterval(timer);
   }, [expiresAt]);
   const [error, setError] = useState("");
+  const [diagnostic, setDiagnostic] = useState("");
   const [busy, setBusy] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError("");
+    setDiagnostic("");
     if (!/^\d+$/.test(empId)) return setError("กรุณากรอกเลขประจำตัวเป็นตัวเลขเท่านั้น");
     if (sentTo && secondsLeft <= 0) return setError("OTP หมดอายุ กรุณาขอรหัสใหม่");
     if (sentTo && !/^\d{6}$/.test(code)) return setError("กรุณากรอก OTP 6 หลัก");
@@ -36,6 +38,10 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
         body: JSON.stringify({ empId, action: sentTo ? "verify" : "request", code }),
       });
       const result = await response.json();
+      if (result?.diagnostic) {
+        const info = result.diagnostic;
+        setDiagnostic([info.phase, info.state || info.reason].filter(Boolean).join(" / "));
+      }
       if (!response.ok) {
         if (requesting && response.status >= 500) {
           return setError("ยังยืนยันการส่ง OTP ไม่สำเร็จ กรุณาตรวจอีเมลก่อน หากได้รับรหัสแล้วให้รอสักครู่และกดขอ OTP อีกครั้ง ระบบจะใช้รหัสเดิมที่ยังไม่หมดอายุ");
@@ -75,6 +81,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
             <button type="button" className="text-sm text-green-700 underline disabled:opacity-40" disabled={secondsLeft > 0 || busy} onClick={() => { setSentTo(""); setCode(""); setError(""); setDeliveryUnconfirmed(false); setExpiresAt(0); }}>ขอ OTP ใหม่ / เปลี่ยนเลขประจำตัว</button>
           </>}
           {error && <div className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div>}
+          {diagnostic && <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600">Staging Diagnostics: <span className="font-mono">{diagnostic}</span></div>}
           <button type="submit" disabled={busy || (Boolean(sentTo) && secondsLeft <= 0)} className="w-full rounded-xl bg-green-600 px-4 py-3 font-bold text-white disabled:opacity-50">{busy ? "กำลังตรวจสอบ..." : sentTo ? "ยืนยัน OTP และลงทะเบียน" : "ส่ง OTP ไปยังอีเมลองค์กร"}</button>
         </form>
         <button
