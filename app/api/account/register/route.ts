@@ -49,6 +49,7 @@ export async function POST(request: Request) {
     }
 
     phase = "otp_gateway";
+    const diagnosticEnabled = process.env.VERCEL_ENV === "preview" && process.env.VERCEL_GIT_COMMIT_REF === "staging";
     const otp = await otpScript(action as "request" | "verify", lineUserId, empId, action === "verify" ? code : undefined);
     if (!otp.ok) {
       const messages: Record<string, string> = {
@@ -63,9 +64,9 @@ export async function POST(request: Request) {
         REQUEST_LIMIT: "ขอ OTP เกินจำนวนครั้งที่กำหนด กรุณาลองใหม่ภายหลัง",
         BUSY: "ระบบกำลังประมวลผล กรุณาลองอีกครั้ง",
       };
-      return NextResponse.json({ ok: false, error: messages[otp.error || ""] || "ไม่สามารถยืนยัน OTP ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: messages[otp.error || ""] || "ไม่สามารถยืนยัน OTP ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ", ...(diagnosticEnabled ? { diagnostic: { phase, reason: otp.error || "UNKNOWN" } } : {}) }, { status: 400 });
     }
-    if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th", expiresAt: otp.expiresAt || Date.now() + 180000 });
+    if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th", expiresAt: otp.expiresAt || Date.now() + 180000, ...(diagnosticEnabled ? { diagnostic: { phase, state: otp.reused ? "EXISTING_CHALLENGE" : "NEW_CHALLENGE" } } : {}) });
 
     phase = "create_mapping";
     await createLineEmployeeMapping({
@@ -87,6 +88,6 @@ export async function POST(request: Request) {
       : phase === "create_mapping"
         ? "ยืนยัน OTP แล้ว แต่บันทึกบัญชีไม่สำเร็จ กรุณาติดต่อผู้ดูแลระบบ"
         : "ระบบลงทะเบียนขัดข้อง กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ";
-    return NextResponse.json({ ok: false, error: message, phase }, { status: 500 });
+    return NextResponse.json({ ok: false, error: message, ...(process.env.VERCEL_ENV === "preview" && process.env.VERCEL_GIT_COMMIT_REF === "staging" ? { diagnostic: { phase, reason: error instanceof Error ? error.message : "UNKNOWN" } } : {}) }, { status: 500 });
   }
 }
