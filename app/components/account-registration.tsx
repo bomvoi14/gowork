@@ -19,6 +19,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
   }, [expiresAt]);
   const [error, setError] = useState("");
   const [diagnostic, setDiagnostic] = useState("");
+  const [requestRef, setRequestRef] = useState("");
   const [busy, setBusy] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
@@ -40,7 +41,8 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
       const result = await response.json();
       if (result?.diagnostic) {
         const info = result.diagnostic;
-        setDiagnostic([info.phase, info.state || info.reason].filter(Boolean).join(" / "));
+        setDiagnostic([info.phase, info.state || info.reason, info.ref ? "ref:" + info.ref : "", requesting ? "" : requestRef ? (info.ref === requestRef ? "MATCH" : "MISMATCH") : ""].filter(Boolean).join(" / "));
+        if (requesting && info.ref && info.ref !== "UNAVAILABLE") setRequestRef(info.ref);
       }
       if (!response.ok) {
         if (requesting && response.status >= 500) {
@@ -78,7 +80,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
             <label className="block text-sm font-bold text-gray-700">รหัส OTP 6 หลัก
               <input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" maxLength={6} autoComplete="one-time-code" className="mt-1.5 w-full rounded-xl border-2 border-gray-200 p-3 text-center text-lg font-bold tracking-[0.35em]" />
             </label>
-            <button type="button" className="text-sm text-green-700 underline disabled:opacity-40" disabled={secondsLeft > 0 || busy} onClick={() => { setSentTo(""); setCode(""); setError(""); setDeliveryUnconfirmed(false); setExpiresAt(0); }}>ขอ OTP ใหม่ / เปลี่ยนเลขประจำตัว</button>
+            <button type="button" className="text-sm text-green-700 underline disabled:opacity-40" disabled={secondsLeft > 0 || busy} onClick={() => { setSentTo(""); setCode(""); setError(""); setDeliveryUnconfirmed(false); setExpiresAt(0); setRequestRef(""); }}>ขอ OTP ใหม่ / เปลี่ยนเลขประจำตัว</button>
           </>}
           {error && <div className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div>}
           {diagnostic && <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600">Staging Diagnostics: <span className="font-mono">{diagnostic}</span></div>}
