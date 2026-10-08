@@ -80,6 +80,11 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Account registration failed:", { phase, durationMs: Date.now() - startedAt, error: error instanceof Error ? error.message : "Unknown error" });
-    return NextResponse.json({ ok: false, error: "ไม่สามารถลงทะเบียนได้" }, { status: 500 });
+    const message = phase === "otp_gateway"
+      ? "ระบบยืนยัน OTP เชื่อมต่อไม่สำเร็จ กรุณารอสักครู่แล้วลองยืนยันอีกครั้ง (ไม่ต้องขอรหัสใหม่)"
+      : phase === "create_mapping"
+        ? "ยืนยัน OTP แล้ว แต่บันทึกบัญชีไม่สำเร็จ กรุณาติดต่อผู้ดูแลระบบ"
+        : "ระบบลงทะเบียนขัดข้อง กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ";
+    return NextResponse.json({ ok: false, error: message, phase }, { status: 500 });
   }
 }
