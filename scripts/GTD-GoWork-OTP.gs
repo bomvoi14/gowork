@@ -52,6 +52,9 @@ function doPost(e) {
     const key = "otp:"+mac_(lineUserId+"|"+empId,secret);
     const now = Date.now();
     const existing = JSON.parse(props.getProperty(key)||"null");
+    // Diagnostic fingerprint: no employee ID, LINE ID, OTP or secret in logs.
+    const fingerprint = mac_(key,secret).slice(0,12);
+    console.log("OTP_STATE",JSON.stringify({action,fingerprint,found:!!existing,expired:!!existing && now > existing.expiresAt}));
     if (action === "request") {
       if (existing && existing.expiresAt > now) return json_({ok:true,expiresAt:existing.expiresAt,reused:true});
       if (existing && now-existing.sentAt < OTP_COOLDOWN_MS) return json_({ok:false,error:"WAIT_BEFORE_RESEND"});
@@ -70,6 +73,12 @@ function doPost(e) {
         return json_({ok:false,error:"OTP_EMAIL_SEND_FAILED"});
       }
       props.setProperty(key,JSON.stringify(record));
+      const persisted = props.getProperty(key);
+      if (!persisted) {
+        console.error("OTP_PERSIST_FAILED",fingerprint);
+        return json_({ok:false,error:"OTP_STORAGE_FAILED"});
+      }
+      console.log("OTP_PERSIST_OK",fingerprint);
       return json_({ok:true,expiresAt:now+OTP_TTL_MS});
     }
     if (!existing) return json_({ok:false,error:"OTP_NOT_FOUND"});
