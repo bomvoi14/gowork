@@ -49,13 +49,7 @@ export async function POST(request: Request) {
     }
 
     phase = "otp_gateway";
-    // Temporary staging-only registration isolation test. Remove before release.
-    const isStagingTest = process.env.VERCEL_ENV === "preview" && process.env.VERCEL_GIT_COMMIT_REF === "staging";
-    const otp = isStagingTest
-      ? action === "request"
-        ? { ok: true, expiresAt: Date.now() + 180000 }
-        : { ok: code === "123456", error: code === "123456" ? undefined : "OTP_INVALID" }
-      : await otpScript(action as "request" | "verify", lineUserId, empId, action === "verify" ? code : undefined);
+    const otp = await otpScript(action as "request" | "verify", lineUserId, empId, action === "verify" ? code : undefined);
     if (!otp.ok) {
       const messages: Record<string, string> = {
         OTP_NOT_FOUND: "ไม่พบ OTP ที่รอยืนยัน กรุณาขอรหัสใหม่",
@@ -69,7 +63,7 @@ export async function POST(request: Request) {
       };
       return NextResponse.json({ ok: false, error: messages[otp.error || ""] || "ไม่สามารถยืนยัน OTP ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ" }, { status: 400 });
     }
-    if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th", expiresAt: otp.expiresAt || Date.now() + 180000, testMode: isStagingTest });
+    if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th", expiresAt: otp.expiresAt || Date.now() + 180000 });
 
     phase = "create_mapping";
     await createLineEmployeeMapping({
