@@ -69,13 +69,15 @@ function doPost(e) {
       }
       return json_({ok:true,expiresAt:now+OTP_TTL_MS});
     }
-    if (!/^\d{6}$/.test(String(code||"")) || !existing || now > existing.expiresAt ||
-        existing.attempts >= OTP_LIMIT || existing.blockedUntil > now) return json_({ok:false,error:"INVALID_OR_EXPIRED"});
+    if (!existing) return json_({ok:false,error:"OTP_NOT_FOUND"});
+    if (now > existing.expiresAt) return json_({ok:false,error:"OTP_EXPIRED"});
+    if (existing.attempts >= OTP_LIMIT || existing.blockedUntil > now) return json_({ok:false,error:"OTP_LOCKED"});
+    if (!/^\d{6}$/.test(String(code||""))) return json_({ok:false,error:"OTP_INVALID"});
     existing.attempts++;
     if (!equal_(mac_(code+"|"+lineUserId+"|"+empId,secret),existing.hash)) {
       if (existing.attempts >= OTP_LIMIT) existing.blockedUntil = now+15*60*1000;
       props.setProperty(key,JSON.stringify(existing));
-      return json_({ok:false,error:"INVALID_OR_EXPIRED"});
+      return json_({ok:false,error:"OTP_INVALID"});
     }
     props.deleteProperty(key);
     return json_({ok:true});
