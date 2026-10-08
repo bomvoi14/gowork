@@ -49,7 +49,6 @@ function doPost(e) {
     if (action === "request") {
       if (existing && now-existing.sentAt < OTP_COOLDOWN_MS) return json_({ok:false,error:"WAIT_BEFORE_RESEND"});
       if (existing && existing.blockedUntil > now) return json_({ok:false,error:"TOO_MANY_ATTEMPTS"});
-      const otp = String(Math.floor(Math.random()*1000000)).padStart(6,"0");
       // Apps Script has no cryptographic random API; use UUID entropy to derive OTP instead.
       const secureCode = String(parseInt(mac_(Utilities.getUuid()+Utilities.getUuid(),secret).slice(0,12),16)%1000000).padStart(6,"0");
       const hash = mac_(secureCode+"|"+lineUserId+"|"+empId,secret);
