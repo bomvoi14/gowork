@@ -50,7 +50,19 @@ export async function POST(request: Request) {
 
     phase = "otp_gateway";
     const otp = await otpScript(action as "request" | "verify", lineUserId, empId, action === "verify" ? code : undefined);
-    if (!otp.ok) return NextResponse.json({ ok: false, error: "ไม่สามารถส่งหรือยืนยัน OTP ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ" }, { status: 400 });
+    if (!otp.ok) {
+      const messages: Record<string, string> = {
+        OTP_NOT_FOUND: "ไม่พบ OTP ที่รอยืนยัน กรุณาขอรหัสใหม่",
+        OTP_EXPIRED: "OTP หมดอายุแล้ว กรุณาขอรหัสใหม่",
+        OTP_LOCKED: "ลองยืนยัน OTP เกินจำนวนครั้งที่กำหนด กรุณาติดต่อผู้ดูแลระบบ",
+        OTP_INVALID: "OTP ไม่ถูกต้อง กรุณาตรวจสอบรหัสล่าสุดจากอีเมล",
+        INVALID_OR_EXPIRED: "OTP ไม่ถูกต้องหรือหมดอายุ กรุณาขอรหัสใหม่หากหมดเวลา",
+        WAIT_BEFORE_RESEND: "กรุณารอก่อนขอ OTP ใหม่",
+        REQUEST_LIMIT: "ขอ OTP เกินจำนวนครั้งที่กำหนด กรุณาลองใหม่ภายหลัง",
+        BUSY: "ระบบกำลังประมวลผล กรุณาลองอีกครั้ง",
+      };
+      return NextResponse.json({ ok: false, error: messages[otp.error || ""] || "ไม่สามารถยืนยัน OTP ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ" }, { status: 400 });
+    }
     if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th", expiresAt: otp.expiresAt || Date.now() + 180000 });
 
     phase = "create_mapping";
