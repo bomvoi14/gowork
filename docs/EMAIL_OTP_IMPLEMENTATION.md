@@ -44,3 +44,13 @@ Current code:
 - [ ] Test valid/invalid/expired/replayed/rate-limited OTP and duplicate/concurrent registration.
 - [ ] Test LINE + Google + Facebook identity resolution and user/admin permissions.
 - [ ] Production approval and deployment only after successful staging tests.
+
+## Staging implementation status (2026-10-08)
+- [x] Email format confirmed and GmailApp delivery to EGAT tested manually.
+- [x] Registration UI and Next.js OTP request/verify gateway committed to staging.
+- [x] Apps Script source in `scripts/GTD-GoWork-OTP.gs` committed; NOT deployed.
+- [ ] Deploy Apps Script as Web App under `gtdgowork@gmail.com`; configure Script Property `OTP_SCRIPT_SECRET`.
+- [ ] Configure matching `OTP_SCRIPT_SECRET` and `OTP_SCRIPT_URL` on Vercel staging/Preview only. Never put secret in browser code or chat.
+- [ ] Review challenge entropy, bounded nonce storage, persistent abuse throttling and concurrent EmpID binding before public tests.
+- [ ] Verify staging build, complete end-to-end tests with an unregistered test EmpID.
+- [ ] Production remains unchanged.
