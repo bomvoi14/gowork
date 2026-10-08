@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     phase = "otp_gateway";
     const otp = await otpScript(action as "request" | "verify", lineUserId, empId, action === "verify" ? code : undefined);
     if (!otp.ok) return NextResponse.json({ ok: false, error: "ไม่สามารถส่งหรือยืนยัน OTP ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ" }, { status: 400 });
-    if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th" });
+    if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th", expiresAt: otp.expiresAt || Date.now() + 180000 });
 
     phase = "create_mapping";
     await createLineEmployeeMapping({
