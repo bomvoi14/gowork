@@ -52,7 +52,9 @@ export async function POST(request: Request) {
     const otp = await otpScript(action as "request" | "verify", lineUserId, empId, action === "verify" ? code : undefined);
     if (!otp.ok) {
       const messages: Record<string, string> = {
-        OTP_NOT_FOUND: "ไม่พบ OTP ที่รอยืนยัน กรุณาขอรหัสใหม่",
+        OTP_NOT_FOUND: "ระบบไม่พบข้อมูล OTP ที่ส่งไป กรุณารอให้หมดเวลาแล้วขอรหัสใหม่",
+        OTP_STORAGE_FAILED: "ระบบจัดเก็บ OTP ขัดข้อง กรุณาติดต่อผู้ดูแลระบบ",
+        OTP_EMAIL_SEND_FAILED: "ไม่สามารถส่งอีเมล OTP ได้ กรุณาลองใหม่ภายหลัง",
         OTP_EXPIRED: "OTP หมดอายุแล้ว กรุณาขอรหัสใหม่",
         OTP_LOCKED: "ลองยืนยัน OTP เกินจำนวนครั้งที่กำหนด กรุณาติดต่อผู้ดูแลระบบ",
         OTP_INVALID: "OTP ไม่ถูกต้อง กรุณาตรวจสอบรหัสล่าสุดจากอีเมล",
