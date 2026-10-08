@@ -12,6 +12,8 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const startedAt = Date.now();
+  let phase = "session";
   try {
     const session = await getServerSession(authOptions);
     const user = session?.user as
@@ -40,15 +42,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "รหัสพนักงานนี้ถูกลงทะเบียนแล้ว" }, { status: 409 });
     }
 
+    phase = "employee_lookup";
     const employee = await findEmployeeForRegistration(empId);
     if (!employee) {
       return NextResponse.json({ ok: false, error: "ข้อมูลยืนยันไม่ถูกต้อง" }, { status: 400 });
     }
 
+    phase = "otp_gateway";
     const otp = await otpScript(action as "request" | "verify", lineUserId, empId, action === "verify" ? code : undefined);
     if (!otp.ok) return NextResponse.json({ ok: false, error: "ไม่สามารถส่งหรือยืนยัน OTP ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ" }, { status: 400 });
     if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th" });
 
+    phase = "create_mapping";
     await createLineEmployeeMapping({
       empId: employee.empId,
       name: employee.name,
@@ -62,7 +67,7 @@ export async function POST(request: Request) {
       employee: { empId: employee.empId, name: employee.name },
     });
   } catch (error) {
-    console.error("Account registration failed:", error instanceof Error ? error.message : "Unknown error");
+    console.error("Account registration failed:", { phase, durationMs: Date.now() - startedAt, error: error instanceof Error ? error.message : "Unknown error" });
     return NextResponse.json({ ok: false, error: "ไม่สามารถลงทะเบียนได้" }, { status: 500 });
   }
 }
