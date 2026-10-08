@@ -38,10 +38,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
       const result = await response.json();
       if (!response.ok) {
         if (requesting && response.status >= 500) {
-          setSentTo(empId + "@egat.co.th");
-          setExpiresAt(Date.now() + 180000);
-          setDeliveryUnconfirmed(true);
-          return;
+          return setError("ยังยืนยันการส่ง OTP ไม่สำเร็จ กรุณาตรวจอีเมลก่อน หากได้รับรหัสแล้วให้รอสักครู่และกดขอ OTP อีกครั้ง ระบบจะใช้รหัสเดิมที่ยังไม่หมดอายุ");
         }
         return setError(result?.error || "ไม่สามารถลงทะเบียนได้");
       }
@@ -49,9 +46,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
       onRegistered();
     } catch {
       if (requesting) {
-        setExpiresAt(Date.now() + 180000);
-        setSentTo(empId + "@egat.co.th");
-        setDeliveryUnconfirmed(true);
+        setError("การเชื่อมต่อขัดข้อง ยังยืนยันการส่ง OTP ไม่ได้ กรุณาลองกดขอ OTP อีกครั้ง ระบบจะไม่ส่งรหัสซ้ำถ้ารหัสเดิมยังใช้งานได้");
       } else {
         setError("ไม่สามารถเชื่อมต่อระบบได้ กรุณาลองใหม่");
       }
