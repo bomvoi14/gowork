@@ -23,10 +23,22 @@ export async function otpScript(action: "request" | "verify", lineUserId: string
     body: JSON.stringify({ ...payload, signature }),
     redirect: "follow",
     cache: "no-store",
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(45000),
   });
-  if (!response.ok) throw new Error("OTP_DELIVERY_FAILED");
-  const result: unknown = await response.json();
+  if (!response.ok) {
+    console.error("OTP gateway HTTP failure", { status: response.status });
+    throw new Error("OTP_DELIVERY_FAILED");
+  }
+  const raw = await response.text();
+  let result: unknown;
+  try {
+    result = JSON.parse(raw);
+  } catch {
+    console.error("OTP gateway returned non-JSON", { status: response.status, contentType: response.headers.get("content-type"), length: raw.length });
+    throw new Error("OTP_INVALID_RESPONSE");
+  }
   if (!result || typeof result !== "object" || !("ok" in result)) throw new Error("OTP_INVALID_RESPONSE");
-  return result as { ok: boolean; error?: string };
+  const parsed = result as { ok: boolean; error?: string };
+  if (!parsed.ok) console.error("OTP gateway rejected request", { reason: parsed.error || "UNKNOWN" });
+  return parsed;
 }
