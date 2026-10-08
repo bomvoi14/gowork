@@ -60,13 +60,16 @@ function doPost(e) {
       // Apps Script has no cryptographic random API; use UUID entropy to derive OTP instead.
       const secureCode = String(parseInt(mac_(Utilities.getUuid()+Utilities.getUuid(),secret).slice(0,12),16)%1000000).padStart(6,"0");
       const hash = mac_(secureCode+"|"+lineUserId+"|"+empId,secret);
-      props.setProperty(key,JSON.stringify({hash,sentAt:now,expiresAt:now+OTP_TTL_MS,attempts:0,blockedUntil:0,requestWindowStart:existing && now-existing.requestWindowStart < 3600000 ? existing.requestWindowStart : now,requests:existing && now-existing.requestWindowStart < 3600000 ? (existing.requests||0)+1 : 1}));
+      const record = {hash,sentAt:now,expiresAt:now+OTP_TTL_MS,attempts:0,blockedUntil:0,requestWindowStart:existing && now-existing.requestWindowStart < 3600000 ? existing.requestWindowStart : now,requests:existing && now-existing.requestWindowStart < 3600000 ? (existing.requests||0)+1 : 1};
+      // Persist the challenge only after Gmail accepts the message. A failed send
+      // must not erase or replace a previously issued OTP.
       try {
-        GmailApp.sendEmail(empId+"@egat.co.th","GTD-GoWork | รหัสยืนยันตัวตน", "รหัส OTP ของคุณคือ "+secureCode+"\nรหัสมีอายุ 3 นาที และใช้ได้ครั้งเดียว\nหากคุณไม่ได้ร้องขอ โปรดละเว้นข้อความนี้", {name:"GTD-GoWork Security"});
+        GmailApp.sendEmail(empId+"@egat.co.th","GTD-GoWork | รหัสยืนยันตัวตน", "รหัส OTP ของคุณคือ "+secureCode+"\\nรหัสมีอายุ 3 นาที และใช้ได้ครั้งเดียว\\nหากคุณไม่ได้ร้องขอ โปรดละเว้นข้อความนี้", {name:"GTD-GoWork Security"});
       } catch (err) {
-        props.deleteProperty(key);
-        throw err;
+        console.error("OTP_EMAIL_SEND_FAILED: "+String(err));
+        return json_({ok:false,error:"OTP_EMAIL_SEND_FAILED"});
       }
+      props.setProperty(key,JSON.stringify(record));
       return json_({ok:true,expiresAt:now+OTP_TTL_MS});
     }
     if (!existing) return json_({ok:false,error:"OTP_NOT_FOUND"});
