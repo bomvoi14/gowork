@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
+import { otpScript } from "@/lib/otp-script";
 import {
   createLineEmployeeMapping,
   findActiveMappingByEmpId,
@@ -9,12 +10,6 @@ import {
 } from "@/lib/google-sheets";
 
 export const runtime = "nodejs";
-
-function surnameSuffix4(englishName: string) {
-  const parts = englishName.trim().split(/\s+/).filter(Boolean);
-  const surname = parts.at(-1) || "";
-  return surname.slice(-4).toUpperCase();
-}
 
 export async function POST(request: Request) {
   try {
@@ -31,9 +26,10 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const empId = String(body.empId || "").trim();
-    const suffix = String(body.surnameSuffix || "").trim().toUpperCase();
+    const code = String(body.code || "").trim();
+    const action = String(body.action || "verify");
 
-    if (!/^\d+$/.test(empId) || !/^[A-Z]{4}$/.test(suffix)) {
+    if (!/^\d{1,12}$/.test(empId) || !["request", "verify"].includes(action) || (action === "verify" && !/^\d{6}$/.test(code))) {
       return NextResponse.json({ ok: false, error: "ข้อมูลยืนยันไม่ถูกต้อง" }, { status: 400 });
     }
 
@@ -45,9 +41,13 @@ export async function POST(request: Request) {
     }
 
     const employee = await findEmployeeForRegistration(empId);
-    if (!employee || surnameSuffix4(employee.englishName) !== suffix) {
+    if (!employee) {
       return NextResponse.json({ ok: false, error: "ข้อมูลยืนยันไม่ถูกต้อง" }, { status: 400 });
     }
+
+    const otp = await otpScript(action as "request" | "verify", lineUserId, empId, action === "verify" ? code : undefined);
+    if (!otp.ok) return NextResponse.json({ ok: false, error: "ไม่สามารถส่งหรือยืนยัน OTP ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ" }, { status: 400 });
+    if (action === "request") return NextResponse.json({ ok: true, email: empId + "@egat.co.th" });
 
     await createLineEmployeeMapping({
       empId: employee.empId,
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       employee: { empId: employee.empId, name: employee.name },
     });
   } catch (error) {
-    console.error("Account registration failed:", error);
+    console.error("Account registration failed:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ ok: false, error: "ไม่สามารถลงทะเบียนได้" }, { status: 500 });
   }
 }
