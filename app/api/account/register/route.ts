@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
+import { registrationAttemptAllowed } from "@/lib/registration-throttle";
 import {
   createLineEmployeeMapping,
   findActiveMappingByEmpId,
@@ -18,6 +19,9 @@ export async function POST(request: Request) {
     const lineName = user?.name || "";
     if (!lineUserId) return NextResponse.json({ ok: false, error: "กรุณาเข้าสู่ระบบด้วย LINE" }, { status: 401 });
 
+    if (!registrationAttemptAllowed(lineUserId)) {
+      return NextResponse.json({ ok: false, error: "มีการตรวจสอบข้อมูลบ่อยเกินไป กรุณารอ 15 นาทีแล้วลองใหม่" }, { status: 429, headers: { "Retry-After": "900" } });
+    }
     const body = await request.json();
     const empId = String(body?.empId || "").trim();
     if (!/^\d{1,12}$/.test(empId) || body?.confirmed !== true) {
