@@ -72,12 +72,12 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
           </form>
         ) : (
           <div className="space-y-4">
-            <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+            <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-center">
               <p className="text-sm text-gray-600">เลขประจำตัว: <span className="font-bold text-gray-900">{employee.empId}</span></p>
               <p className="mt-2 text-sm text-gray-600">ชื่อ-นามสกุล</p>
               <p className="font-bold text-lg text-gray-900">{employee.name}</p>
             </div>
-            <p className="text-sm text-gray-600">กรุณาตรวจสอบว่าชื่อ-นามสกุลตรงกับคุณก่อนยืนยัน</p>
+            <p className="text-center text-sm text-gray-600">ตรวจสอบชื่อ-นามสกุลตรงกับตัวคุณ<br />ก่อนยืนยัน</p>
             {error && <div role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div>}
             <button type="button" onClick={confirm} disabled={busy} className="w-full rounded-xl bg-green-600 px-4 py-3 font-bold text-white disabled:opacity-50">{busy ? "กำลังลงทะเบียน..." : "ยืนยันว่าเป็นฉัน"}</button>
             <button type="button" disabled={busy} onClick={() => { setEmployee(null); setError(""); }} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-700 disabled:opacity-50">แก้ไขเลขประจำตัว</button>
