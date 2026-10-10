@@ -59,6 +59,7 @@ export function AccountRegistration({ onRegistered }: { onRegistered: () => void
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-5 flex items-center justify-center">
       <div className="w-full rounded-3xl bg-white p-6 shadow-lg border border-gray-100">
         <div className="text-center mb-6">
+          <img src="/gtd-logo.png" alt="GTD-GoWork" className="mx-auto mb-4 h-24 w-24 object-contain" />
           <h1 className="text-xl font-bold text-gray-800">ลงทะเบียนเข้าใช้งานครั้งแรก</h1>
           <p className="mt-2 text-sm text-gray-500">กรอกเลขประจำตัวพนักงานเพื่อตรวจสอบข้อมูล</p>
         </div>
