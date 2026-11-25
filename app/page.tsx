@@ -523,7 +523,6 @@ export default function Home() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-4 relative flex flex-col justify-between">
       <div>
-        <AppBrandHeader />
         {/* แถบ LINE Login */}
         <div id="tour-line" className="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100">
           {session ? (
