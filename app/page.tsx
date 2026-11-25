@@ -853,9 +853,10 @@ export default function Home() {
           )}
         </div>
         <footer lang="en" className="app-credit">
-          <span>GTD-GoWork • v1.0.1</span>
-          <span>Built by BOM_GTD</span>
-          <span className="credit-tagline">For everyone. For happier work.</span>
+          <p className="font-medium">Simple A Smart A Sustainable</p>
+          <p className="text-[10px] mt-0.5">Build what matters. Keep it simple.</p>
+          <p className="mt-0.5">by BOM_GTD</p>
+          <p className="text-[10px] mt-0.5">For everyone. For happier work.</p>
         </footer>
       </div>
       {/* Welcome Notice */}
