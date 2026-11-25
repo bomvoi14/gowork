@@ -1,5 +1,21 @@
 @import "tailwindcss";
-/* Shared GTD brand credit */
-.app-credit { display: grid; gap: 3px; text-align: center; margin-top: 20px; padding: 13px 2px 5px; border-top: 1px solid #e2e6ea; color: #656b73; font: 400 12px/1.5 var(--font-gtd-credit), system-ui, sans-serif; }
-.app-credit span { display: block; }
+
+.app-brand-header {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 8px; margin-bottom: 12px; padding: 12px 14px; border-radius: 12px;
+  background: #172C46; color: #fff;
+  font-family: var(--font-brand-inter), var(--font-brand-thai), system-ui, sans-serif;
+}
+.app-brand-name { font-size: 18px; font-weight: 600; line-height: 1.4; }
+.app-version-chip {
+  background: #344D68; color: #DCE7F3; border-radius: 6px;
+  padding: 3px 7px; font-size: 11px; font-weight: 500; white-space: nowrap;
+}
+.app-credit {
+  display: grid; gap: 3px; text-align: center; margin-top: 20px;
+  padding: 13px 2px 5px; border-top: 1px solid #e2e6ea; color: #656b73;
+  font: 400 12px/1.5 var(--font-brand-inter), var(--font-brand-thai), system-ui, sans-serif;
+}
+.app-credit .credit-title { font-weight: 500; }
 .app-credit .credit-tagline { font-size: 11px; }
+.app-credit .credit-author { margin-top: 8px; }
