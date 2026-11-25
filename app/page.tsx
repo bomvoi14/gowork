@@ -852,9 +852,11 @@ export default function Home() {
             </div>
           )}
         </div>
-        <div className="pb-4 text-center text-xs font-medium tracking-wide text-slate-500">
-          GTD-GoWork v1.0.0 <span className="mx-1 opacity-60">·</span> Created by <span className="font-semibold">BOM_GTD</span>
-        </div>
+        <footer lang="en" className="app-credit">
+          <span>GTD-GoWork • v1.0.1</span>
+          <span>Built by BOM_GTD</span>
+          <span className="credit-tagline">For everyone. For happier work.</span>
+        </footer>
       </div>
       {/* Welcome Notice */}
       {showInstallHelp && (
