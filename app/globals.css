@@ -1,1 +1,5 @@
 @import "tailwindcss";
+/* Shared GTD brand credit */
+.app-credit { display: grid; gap: 3px; text-align: center; margin-top: 20px; padding: 13px 2px 5px; border-top: 1px solid #e2e6ea; color: #656b73; font: 400 12px/1.5 var(--font-gtd-credit), system-ui, sans-serif; }
+.app-credit span { display: block; }
+.app-credit .credit-tagline { font-size: 11px; }
