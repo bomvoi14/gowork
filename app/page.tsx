@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { AccountRegistration } from './components/account-registration';
 import { AppBrandHeader } from './components/app-brand-header';
+import { APP_VERSION } from './release';
 interface Job {
   id: string;
   name: string;
@@ -854,10 +855,9 @@ export default function Home() {
           )}
         </div>
         <footer lang="en" className="app-credit">
-          <p className="credit-title">Simple · Smart · Sustainable</p>
-          <p className="credit-tagline">Build what matters. Keep it simple.</p>
-          <p className="credit-author">by BOM_GTD</p>
-          <p className="credit-tagline">For everyone. For happier work.</p>
+          <p className="credit-title">GTD-GoWork by BOM_GTD</p>
+          <p className="credit-tagline italic">Simple · Smart · Sustainable</p>
+          <p className="credit-tagline">Version {APP_VERSION} (Build {process.env.NEXT_PUBLIC_BUILD_DATE})</p>
         </footer>
       </div>
       {/* Welcome Notice */}
