@@ -857,6 +857,7 @@ export default function Home() {
           <p className="text-[10px] mt-0.5">Build what matters. Keep it simple.</p>
           <p className="mt-0.5">by BOM_GTD</p>
           <p className="text-[10px] mt-0.5">For everyone. For happier work.</p>
+          <p className="text-[10px] mt-0.5 text-gray-400">GTD-GoWork • v1.0.1</p>
         </footer>
       </div>
       {/* Welcome Notice */}
