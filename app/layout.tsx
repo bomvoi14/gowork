@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Prompt } from "next/font/google";
+import { Inter, Noto_Sans_Thai, Prompt } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -9,7 +9,8 @@ const prompt = Prompt({
   display: "swap",
 });
 
-const geist = Geist({ subsets: ["latin"], weight: "400", display: "swap", variable: "--font-gtd-credit" });
+const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-brand-inter" });
+const notoThai = Noto_Sans_Thai({ subsets: ["thai", "latin"], display: "swap", variable: "--font-brand-thai" });
 
 export const metadata: Metadata = {
   title: "GTD-GoWork App",
@@ -23,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th">
-      <body className={`${prompt.className} ${geist.variable}`}>
+      <body className={`${prompt.className} ${inter.variable} ${notoThai.variable}`}>
         <Providers>
           {children}
         </Providers>

@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { AccountRegistration } from './components/account-registration';
+import { AppBrandHeader } from './components/app-brand-header';
 interface Job {
   id: string;
   name: string;
@@ -499,7 +500,7 @@ export default function Home() {
       <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="w-full rounded-3xl bg-white p-7 text-center shadow-lg border border-gray-100">
           <img src="/gtd-logo.png" alt="GTD-GoWork" className="mx-auto mb-4 h-28 w-28 object-contain" />
-          <h1 className="text-xl font-bold text-gray-800">GTD-GoWork</h1>
+          <AppBrandHeader />
           <button
             type="button"
             onClick={() => {
@@ -522,6 +523,7 @@ export default function Home() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-4 relative flex flex-col justify-between">
       <div>
+        <AppBrandHeader />
         {/* แถบ LINE Login */}
         <div id="tour-line" className="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100">
           {session ? (
@@ -853,9 +855,10 @@ export default function Home() {
           )}
         </div>
         <footer lang="en" className="app-credit">
-          <span>GTD-GoWork • v1.0.1</span>
-          <span>Built by BOM_GTD</span>
-          <span className="credit-tagline">For everyone. For happier work.</span>
+          <p className="credit-title">Simple · Smart · Sustainable</p>
+          <p className="credit-tagline">Build what matters. Keep it simple.</p>
+          <p className="credit-author">by BOM_GTD</p>
+          <p className="credit-tagline">For everyone. For happier work.</p>
         </footer>
       </div>
       {/* Welcome Notice */}
